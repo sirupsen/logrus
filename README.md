@@ -26,11 +26,11 @@ logrus.Debug("Something debugworthy happened: %s", importantStuff")
 logrus.Info("Something infoworthy happened: %s", importantStuff")
 
 logrus.Warning("Something bad happened: %s", importantStuff")
-# Reports to Airbrake
+// Reports to Airbrake
 
 logrus.Fatal("Something fatal happened: %s", importantStuff")
-# Reports to Airbrake
-# Then exits
+// Reports to Airbrake
+// Then exits
 ```
 
 Types are encouraged to include their own logging object. This allows to set a
@@ -58,9 +58,9 @@ func (walrus *Walrus) Mate(partner *Walrus) error {
   }
 
   walrus.logger.Info("Walrus with tusk sizes %d and %d are mating!", walrus.TuskSize, partner.TuskSize)
-  # Generates a logging message: <timestamp> [Info] [Walrus] Walrus with tusk sizes <int> and <int> are mating!
+  // Generates a logging message: <timestamp> [Info] [Walrus] Walrus with tusk sizes <int> and <int> are mating!
 
-  # Walrus mating happens here
+  // Walrus mating happens here
 
   return nil
 }
