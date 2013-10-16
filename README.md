@@ -22,13 +22,13 @@ created (see example below), such as the place to redirect output. Logging can
 be done with the global logging module:
 
 ```go
-logrus.Debug("Something debugworthy happened: %s", importantStuff")
-logrus.Info("Something infoworthy happened: %s", importantStuff")
+logrus.Debug("Something debugworthy happened: %s", importantStuff)
+logrus.Info("Something infoworthy happened: %s", importantStuff)
 
-logrus.Warning("Something bad happened: %s", importantStuff")
+logrus.Warning("Something bad happened: %s", importantStuff)
 // Reports to Airbrake
 
-logrus.Fatal("Something fatal happened: %s", importantStuff")
+logrus.Fatal("Something fatal happened: %s", importantStuff)
 // Reports to Airbrake
 // Then exits
 ```
