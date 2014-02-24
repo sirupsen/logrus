@@ -27,8 +27,9 @@ func NewEntry(logger *Logger) *Entry {
 }
 
 // TODO: Other formats?
-func (entry *Entry) Reader() (read *bytes.Buffer, err error) {
+func (entry *Entry) Reader() (*bytes.Buffer, error) {
 	var serialized []byte
+	var err error
 
 	if Environment == "production" {
 		serialized, err = json.Marshal(entry.Data)
@@ -38,7 +39,7 @@ func (entry *Entry) Reader() (read *bytes.Buffer, err error) {
 	}
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
 	}
 
 	serialized = append(serialized, '\n')
@@ -59,7 +60,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return entry
 }
 
-func (entry *Entry) log(level string, msg string) {
+func (entry *Entry) log(level string, msg string) string {
 	// TODO: Is the default format output from String() the one we want?
 	entry.Data["time"] = time.Now().String()
 	entry.Data["level"] = level
@@ -69,7 +70,7 @@ func (entry *Entry) log(level string, msg string) {
 	reader, err := entry.Reader()
 	if err != nil {
 		// TODO: Panic?
-		entry.logger.Panicln("Failed to marshal JSON: ", err.Error())
+		entry.logger.Panicf("Failed to obtain reader, %v", err)
 	}
 
 	// Send HTTP request in a goroutine in warning environment to not halt the
@@ -83,17 +84,16 @@ func (entry *Entry) log(level string, msg string) {
 		entry.airbrake(reader.String())
 	}
 
-	if level == "panic" {
-		panic(reader.String())
-	} else {
-		entry.logger.mu.Lock()
-		defer entry.logger.mu.Unlock()
-		_, err := io.Copy(entry.logger.Out, reader)
-		// TODO: Panic?
-		if err != nil {
-			entry.logger.Panicln("Failed to log message: ", err.Error())
-		}
+	entry.logger.mu.Lock()
+	defer entry.logger.mu.Unlock()
+
+	_, err = io.Copy(entry.logger.Out, reader)
+	// TODO: Panic?
+	if err != nil {
+		entry.logger.Panicln("Failed to log message, %v", err)
 	}
+
+	return reader.String()
 }
 
 func (entry *Entry) Debug(args ...interface{}) {
@@ -129,8 +129,10 @@ func (entry *Entry) Fatal(args ...interface{}) {
 
 func (entry *Entry) Panic(args ...interface{}) {
 	if Level >= LevelPanic {
-		entry.log("panic", fmt.Sprint(args...))
+		msg = entry.log("panic", fmt.Sprint(args...))
+		panic(msg)
 	}
+	panic(fmt.Sprint(args...))
 }
 
 // Entry Printf family functions

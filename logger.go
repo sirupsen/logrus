@@ -25,7 +25,6 @@ func (logger *Logger) WithFields(fields Fields) *Entry {
 	return NewEntry(logger).WithFields(fields)
 }
 
-// Entry Print family functions
 // Logger Printf family functions
 
 func (logger *Logger) Debugf(format string, args ...interface{}) {
