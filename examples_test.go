@@ -57,7 +57,7 @@ func ExampleLogger_WithFields() {
 	// 	 "weather":"rain",
 	// 	 "name": "Wally",
 	// 	 "event":"escape",
-	//   "msg": "Walrus has escaped the aquarium! Action required!")
+	//   "msg": "Walrus has escaped the aquarium! Action required!",
 	//   "time": "2014-02-23 19:57:35.862271048 -0500 EST"
 	// }
 }
