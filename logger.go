@@ -3,10 +3,7 @@ package logrus
 import (
 	"io"
 	"os"
-	"strings"
 	"sync"
-
-	"github.com/tobi/airbrake-go"
 )
 
 type Logger struct {
@@ -15,30 +12,17 @@ type Logger struct {
 }
 
 func New() *Logger {
-	environment := strings.ToLower(os.Getenv("ENV"))
-	if environment == "" {
-		environment = "development"
-	}
-
-	if airbrake.Environment == "" {
-		airbrake.Environment = environment
-	}
-
 	return &Logger{
 		Out: os.Stdout, // Default to stdout, change it if you want.
 	}
 }
 
 func (logger *Logger) WithField(key string, value interface{}) *Entry {
-	entry := NewEntry(logger)
-	entry.WithField(key, value)
-	return entry
+	return NewEntry(logger).WithField(key, value)
 }
 
 func (logger *Logger) WithFields(fields Fields) *Entry {
-	entry := NewEntry(logger)
-	entry.WithFields(fields)
-	return entry
+	return NewEntry(logger).WithFields(fields)
 }
 
 // Entry Print family functions

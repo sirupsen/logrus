@@ -61,14 +61,15 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 
 func (entry *Entry) log(level string, msg string) {
 	// TODO: Is the default format output from String() the one we want?
-	entry.Data["timestamp"] = time.Now().String()
+	entry.Data["time"] = time.Now().String()
 	entry.Data["level"] = level
 	// TODO: Is this the best name?
 	entry.Data["msg"] = msg
 
 	reader, err := entry.Reader()
 	if err != nil {
-		entry.logger.Panicln("Failed to marshal JSON ", err.Error())
+		// TODO: Panic?
+		entry.logger.Panicln("Failed to marshal JSON: ", err.Error())
 	}
 
 	// Send HTTP request in a goroutine in warning environment to not halt the
@@ -86,8 +87,12 @@ func (entry *Entry) log(level string, msg string) {
 		panic(reader.String())
 	} else {
 		entry.logger.mu.Lock()
-		io.Copy(entry.logger.Out, reader)
-		entry.logger.mu.Unlock()
+		defer entry.logger.mu.Unlock()
+		_, err := io.Copy(entry.logger.Out, reader)
+		// TODO: Panic?
+		if err != nil {
+			entry.logger.Panicln("Failed to log message: ", err.Error())
+		}
 	}
 }
 
