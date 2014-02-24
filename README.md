@@ -1,67 +1,75 @@
 # Logrus
 
-Logrus is a simple, opinionated logging package for Go. It has three debugging
-levels:
+Logrus is a simple, opinionated logging package for Go. Features include:
 
-* `LevelDebug`: Debugging, usually turned off for deploys.
-* `LevelInfo`: Info, useful for monitoring in production.
-* `LevelWarning`: Warnings that should definitely be noted. These are sent to
-  `airbrake`.
-* `LevelFatal`: Fatal messages that causes the application to crash. These are
-  sent to `airbrake`.
+* **Level logging**. Logrus has the levels: Debug, Info, Warning and Fatal.
+* **Exceptions**. Warnings will log as an exception along with logging it to
+  out, without quitting. Fatal will do the same, but call `os.Exit(1)` after
+  emitting the exception.
+* **JSON**. Logrus currently logs as JSON by default.
 
-## Usage
+The API is completely compatible with the Go standard lib logger, with only the
+features above added.
 
-The global logging level is set by: `logrus.Level = logrus.{LevelDebug,LevelWarning,LevelFatal}`.
+## Motivation
 
-Note that for `airbrake` to work, `airbrake.Endpoint` and `airbrake.ApiKey`
-should be set.
-
-There is a global logger, which new loggers inherit their settings from when
-created (see example below), such as the place to redirect output. Logging can
-be done with the global logging module:
+The motivation for this library came out of a pattern seen in Go applications me
+and others have been writing with functions such as:
 
 ```go
-logrus.Debug("Something debugworthy happened: %s", importantStuff)
-logrus.Info("Something infoworthy happened: %s", importantStuff)
+func reportFatalError(err error) {
+  airbrake.Notify(err)
+  log.Fatal(err)
+}
 
-logrus.Warning("Something bad happened: %s", importantStuff)
-// Reports to Airbrake
-
-logrus.Fatal("Something fatal happened: %s", importantStuff)
-// Reports to Airbrake
-// Then exits
+func reportWarning(err error) {
+  airbrake.Notify(err)
+}
 ```
 
-Types are encouraged to include their own logging object. This allows to set a
-context dependent prefix to know where a certain message is coming from, without
-cluttering every single message with this.
+JSON logging is excellent for parsing logs for analysis and troubleshooting.
+It's supported natively by log aggregators such as logstash and Splunk. Logging
+JSON with logrus with the `WithFields` and `WithField` API in logrus forces you
+to think about what context to log, to provide valuable troubleshoot information
+later.
+
+## Example
 
 ```go
-type Walrus struct {
-  TuskSize uint64
-  Sex      bool
-  logger logrus.Logger
-}
+import (
+  "github.com/Sirupsen/logrus"
+)
 
-func NewWalrus(tuskSize uint64, sex bool) *Walrus {
-  return &Walrus{
-    TuskSize: tuskSize,
-    Sex: bool,
-    logger: logrus.NewLogger("Walrus"),
-  }
-}
+var logger logrus.New()
+func main() {
+  logger.WithFields(Fields{
+      "animal":   "walrus",
+      "location": "New York Aquarium",
+      "weather":  "rain",
+      "name":     "Wally",
+      "event":    "escape",
+      }).Info("Walrus has escaped the aquarium! Action required!")
+  // {
+  //   "level": "info",
+  //   "animal": "walrus",
+  //   "location": "New York Aquarium",
+  //   "weather":"rain",
+  //   "name": "Wally",
+  //   "event":"escape",
+  //   "msg": "Walrus has escaped the aquarium! Action required!")
+  //   "time": "2014-02-23 19:57:35.862271048 -0500 EST"
+  // }
 
-func (walrus *Walrus) Mate(partner *Walrus) error {
-  if walrus.Sex == partner.Sex {
-    return errors.New("Incompatible mating partner.")
-  }
-
-  walrus.logger.Info("Walrus with tusk sizes %d and %d are mating!", walrus.TuskSize, partner.TuskSize)
-  // Generates a logging message: <timestamp> [Info] [Walrus] Walrus with tusk sizes <int> and <int> are mating!
-
-  // Walrus mating happens here
-
-  return nil
+  logger.WithField("source", "kafka").Infof("Connection to Kafka failed with %s", "some error")
+  // {
+  //   "level": "info",
+  //   "source": "kafka",
+  //   "msg": "Connection to Kafka failed with some error",
+  //   "time": "2014-02-23 19:57:35.862271048 -0500 EST"
+  // }
 }
 ```
+
+Using `Warning` and `Fatal` to log to `airbrake` requires setting
+`airbrake.Endpoint` and `airbrake.ApiKey`. See
+[tobi/airbrake-go](https://github.com/tobi/airbrake-go).
