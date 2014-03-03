@@ -82,8 +82,7 @@ func (entry *Entry) log(level string, msg string) string {
 
 	reader, err := entry.Reader()
 	if err != nil {
-		// TODO: Panic?
-		entry.logger.Panicf("Failed to obtain reader, %v", err)
+		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v", err)
 	}
 
 	// Send HTTP request in a goroutine in warning environment to not halt the
@@ -101,9 +100,8 @@ func (entry *Entry) log(level string, msg string) string {
 	defer entry.logger.mu.Unlock()
 
 	_, err = io.Copy(entry.logger.Out, reader)
-	// TODO: Panic?
 	if err != nil {
-		entry.logger.Panicln("Failed to log message, %v", err)
+		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v", err)
 	}
 
 	return reader.String()
