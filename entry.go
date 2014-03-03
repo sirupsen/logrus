@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/burke/ttyutils"
 	"github.com/tobi/airbrake-go"
 )
 
@@ -33,16 +35,27 @@ func (entry *Entry) Reader() (*bytes.Buffer, error) {
 
 	if Environment == "production" {
 		serialized, err = json.Marshal(entry.Data)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
+		}
+		serialized = append(serialized, '\n')
 	} else {
+		if ttyutils.IsTerminal(os.Stdout.Fd()) {
+			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[34m%s: ", strings.ToUpper(entry.Data["level"].(string))))...)
+		}
+
 		// TODO: Pretty-print more by coloring when stdout is a tty
-		serialized, err = json.MarshalIndent(entry.Data, "", "  ")
-	}
+		// TODO: If this is a println, it'll do a newline and then closing quote.
+		for k, v := range entry.Data {
+			serialized = append(serialized, []byte(fmt.Sprintf("%s='%s' ", k, v))...)
+		}
 
-	if err != nil {
-		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
-	}
+		if ttyutils.IsTerminal(os.Stdout.Fd()) {
+			serialized = append(serialized, []byte("\x1b[0m")...)
+		}
 
-	serialized = append(serialized, '\n')
+		serialized = append(serialized, '\n')
+	}
 
 	return bytes.NewBuffer(serialized), nil
 }
@@ -129,7 +142,7 @@ func (entry *Entry) Fatal(args ...interface{}) {
 
 func (entry *Entry) Panic(args ...interface{}) {
 	if Level >= LevelPanic {
-		msg = entry.log("panic", fmt.Sprint(args...))
+		msg := entry.log("panic", fmt.Sprint(args...))
 		panic(msg)
 	}
 	panic(fmt.Sprint(args...))
