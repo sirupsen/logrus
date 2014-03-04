@@ -69,9 +69,15 @@ func (entry *Entry) Reader() (*bytes.Buffer, error) {
 			}
 		}
 		sort.Strings(keys)
+		first := true
 		for _, k := range keys {
 			v := entry.Data[k]
-			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[34m%s\x1b[0m='%s' ", k, v))...)
+			if first {
+				first = false
+			} else {
+				serialized = append(serialized, ' ')
+			}
+			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[34m%s\x1b[0m=%v", k, v))...)
 		}
 
 		serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm)\x1b[0m", levelColor))...)
