@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -17,6 +18,16 @@ import (
 type Entry struct {
 	logger *Logger
 	Data   Fields
+}
+
+var baseTimestamp time.Time
+
+func init() {
+	baseTimestamp = time.Now()
+}
+
+func miniTS() int {
+	return int(time.Since(baseTimestamp) / time.Second)
 }
 
 func NewEntry(logger *Logger) *Entry {
@@ -40,19 +51,36 @@ func (entry *Entry) Reader() (*bytes.Buffer, error) {
 		}
 		serialized = append(serialized, '\n')
 	} else {
+		levelText := strings.ToUpper(entry.Data["level"].(string))
+		levelColor := 34
+		if levelText != "INFO" {
+			levelColor = 31
+		}
 		if ttyutils.IsTerminal(os.Stdout.Fd()) {
-			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[34m%s: ", strings.ToUpper(entry.Data["level"].(string))))...)
+			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm%s\x1b[0m[%04d] %-45s \x1b[%dm(\x1b[0m", levelColor, levelText, miniTS(), entry.Data["msg"], levelColor))...)
 		}
 
 		// TODO: Pretty-print more by coloring when stdout is a tty
 		// TODO: If this is a println, it'll do a newline and then closing quote.
-		for k, v := range entry.Data {
-			serialized = append(serialized, []byte(fmt.Sprintf("%s='%s' ", k, v))...)
+		keys := make([]string, 0)
+		for k, _ := range entry.Data {
+			if k != "level" && k != "time" && k != "msg" {
+				keys = append(keys, k)
+			}
+		}
+		sort.Strings(keys)
+		first := true
+		for _, k := range keys {
+			v := entry.Data[k]
+			if first {
+				first = false
+			} else {
+				serialized = append(serialized, ' ')
+			}
+			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[34m%s\x1b[0m=%v", k, v))...)
 		}
 
-		if ttyutils.IsTerminal(os.Stdout.Fd()) {
-			serialized = append(serialized, []byte("\x1b[0m")...)
-		}
+		serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm)\x1b[0m", levelColor))...)
 
 		serialized = append(serialized, '\n')
 	}
