@@ -51,13 +51,18 @@ func (entry *Entry) Reader() (*bytes.Buffer, error) {
 		}
 		serialized = append(serialized, '\n')
 	} else {
-		levelText := strings.ToUpper(entry.Data["level"].(string))
+		levelText := strings.ToUpper(entry.Data["level"].(string))[0:4]
 		levelColor := 34
-		if levelText != "INFO" {
+
+		if entry.Data["level"] == "warning" {
+			levelColor = 33
+		} else if entry.Data["level"] == "fatal" ||
+			entry.Data["level"] == "panic" {
 			levelColor = 31
 		}
+
 		if ttyutils.IsTerminal(os.Stdout.Fd()) {
-			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm%s\x1b[0m[%04d] %-45s \x1b[%dm(\x1b[0m", levelColor, levelText, miniTS(), entry.Data["msg"], levelColor))...)
+			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm%s\x1b[0m[%04d] %-45s ", levelColor, levelText, miniTS(), entry.Data["msg"]))...)
 		}
 
 		// TODO: Pretty-print more by coloring when stdout is a tty
@@ -77,10 +82,10 @@ func (entry *Entry) Reader() (*bytes.Buffer, error) {
 			} else {
 				serialized = append(serialized, ' ')
 			}
-			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[34m%s\x1b[0m=%v", k, v))...)
+			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm%s\x1b[0m=%v", levelColor, k, v))...)
 		}
 
-		serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm)\x1b[0m", levelColor))...)
+		// serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm)\x1b[0m", levelColor))...)
 
 		serialized = append(serialized, '\n')
 	}
@@ -113,15 +118,17 @@ func (entry *Entry) log(level string, msg string) string {
 		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v", err)
 	}
 
-	// Send HTTP request in a goroutine in warning environment to not halt the
-	// main thread. It's sent before logging due to panic.
-	if level == "warning" {
-		// TODO: new() should spawn an airbrake goroutine and this should send to
-		// that channel. This prevent us from spawning hundreds of goroutines in a
-		// hot code path generating a warning.
-		go entry.airbrake(reader.String())
-	} else if level == "fatal" || level == "panic" {
-		entry.airbrake(reader.String())
+	if Environment != "development" {
+		// Send HTTP request in a goroutine in warning environment to not halt the
+		// main thread. It's sent before logging due to panic.
+		if level == "warning" {
+			// TODO: new() should spawn an airbrake goroutine and this should send to
+			// that channel. This prevent us from spawning hundreds of goroutines in a
+			// hot code path generating a warning.
+			go entry.airbrake(reader.String())
+		} else if level == "fatal" || level == "panic" {
+			entry.airbrake(reader.String())
+		}
 	}
 
 	entry.logger.mu.Lock()
