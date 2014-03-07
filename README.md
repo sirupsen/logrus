@@ -11,7 +11,7 @@ tracker.
 #### Fields
 
 Logrus encourages careful, informative logging. It encourages the use of logging
-fields, instead of long, unparseable error messages. For example, instead of:
+fields instead of long, unparseable error messages. For example, instead of:
 `log.Fatalf("Failed to send event %s to topic %s with key %d")`, you should log
 the much more discoverable:
 
@@ -27,10 +27,14 @@ log.WithFields(&logrus.Fields{
 We've found this API forces you to think about logging in a way that produces
 much more useful logging messages. The `WithFields` call is optional.
 
+In general, with Logrus using any of the `printf`-family functions should be
+seen as a hint you want to add a field, however, you can still use the
+`printf`-family functions with Logrus.
+
 #### Hooks
 
-You can add hooks for logging levels. For example to send errors, to an
-exception tracking service:
+You can add hooks for logging levels. For example to send errors to an exception
+tracking service:
 
 ```go
 log.AddHook("error", func(entry logrus.Entry) {
