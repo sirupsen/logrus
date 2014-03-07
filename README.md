@@ -71,11 +71,19 @@ for the environment.
 Logrus has six levels: Debug, Info, Warning, Error, Fatal and Panic.
 
 ```go
+log.Debug("Useful debugging information.")
 log.Info("Something noteworthy happened!")
 log.Warn("You should probably take a look at this.")
 log.Error("Something failed but I'm not quitting.")
 log.Fatal("Bye.")
 log.Panic("I'm bailing.")
+```
+
+You can set the logging level:
+
+```go
+// Will log anything that is info or above, default.
+logrus.Level = LevelInfo
 ```
 
 #### Entries
