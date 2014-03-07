@@ -124,8 +124,8 @@ init() {
 The built in logging formatters are:
 
 * `logrus.TextFormatter`. Logs the event in colors if stdout is a tty, otherwise
-  without colors. Default for the development environment. <screenshot>
-* `logrus.JSONFormatter`. Default for the production environment. <screnshot>
+  without colors.
+* `logrus.JSONFormatter`. Logs fields as JSON.
 
 You can define your formatter taking an entry. `entry.Data` is a `Fields` type
 which is a `map[string]interface{}` with all your fields as well as the default
