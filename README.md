@@ -48,24 +48,6 @@ log.AddHook("error", func(entry logrus.Entry) {
 })
 ```
 
-#### Errors
-
-You can also use Logrus to return errors with fields. For instance:
-
-```go
-err := record.Destroy()
-if err != nil {
-  return log.WithFields(&logrus.Fields{
-            "id": record.Id,
-            "method": "destroy"
-          }).AsError("Failed to destroy record")
-}
-```
-
-Will return a `logrus.Error` object. Passing it to
-`log.{Info,Warn,Error,Fatal,Panic}` will log it according to the formatter set
-for the environment.
-
 #### Level logging
 
 Logrus has six levels: Debug, Info, Warning, Error, Fatal and Panic.
