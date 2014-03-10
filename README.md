@@ -1,67 +1,121 @@
 # Logrus
 
-Logrus is a simple, opinionated logging package for Go. It has three debugging
-levels:
+Logrus is a simple, opinionated structured logging package for Go which is
+completely API compatible with the standard library logger.
 
-* `LevelDebug`: Debugging, usually turned off for deploys.
-* `LevelInfo`: Info, useful for monitoring in production.
-* `LevelWarning`: Warnings that should definitely be noted. These are sent to
-  `airbrake`.
-* `LevelFatal`: Fatal messages that causes the application to crash. These are
-  sent to `airbrake`.
+#### Fields
 
-## Usage
-
-The global logging level is set by: `logrus.Level = logrus.{LevelDebug,LevelWarning,LevelFatal}`.
-
-Note that for `airbrake` to work, `airbrake.Endpoint` and `airbrake.ApiKey`
-should be set.
-
-There is a global logger, which new loggers inherit their settings from when
-created (see example below), such as the place to redirect output. Logging can
-be done with the global logging module:
+Logrus encourages careful, informative logging. It encourages the use of logging
+fields instead of long, unparseable error messages. For example, instead of:
+`log.Fatalf("Failed to send event %s to topic %s with key %d")`, you should log
+the much more discoverable:
 
 ```go
-logrus.Debug("Something debugworthy happened: %s", importantStuff)
-logrus.Info("Something infoworthy happened: %s", importantStuff)
-
-logrus.Warning("Something bad happened: %s", importantStuff)
-// Reports to Airbrake
-
-logrus.Fatal("Something fatal happened: %s", importantStuff)
-// Reports to Airbrake
-// Then exits
+log = logrus.New()
+log.WithFields(&logrus.Fields{
+  "event": event,
+  "topic": topic,
+  "key": key
+}).Fatal("Failed to send event")
 ```
 
-Types are encouraged to include their own logging object. This allows to set a
-context dependent prefix to know where a certain message is coming from, without
-cluttering every single message with this.
+We've found this API forces you to think about logging in a way that produces
+much more useful logging messages. The `WithFields` call is optional.
+
+In general, with Logrus using any of the `printf`-family functions should be
+seen as a hint you want to add a field, however, you can still use the
+`printf`-family functions with Logrus.
+
+#### Hooks
+
+You can add hooks for logging levels. For example to send errors to an exception
+tracking service:
 
 ```go
-type Walrus struct {
-  TuskSize uint64
-  Sex      bool
-  logger logrus.Logger
-}
+log.AddHook("error", func(entry logrus.Entry) {
+  err := airbrake.Notify(errors.New(entry.String()))
+  if err != nil {
+    log.WithFields(logrus.Fields{
+      "source": "airbrake",
+      "endpoint": airbrake.Endpoint,
+    }).Info("Failed to send error to Airbrake")
+  }
+})
+```
 
-func NewWalrus(tuskSize uint64, sex bool) *Walrus {
-  return &Walrus{
-    TuskSize: tuskSize,
-    Sex: bool,
-    logger: logrus.NewLogger("Walrus"),
+#### Level logging
+
+Logrus has six levels: Debug, Info, Warning, Error, Fatal and Panic.
+
+```go
+log.Debug("Useful debugging information.")
+log.Info("Something noteworthy happened!")
+log.Warn("You should probably take a look at this.")
+log.Error("Something failed but I'm not quitting.")
+log.Fatal("Bye.")
+log.Panic("I'm bailing.")
+```
+
+You can set the logging level:
+
+```go
+// Will log anything that is info or above, default.
+logrus.Level = LevelInfo
+```
+
+#### Entries
+
+Besides the fields added with `WithField` or `WithFields` some fields are
+automatically added to all logging events:
+
+1. `time`. The timestamp when the entry was created.
+2. `msg`. The logging message passed to `{Info,Warn,Error,Fatal,Panic}` after
+   the `AddFields` call. E.g. `Failed to send event.`
+3. `level`. The logging level. E.g. `info`.
+4. `file`. The file (and line) where the logging entry was created. E.g.,
+   `main.go:82`.
+
+#### Environments
+
+Logrus has no notion of environment. If you wish for hooks and formatters to
+only be used in specific environments, you should handle that yourself. For
+example, if your application has a global variable `Environment`, which is a
+string representation of the environment you could do:
+
+```go
+init() {
+  // do something here to set environment depending on an environment variable
+  // or command-line flag
+
+  if Environment == "production" {
+    log.SetFormatter(logrus.JSONFormatter)
+  } else {
+    // The TextFormatter is default, you don't actually have to do this.
+    log.SetFormatter(logrus.TextFormatter)
   }
 }
+```
 
-func (walrus *Walrus) Mate(partner *Walrus) error {
-  if walrus.Sex == partner.Sex {
-    return errors.New("Incompatible mating partner.")
+#### Formats
+
+The built in logging formatters are:
+
+* `logrus.TextFormatter`. Logs the event in colors if stdout is a tty, otherwise
+  without colors.
+* `logrus.JSONFormatter`. Logs fields as JSON.
+
+You can define your formatter taking an entry. `entry.Data` is a `Fields` type
+which is a `map[string]interface{}` with all your fields as well as the default
+ones (see Entries above):
+
+```go
+log.SetFormatter(func(entry *logrus.Entry) {
+  serialized, err = json.Marshal(entry.Data)
+  if err != nil {
+    return nil, log.WithFields(&logrus.Fields{
+      "source": "log formatter",
+      "entry": entry.Data
+    }).AsError("Failed to serialize log entry to JSON")
   }
-
-  walrus.logger.Info("Walrus with tusk sizes %d and %d are mating!", walrus.TuskSize, partner.TuskSize)
-  // Generates a logging message: <timestamp> [Info] [Walrus] Walrus with tusk sizes <int> and <int> are mating!
-
-  // Walrus mating happens here
-
-  return nil
-}
+})
 ```
