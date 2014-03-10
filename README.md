@@ -5,7 +5,7 @@ completely API compatible with the standard library logger.
 
 #### Fields
 
-Logrus encourages careful, informative logging. It encourages the use of logging
+Logrus encourages careful, structured logging. It encourages the use of logging
 fields instead of long, unparseable error messages. For example, instead of:
 `log.Fatalf("Failed to send event %s to topic %s with key %d")`, you should log
 the much more discoverable:
@@ -30,13 +30,15 @@ seen as a hint you want to add a field, however, you can still use the
 #### Hooks
 
 You can add hooks for logging levels. For example to send errors to an exception
-tracking service:
+tracking service on `LevelError`, `LevelFatal` and `LevelPanic`.
 
 ```go
 log = logrus.New()
 
 type AirbrakeHook struct {}
 
+// `Fire()` takes the entry that the hook is fired for. `entry.Data[]` contains
+// the fields for the entry. See the Fields section of the README.
 func (hook *AirbrakeHook) Fire(entry *Entry) (error) {
   err := airbrake.Notify(errors.New(entry.String()))
   if err != nil {
@@ -49,6 +51,7 @@ func (hook *AirbrakeHook) Fire(entry *Entry) (error) {
   return nil
 }
 
+// `Levels()` returns a slice of `LevelTypes` the hook is fired for.
 func (hook *AirbrakeHook) Levels() []logrus.LevelType {
   return []logrus.LevelType{
     logrus.LevelError,
