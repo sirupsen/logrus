@@ -85,6 +85,10 @@ func (entry *Entry) Debug(args ...interface{}) {
 	}
 }
 
+func (entry *Entry) Print(args ...interface{}) {
+	entry.Info(args...)
+}
+
 func (entry *Entry) Info(args ...interface{}) {
 	if entry.logger.Level >= Info {
 		entry.log("info", fmt.Sprint(args...))
