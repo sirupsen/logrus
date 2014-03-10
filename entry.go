@@ -79,52 +79,45 @@ func (entry *Entry) log(level string, msg string) string {
 }
 
 func (entry *Entry) Debug(args ...interface{}) {
-	if Level >= LevelDebug {
+	if entry.logger.Level >= Debug {
 		entry.log("debug", fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(LevelDebug, entry)
+		entry.logger.Hooks.Fire(Debug, entry)
 	}
 }
 
 func (entry *Entry) Info(args ...interface{}) {
-	if Level >= LevelInfo {
+	if entry.logger.Level >= Info {
 		entry.log("info", fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(LevelInfo, entry)
-	}
-}
-
-func (entry *Entry) Print(args ...interface{}) {
-	if Level >= LevelInfo {
-		entry.log("info", fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(LevelInfo, entry)
+		entry.logger.Hooks.Fire(Info, entry)
 	}
 }
 
 func (entry *Entry) Warn(args ...interface{}) {
-	if Level >= LevelWarn {
+	if entry.logger.Level >= Warn {
 		entry.log("warning", fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(LevelWarn, entry)
+		entry.logger.Hooks.Fire(Warn, entry)
 	}
 }
 
 func (entry *Entry) Error(args ...interface{}) {
-	if Level >= LevelError {
+	if entry.logger.Level >= Error {
 		entry.log("error", fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(LevelError, entry)
+		entry.logger.Hooks.Fire(Error, entry)
 	}
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
-	if Level >= LevelFatal {
+	if entry.logger.Level >= Fatal {
 		entry.log("fatal", fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(LevelFatal, entry)
+		entry.logger.Hooks.Fire(Fatal, entry)
 	}
 	os.Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
-	if Level >= LevelPanic {
+	if entry.logger.Level >= Panic {
 		msg := entry.log("panic", fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(LevelPanic, entry)
+		entry.logger.Hooks.Fire(Panic, entry)
 		panic(msg)
 	}
 	panic(fmt.Sprint(args...))
@@ -141,7 +134,7 @@ func (entry *Entry) Infof(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Printf(format string, args ...interface{}) {
-	entry.Print(fmt.Sprintf(format, args...))
+	entry.Info(fmt.Sprintf(format, args...))
 }
 
 func (entry *Entry) Warnf(format string, args ...interface{}) {
@@ -153,7 +146,7 @@ func (entry *Entry) Warningf(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Errorf(format string, args ...interface{}) {
-	entry.Print(fmt.Sprintf(format, args...))
+	entry.Error(fmt.Sprintf(format, args...))
 }
 
 func (entry *Entry) Fatalf(format string, args ...interface{}) {
@@ -175,7 +168,7 @@ func (entry *Entry) Infoln(args ...interface{}) {
 }
 
 func (entry *Entry) Println(args ...interface{}) {
-	entry.Print(fmt.Sprint(args...))
+	entry.Info(fmt.Sprint(args...))
 }
 
 func (entry *Entry) Warnln(args ...interface{}) {

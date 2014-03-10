@@ -2,18 +2,16 @@ package logrus
 
 type Fields map[string]interface{}
 
-type LevelType uint8
+type Level uint8
 
 const (
-	LevelPanic LevelType = iota
-	LevelFatal
-	LevelError
-	LevelWarn
-	LevelInfo
-	LevelDebug
+	Panic Level = iota
+	Fatal
+	Error
+	Warn
+	Info
+	Debug
 )
-
-var Level LevelType = LevelInfo
 
 // StandardLogger is what your logrus-enabled library should take, that way
 // it'll accept a stdlib logger and a logrus logger. There's no standard

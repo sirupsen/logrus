@@ -10,6 +10,7 @@ type Logger struct {
 	Out       io.Writer
 	Hooks     levelHooks
 	Formatter Formatter
+	Level     Level
 	mu        sync.Mutex
 }
 
@@ -18,6 +19,7 @@ func New() *Logger {
 		Out:       os.Stdout, // Default to stdout, change it if you want.
 		Formatter: new(TextFormatter),
 		Hooks:     make(levelHooks),
+		Level:     Info,
 	}
 }
 
@@ -74,7 +76,7 @@ func (logger *Logger) Info(args ...interface{}) {
 }
 
 func (logger *Logger) Print(args ...interface{}) {
-	NewEntry(logger).Print(args...)
+	NewEntry(logger).Info(args...)
 }
 
 func (logger *Logger) Warn(args ...interface{}) {

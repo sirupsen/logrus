@@ -30,7 +30,7 @@ seen as a hint you want to add a field, however, you can still use the
 #### Hooks
 
 You can add hooks for logging levels. For example to send errors to an exception
-tracking service on `LevelError`, `LevelFatal` and `LevelPanic`.
+tracking service on `Error`, `Fatal` and `Panic`.
 
 ```go
 log = logrus.New()
@@ -51,12 +51,12 @@ func (hook *AirbrakeHook) Fire(entry *Entry) (error) {
   return nil
 }
 
-// `Levels()` returns a slice of `LevelTypes` the hook is fired for.
-func (hook *AirbrakeHook) Levels() []logrus.LevelType {
-  return []logrus.LevelType{
-    logrus.LevelError,
-    logrus.LevelFatal,
-    logrus.LevelPanic
+// `Levels()` returns a slice of `Levels` the hook is fired for.
+func (hook *AirbrakeHook) Levels() []logrus.Level {
+  return []logrus.Level{
+    logrus.Error,
+    logrus.Fatal,
+    logrus.Panic
   }
 }
 ```
@@ -78,7 +78,7 @@ You can set the logging level:
 
 ```go
 // Will log anything that is info or above, default.
-logrus.Level = LevelInfo
+log.Level = logrus.Info
 ```
 
 #### Entries
