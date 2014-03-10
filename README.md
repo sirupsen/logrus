@@ -1,12 +1,7 @@
 # Logrus
 
-Logrus is a simple, opinionated logging package for Go which is completely API
-compatible with the standard library logger. It has six logging levels: Debug,
-Info, Warn, Error, Fatal and Panic. It supports custom logging formatters, and
-ships with JSON and nicely formatted text by default. It encourages the use of
-logging key value pairs for discoverability. Logrus allows you to add hooks to
-logging events at different levels, for instance to notify an external error
-tracker.
+Logrus is a simple, opinionated structured logging package for Go which is
+completely API compatible with the standard library logger.
 
 #### Fields
 

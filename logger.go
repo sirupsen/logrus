@@ -7,13 +7,17 @@ import (
 )
 
 type Logger struct {
-	Out io.Writer
-	mu  sync.Mutex
+	Out       io.Writer
+	Hooks     levelHooks
+	Formatter Formatter
+	mu        sync.Mutex
 }
 
 func New() *Logger {
 	return &Logger{
-		Out: os.Stdout, // Default to stdout, change it if you want.
+		Out:       os.Stdout, // Default to stdout, change it if you want.
+		Formatter: new(TextFormatter),
+		Hooks:     make(levelHooks),
 	}
 }
 
@@ -39,8 +43,16 @@ func (logger *Logger) Printf(format string, args ...interface{}) {
 	NewEntry(logger).Printf(format, args...)
 }
 
+func (logger *Logger) Warnf(format string, args ...interface{}) {
+	NewEntry(logger).Warnf(format, args...)
+}
+
 func (logger *Logger) Warningf(format string, args ...interface{}) {
-	NewEntry(logger).Warningf(format, args...)
+	NewEntry(logger).Warnf(format, args...)
+}
+
+func (logger *Logger) Errorf(format string, args ...interface{}) {
+	NewEntry(logger).Errorf(format, args...)
 }
 
 func (logger *Logger) Fatalf(format string, args ...interface{}) {
@@ -65,8 +77,16 @@ func (logger *Logger) Print(args ...interface{}) {
 	NewEntry(logger).Print(args...)
 }
 
+func (logger *Logger) Warn(args ...interface{}) {
+	NewEntry(logger).Warn(args...)
+}
+
 func (logger *Logger) Warning(args ...interface{}) {
-	NewEntry(logger).Warning(args...)
+	NewEntry(logger).Warn(args...)
+}
+
+func (logger *Logger) Error(args ...interface{}) {
+	NewEntry(logger).Error(args...)
 }
 
 func (logger *Logger) Fatal(args ...interface{}) {
@@ -91,8 +111,16 @@ func (logger *Logger) Println(args ...interface{}) {
 	NewEntry(logger).Println(args...)
 }
 
+func (logger *Logger) Warnln(args ...interface{}) {
+	NewEntry(logger).Warnln(args...)
+}
+
 func (logger *Logger) Warningln(args ...interface{}) {
-	NewEntry(logger).Warningln(args...)
+	NewEntry(logger).Warnln(args...)
+}
+
+func (logger *Logger) Errorln(args ...interface{}) {
+	NewEntry(logger).Errorln(args...)
 }
 
 func (logger *Logger) Fatalln(args ...interface{}) {
