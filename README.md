@@ -12,6 +12,7 @@ the much more discoverable:
 
 ```go
 log = logrus.New()
+
 log.WithFields(&logrus.Fields{
   "event": event,
   "topic": topic,
@@ -32,7 +33,11 @@ You can add hooks for logging levels. For example to send errors to an exception
 tracking service:
 
 ```go
-log.AddHook("error", func(entry logrus.Entry) {
+log = logrus.New()
+
+type AirbrakeHook struct {}
+
+func (hook *AirbrakeHook) Fire(entry *Entry) (error) {
   err := airbrake.Notify(errors.New(entry.String()))
   if err != nil {
     log.WithFields(logrus.Fields{
@@ -40,7 +45,17 @@ log.AddHook("error", func(entry logrus.Entry) {
       "endpoint": airbrake.Endpoint,
     }).Info("Failed to send error to Airbrake")
   }
-})
+
+  return nil
+}
+
+func (hook *AirbrakeHook) Levels() []logrus.LevelType {
+  return []logrus.LevelType{
+    logrus.LevelError,
+    logrus.LevelFatal,
+    logrus.LevelPanic
+  }
+}
 ```
 
 #### Level logging
@@ -72,8 +87,6 @@ automatically added to all logging events:
 2. `msg`. The logging message passed to `{Info,Warn,Error,Fatal,Panic}` after
    the `AddFields` call. E.g. `Failed to send event.`
 3. `level`. The logging level. E.g. `info`.
-4. `file`. The file (and line) where the logging entry was created. E.g.,
-   `main.go:82`.
 
 #### Environments
 
@@ -86,12 +99,13 @@ string representation of the environment you could do:
 init() {
   // do something here to set environment depending on an environment variable
   // or command-line flag
+  log := logrus.New()
 
   if Environment == "production" {
-    log.SetFormatter(logrus.JSONFormatter)
+    log.Formatter = new(logrus.JSONFormatter)
   } else {
     // The TextFormatter is default, you don't actually have to do this.
-    log.SetFormatter(logrus.TextFormatter)
+    log.Formatter = new(logrus.TextFormatter)
   }
 }
 ```
@@ -109,13 +123,16 @@ which is a `map[string]interface{}` with all your fields as well as the default
 ones (see Entries above):
 
 ```go
-log.SetFormatter(func(entry *logrus.Entry) {
-  serialized, err = json.Marshal(entry.Data)
-  if err != nil {
-    return nil, log.WithFields(&logrus.Fields{
-      "source": "log formatter",
-      "entry": entry.Data
-    }).AsError("Failed to serialize log entry to JSON")
-  }
-})
+type MyJSONFormatter struct {
+}
+
+log.Formatter = new(MyJSONFormatter)
+
+func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
+  serialized, err := json.Marshal(entry.Data)
+    if err != nil {
+      return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
+    }
+  return append(serialized, '\n'), nil
+}
 ```
