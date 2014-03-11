@@ -46,7 +46,9 @@ log.WithFields(logrus.Fields{
 ```
 
 We've found this API forces you to think about logging in a way that produces
-much more useful logging messages. The `WithFields` call is optional.
+much more useful logging messages. We've been in countless situations where just
+a single added field to a log statement that was already there would've saved us
+hours. The `WithFields` call is optional.
 
 In general, with Logrus using any of the `printf`-family functions should be
 seen as a hint you want to add a field, however, you can still use the
