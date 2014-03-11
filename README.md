@@ -55,7 +55,7 @@ seen as a hint you want to add a field, however, you can still use the
 #### Hooks
 
 You can add hooks for logging levels. For example to send errors to an exception
-tracking service on `Error`, `Fatal` and `Panic`.
+tracking service on `Error`, `Fatal` and `Panic` or info to StatsD.
 
 ```go
 log = logrus.New()
