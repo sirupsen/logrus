@@ -38,7 +38,7 @@ the much more discoverable:
 ```go
 log = logrus.New()
 
-log.WithFields(&logrus.Fields{
+log.WithFields(logrus.Fields{
   "event": event,
   "topic": topic,
   "key": key
@@ -60,15 +60,15 @@ tracking service on `Error`, `Fatal` and `Panic` or info to StatsD.
 ```go
 log = logrus.New()
 
-type AirbrakeHook struct {}
+type AirbrakeHook struct{}
 
 // `Fire()` takes the entry that the hook is fired for. `entry.Data[]` contains
 // the fields for the entry. See the Fields section of the README.
-func (hook *AirbrakeHook) Fire(entry *Entry) (error) {
-  err := airbrake.Notify(errors.New(entry.String()))
+func (hook *AirbrakeHook) Fire(entry *logrus.Entry) error {
+  err := airbrake.Notify(entry.Data["error"].(error))
   if err != nil {
     log.WithFields(logrus.Fields{
-      "source": "airbrake",
+      "source":   "airbrake",
       "endpoint": airbrake.Endpoint,
     }).Info("Failed to send error to Airbrake")
   }
@@ -81,7 +81,7 @@ func (hook *AirbrakeHook) Levels() []logrus.Level {
   return []logrus.Level{
     logrus.Error,
     logrus.Fatal,
-    logrus.Panic
+    logrus.Panic,
   }
 }
 ```
