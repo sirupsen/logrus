@@ -1,7 +1,7 @@
 # Logrus
 
-Logrus is a structured logger for Go, completely API compatible with the
-standard library logger.
+Logrus is a structured logger for Go (golang), completely API compatible with
+the standard library logger.
 
 Nicely color-coded in development (when a TTY is attached, otherwise just
 plain text):
