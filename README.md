@@ -8,7 +8,8 @@ plain text):
 
 ![Colored](http://i.imgur.com/PY7qMwd.png)
 
-With `log.Formatter = new(logrus.JSONFormatter)`:
+With `log.Formatter = new(logrus.JSONFormatter)`, for easy parsing by logstash
+or Splunk:
 
 ```json
 {"animal":"walrus","level":"info","msg":"A group of walrus emerges from the
