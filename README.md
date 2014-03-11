@@ -3,9 +3,10 @@
 Logrus is a simple, opinionated structured logging package for Go which is
 completely API compatible with the standard library logger.
 
-Nicely color-coded in development (when a TTY is attached):
+Nicely color-coded in development (when a TTY is attached, otherwise just
+plain text):
 
-[Imgur](http://i.imgur.com/PY7qMwd.png)
+![Colored](http://i.imgur.com/PY7qMwd.png)
 
 With `log.Formatter = new(logrus.JSONFormatter)`:
 
