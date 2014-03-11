@@ -14,16 +14,18 @@ or Splunk:
 ```json
 {"animal":"walrus","level":"info","msg":"A group of walrus emerges from the
 ocean","size":"10","time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
-{"level":"warning","msg":"The group's number increased
-tremendously!","number":122,"omg":true,"time":"2014-03-10 19:57:38.562471297
--0400 EDT"}
-{"animal":"walrus","level":"info","msg":"A giant walrus
-appears!","size":"10","time":"2014-03-10 19:57:38.562500591 -0400 EDT"}
-{"animal":"walrus","level":"info","msg":"Tremendously sized cow enters the
-ocean.","size":"9","time":"2014-03-10 19:57:38.562527896 -0400 EDT"}
-{"level":"fatal","msg":"The ice
-breaks!","number":100,"omg":true,"time":"2014-03-10 19:57:38.562543128 -0400
-EDT"}
+
+{"level":"warning","msg":"The group's number increased tremendously!",
+"number":122,"omg":true,"time":"2014-03-10 19:57:38.562471297 -0400 EDT"}
+
+{"animal":"walrus","level":"info","msg":"A giant walrus appears!",
+"size":"10","time":"2014-03-10 19:57:38.562500591 -0400 EDT"}
+
+{"animal":"walrus","level":"info","msg":"Tremendously sized cow enters the ocean.",
+"size":"9","time":"2014-03-10 19:57:38.562527896 -0400 EDT"}
+
+{"level":"fatal","msg":"The ice breaks!","number":100,"omg":true,
+"time":"2014-03-10 19:57:38.562543128 -0400 EDT"}
 ```
 
 #### Fields
@@ -86,7 +88,7 @@ func (hook *AirbrakeHook) Levels() []logrus.Level {
 
 #### Level logging
 
-Logrus has six levels: Debug, Info, Warning, Error, Fatal and Panic.
+Logrus has six logging levels: Debug, Info, Warning, Error, Fatal and Panic.
 
 ```go
 log.Debug("Useful debugging information.")
@@ -97,12 +99,16 @@ log.Fatal("Bye.")
 log.Panic("I'm bailing.")
 ```
 
-You can set the logging level:
+You can set the logging level on a `Logger`, then it will only log entries with
+that severity or anything above it:
 
 ```go
-// Will log anything that is info or above, default.
+// Will log anything that is info or above (warn, error, fatal, panic). Default.
 log.Level = logrus.Info
 ```
+
+It may be useful to set `log.Level = logrus.Debug` in a debug or verbose
+environment if your application has that.
 
 #### Entries
 
@@ -116,10 +122,12 @@ automatically added to all logging events:
 
 #### Environments
 
-Logrus has no notion of environment. If you wish for hooks and formatters to
-only be used in specific environments, you should handle that yourself. For
-example, if your application has a global variable `Environment`, which is a
-string representation of the environment you could do:
+Logrus has no notion of environment. 
+
+If you wish for hooks and formatters to only be used in specific environments,
+you should handle that yourself. For example, if your application has a global
+variable `Environment`, which is a string representation of the environment you
+could do:
 
 ```go
 init() {
@@ -136,17 +144,22 @@ init() {
 }
 ```
 
-#### Formats
+This configuration is how `logrus` was intended to be used, but JSON in
+production is mostly only useful if you do log aggregation with tools like
+Splunk or Logstash.
 
-The built in logging formatters are:
+#### Formatters
+
+The built logging formatters are:
 
 * `logrus.TextFormatter`. Logs the event in colors if stdout is a tty, otherwise
   without colors.
 * `logrus.JSONFormatter`. Logs fields as JSON.
 
-You can define your formatter taking an entry. `entry.Data` is a `Fields` type
-which is a `map[string]interface{}` with all your fields as well as the default
-ones (see Entries above):
+You can define your formatter by implementing the `Formatter` interface,
+requiring a `Format` method. `Format` takes an `*Entry`. `entry.Data` is a
+`Fields` type (`map[string]interface{}`) with all your fields as well as the
+default ones (see Entries section above):
 
 ```go
 type MyJSONFormatter struct {
