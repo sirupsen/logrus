@@ -1,4 +1,4 @@
-# Logrus
+# Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>
 
 Logrus is a structured logger for Go (golang), completely API compatible with
 the standard library logger.
@@ -184,3 +184,4 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 * Default fields for an instance and inheritance
 * Default available hooks (airbrake, statsd, dump cores)
 * Revisit TextFormatter
+* Hook error logging
