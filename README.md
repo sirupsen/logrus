@@ -175,3 +175,10 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
   return append(serialized, '\n'), nil
 }
 ```
+
+#### TODO
+
+* Performance
+* Default fields for an instance and inheritance
+* Default available hooks (airbrake, statsd, dump cores)
+* Revisit TextFormatter
