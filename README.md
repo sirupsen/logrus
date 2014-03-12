@@ -61,6 +61,7 @@ tracking service on `Error`, `Fatal` and `Panic` or info to StatsD.
 
 ```go
 log = logrus.New()
+log.Hooks.Add(new(AirbrakeHook))
 
 type AirbrakeHook struct{}
 
