@@ -57,7 +57,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return entry
 }
 
-func (entry *Entry) log(level string, msg string) string {
+func (entry *Entry) log(level string, levelInt Level, msg string) string {
 	entry.Data["time"] = time.Now().String()
 	entry.Data["level"] = level
 	entry.Data["msg"] = msg
@@ -65,6 +65,10 @@ func (entry *Entry) log(level string, msg string) string {
 	reader, err := entry.Reader()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v", err)
+	}
+
+	if err := entry.logger.Hooks.Fire(levelInt, entry); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to fire hook", err)
 	}
 
 	entry.logger.mu.Lock()
@@ -80,7 +84,7 @@ func (entry *Entry) log(level string, msg string) string {
 
 func (entry *Entry) Debug(args ...interface{}) {
 	if entry.logger.Level >= Debug {
-		entry.log("debug", fmt.Sprint(args...))
+		entry.log("debug", Debug, fmt.Sprint(args...))
 		entry.logger.Hooks.Fire(Debug, entry)
 	}
 }
@@ -91,37 +95,32 @@ func (entry *Entry) Print(args ...interface{}) {
 
 func (entry *Entry) Info(args ...interface{}) {
 	if entry.logger.Level >= Info {
-		entry.log("info", fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(Info, entry)
+		entry.log("info", Info, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Warn(args ...interface{}) {
 	if entry.logger.Level >= Warn {
-		entry.log("warning", fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(Warn, entry)
+		entry.log("warning", Warn, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Error(args ...interface{}) {
 	if entry.logger.Level >= Error {
-		entry.log("error", fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(Error, entry)
+		entry.log("error", Error, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
 	if entry.logger.Level >= Fatal {
-		entry.log("fatal", fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(Fatal, entry)
+		entry.log("fatal", Fatal, fmt.Sprint(args...))
 	}
 	os.Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
 	if entry.logger.Level >= Panic {
-		msg := entry.log("panic", fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(Panic, entry)
+		msg := entry.log("panic", Panic, fmt.Sprint(args...))
 		panic(msg)
 	}
 	panic(fmt.Sprint(args...))
