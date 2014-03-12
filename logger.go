@@ -7,31 +7,62 @@ import (
 )
 
 type Logger struct {
-	Out       io.Writer
-	Hooks     levelHooks
+	// The logs are `io.Copy`'d to this in a mutex. It's common to set this to a
+	// file, or leave it default which is `os.Stdout`. You can also set this to
+	// something more adventorous, such as logging to Kafka.
+	Out io.Writer
+	// Hooks for the logger instance. These allow firing events based on logging
+	// levels and log entries. For example, to send errors to an error tracking
+	// service, log to StatsD or dump the core on fatal errors.
+	Hooks levelHooks
+	// All log entries pass through the formatter before logged to Out. The
+	// included formatters are `TextFormatter` and `JSONFormatter` for which
+	// TextFormatter is the default. In development (when a TTY is attached) it
+	// logs with colors, but to a file it wouldn't. You can easily implement your
+	// own that implements the `Formatter` interface, see the `README` or included
+	// formatters for examples.
 	Formatter Formatter
-	Level     Level
-	mu        sync.Mutex
+	// The logging level the logger should log at. This is typically (and defaults
+	// to) `logrus.Info`, which allows Info(), Warn(), Error() and Fatal() to be
+	// logged. `logrus.Debug` is useful in
+	Level Level
+	// Used to sync writing to the log.
+	mu sync.Mutex
 }
 
+// Creates a new logger. Configuration should be set by changing `Formatter`,
+// `Out` and `Hooks` directly on the default logger instance. You can also just
+// instantiate your own:
+//
+//    var log = &Logger{
+//      Out: os.Stderr,
+//      Formatter: new(JSONFormatter),
+//      Hooks: make(levelHooks),
+//      Level: logrus.Debug,
+//    }
+//
+// It's recommended to make this a global instance called `log`.
 func New() *Logger {
 	return &Logger{
-		Out:       os.Stdout, // Default to stdout, change it if you want.
+		Out:       os.Stdout,
 		Formatter: new(TextFormatter),
 		Hooks:     make(levelHooks),
 		Level:     Info,
 	}
 }
 
+// Adds a field to the log entry, note that you it doesn't log until you call
+// Debug, Print, Info, Warn, Fatal or Panic. It only creates a log entry.
+// Ff you want multiple fields, use `WithFields`.
 func (logger *Logger) WithField(key string, value interface{}) *Entry {
 	return NewEntry(logger).WithField(key, value)
 }
 
+// Adds a struct of fields to the log entry. All it does is call `WithField` for
+// each `Field`.
 func (logger *Logger) WithFields(fields Fields) *Entry {
 	return NewEntry(logger).WithFields(fields)
 }
-
-// Logger Printf family functions
 
 func (logger *Logger) Debugf(format string, args ...interface{}) {
 	NewEntry(logger).Debugf(format, args...)
@@ -65,8 +96,6 @@ func (logger *Logger) Panicf(format string, args ...interface{}) {
 	NewEntry(logger).Panicf(format, args...)
 }
 
-// Logger Print family functions
-
 func (logger *Logger) Debug(args ...interface{}) {
 	NewEntry(logger).Debug(args...)
 }
@@ -98,8 +127,6 @@ func (logger *Logger) Fatal(args ...interface{}) {
 func (logger *Logger) Panic(args ...interface{}) {
 	NewEntry(logger).Panic(args...)
 }
-
-// Logger Println family functions
 
 func (logger *Logger) Debugln(args ...interface{}) {
 	NewEntry(logger).Debugln(args...)
