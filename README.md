@@ -138,7 +138,7 @@ automatically added to all logging events:
 
 #### Environments
 
-Logrus has no notion of environment. 
+Logrus has no notion of environment.
 
 If you wish for hooks and formatters to only be used in specific environments,
 you should handle that yourself. For example, if your application has a global
@@ -166,11 +166,15 @@ Splunk or Logstash.
 
 #### Formatters
 
-The built logging formatters are:
+The built-in logging formatters are:
 
 * `logrus.TextFormatter`. Logs the event in colors if stdout is a tty, otherwise
   without colors.
 * `logrus.JSONFormatter`. Logs fields as JSON.
+
+Third party logging formatters:
+
+* [`github.com/aybabtme/logzalgo.ZalgoFormatter`](https://github.com/aybabtme/logzalgo): invoking the P͉̫o̳̼̊w̖͈̰͎e̬͔̭͂r͚̼̹̲ ̫͓͉̳͈ō̠͕͖̚f̝͍̠ ͕̲̞͖͑Z̖̫̤̫ͪa͉̬͈̗l͖͎g̳̥o̰̥̅!̣͔̲̻͊̄ ̙̘̦̹̦.
 
 You can define your formatter by implementing the `Formatter` interface,
 requiring a `Format` method. `Format` takes an `*Entry`. `entry.Data` is a
