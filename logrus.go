@@ -33,7 +33,7 @@ const (
 type StandardLogger interface {
 	Print(...interface{})
 	Printf(string, ...interface{})
-	Printfln(...interface{})
+	Println(...interface{})
 
 	Fatal(...interface{})
 	Fatalf(string, ...interface{})

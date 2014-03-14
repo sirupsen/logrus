@@ -33,6 +33,24 @@ func TestPrint(t *testing.T) {
 	})
 }
 
+func TestPrintf(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.Printf("%s", "test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test")
+		assert.Equal(t, fields["level"], "info")
+	})
+}
+
+func TestPrintln(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.Println("test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test")
+		assert.Equal(t, fields["level"], "info")
+	})
+}
+
 func TestInfo(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Info("test")
