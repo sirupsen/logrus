@@ -70,22 +70,9 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 }
 
 func (f *TextFormatter) AppendKeyValue(serialized []byte, key, value interface{}) []byte {
-	return append(serialized, []byte(fmt.Sprintf("%v=%v ", key, value))...)
+	if _, ok := value.(string); ok {
+		return append(serialized, []byte(fmt.Sprintf("%v='%v' ", key, value))...)
+	} else {
+		return append(serialized, []byte(fmt.Sprintf("%v=%v ", key, value))...)
+	}
 }
-
-// func (f *TextFormatter) ToString(value interface{}, escapeStrings bool) string {
-// 	switch value.(type) {
-// 	default:
-// 		if escapeStrings {
-// 			return fmt.Sprintf("'%s'", value)
-// 		} else {
-// 			return fmt.Sprintf("%s", value)
-// 		}
-// 	case int:
-// 		return fmt.Sprintf("%s", strconv.Itoa(value.(int)))
-// 	case uint64:
-// 		return fmt.Sprintf("%s", strconv.FormatUint(value.(uint64), 10))
-// 	case bool:
-// 		return fmt.Sprintf("%s", strconv.FormatBool(value.(bool)))
-// 	}
-// }
