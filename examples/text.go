@@ -11,7 +11,7 @@ func main() {
 	for {
 		log.WithFields(logrus.Fields{
 			"animal": "walrus",
-			"size":   "10",
+			"size":   10,
 		}).Print("A group of walrus emerges from the ocean")
 
 		log.WithFields(logrus.Fields{
@@ -21,12 +21,12 @@ func main() {
 
 		log.WithFields(logrus.Fields{
 			"animal": "walrus",
-			"size":   "10",
+			"size":   10,
 		}).Print("A giant walrus appears!")
 
 		log.WithFields(logrus.Fields{
 			"animal": "walrus",
-			"size":   "9",
+			"size":   9,
 		}).Print("Tremendously sized cow enters the ocean.")
 
 		log.WithFields(logrus.Fields{
