@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/burke/ttyutils"
@@ -62,8 +61,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 		for key, value := range entry.Data {
 			if key != "time" && key != "level" && key != "msg" {
-				serialized = append(serialized, []byte(fmt.Sprintf("%s=%s ",
-					f.ToString(key, false), f.ToString(value, true)))...)
+				serialized = f.AppendKeyValue(serialized, key, value)
 			}
 		}
 	}
@@ -71,24 +69,23 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	return append(serialized, '\n'), nil
 }
 
-func (f *TextFormatter) AppendKeyValue(serialized []byte, key, value string) []byte {
-	return append(serialized, []byte(fmt.Sprintf("%s=%s ",
-		f.ToString(key, false), f.ToString(value, true)))...)
+func (f *TextFormatter) AppendKeyValue(serialized []byte, key, value interface{}) []byte {
+	return append(serialized, []byte(fmt.Sprintf("%v=%v ", key, value))...)
 }
 
-func (f *TextFormatter) ToString(value interface{}, escapeStrings bool) string {
-	switch value.(type) {
-	default:
-		if escapeStrings {
-			return fmt.Sprintf("'%s'", value)
-		} else {
-			return fmt.Sprintf("%s", value)
-		}
-	case int:
-		return fmt.Sprintf("%s", strconv.Itoa(value.(int)))
-	case uint64:
-		return fmt.Sprintf("%s", strconv.FormatUint(value.(uint64), 10))
-	case bool:
-		return fmt.Sprintf("%s", strconv.FormatBool(value.(bool)))
-	}
-}
+// func (f *TextFormatter) ToString(value interface{}, escapeStrings bool) string {
+// 	switch value.(type) {
+// 	default:
+// 		if escapeStrings {
+// 			return fmt.Sprintf("'%s'", value)
+// 		} else {
+// 			return fmt.Sprintf("%s", value)
+// 		}
+// 	case int:
+// 		return fmt.Sprintf("%s", strconv.Itoa(value.(int)))
+// 	case uint64:
+// 		return fmt.Sprintf("%s", strconv.FormatUint(value.(uint64), 10))
+// 	case bool:
+// 		return fmt.Sprintf("%s", strconv.FormatBool(value.(bool)))
+// 	}
+// }
