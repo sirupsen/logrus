@@ -28,6 +28,17 @@ ocean","size":"10","time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 "time":"2014-03-10 19:57:38.562543128 -0400 EDT"}
 ```
 
+With the default `log.Formatter = new(logrus.TextFormatter)` when a TTY is not
+attached:
+
+```text
+time='2014-03-14 13:00:31.751756799 -0400 EDT' level='info' msg='A group of walrus emerges from the ocean' animal='walrus' size='10' 
+time='2014-03-14 13:00:31.751994265 -0400 EDT' level='warning' msg='The group's number increased tremendously!' omg=true number=122 
+time='2014-03-14 13:00:31.752018319 -0400 EDT' level='info' msg='A giant walrus appears!' animal='walrus' size='10' 
+time='2014-03-14 13:00:31.752034139 -0400 EDT' level='info' msg='Tremendously sized cow enters the ocean.' animal='walrus' size='9' 
+time='2014-03-14 13:00:31.752048504 -0400 EDT' level='fatal' msg='The ice breaks!' omg=true number=100
+```
+
 #### Fields
 
 Logrus encourages careful, structured logging. It encourages the use of logging
