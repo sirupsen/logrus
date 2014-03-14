@@ -1,5 +1,9 @@
 package logrus
 
+import (
+	"log"
+)
+
 // Fields type, used to pass to `WithFields`.
 type Fields map[string]interface{}
 
@@ -27,10 +31,13 @@ const (
 	Debug
 )
 
-// StandardLogger is what your logrus-enabled library should take, that way
+// Won't compile if StdLogger can't be realized by a log.Logger
+var _ StdLogger = &log.Logger{}
+
+// StdLogger is what your logrus-enabled library should take, that way
 // it'll accept a stdlib logger and a logrus logger. There's no standard
 // interface, this is the closest we get, unfortunately.
-type StandardLogger interface {
+type StdLogger interface {
 	Print(...interface{})
 	Printf(string, ...interface{})
 	Println(...interface{})
