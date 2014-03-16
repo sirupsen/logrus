@@ -170,6 +170,8 @@ The built-in logging formatters are:
 
 * `logrus.TextFormatter`. Logs the event in colors if stdout is a tty, otherwise
   without colors.
+  * *Note:* to force colored output when there is no TTY, set the `ForceColors`
+    field to `true`.
 * `logrus.JSONFormatter`. Logs fields as JSON.
 
 Third party logging formatters:
