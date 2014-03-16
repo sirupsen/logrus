@@ -30,7 +30,8 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 		if entry.Data["level"] == "warning" {
 			levelColor = yellow
-		} else if entry.Data["level"] == "fatal" ||
+		} else if entry.Data["level"] == "error" ||
+			entry.Data["level"] == "fatal" ||
 			entry.Data["level"] == "panic" {
 			levelColor = red
 		}
