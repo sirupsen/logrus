@@ -18,12 +18,14 @@ const (
 )
 
 type TextFormatter struct {
+	// Set to true to bypass checking for a TTY before outputting colors.
+	ForceColors bool
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	var serialized []byte
 
-	if ttyutils.IsTerminal(os.Stdout.Fd()) {
+	if f.ForceColors || ttyutils.IsTerminal(os.Stdout.Fd()) {
 		levelText := strings.ToUpper(entry.Data["level"].(string))[0:4]
 
 		levelColor := blue
