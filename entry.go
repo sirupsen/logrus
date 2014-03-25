@@ -129,67 +129,79 @@ func (entry *Entry) Panic(args ...interface{}) {
 // Entry Printf family functions
 
 func (entry *Entry) Debugf(format string, args ...interface{}) {
-	entry.Debug(fmt.Sprintf(format, args...))
+	if entry.logger.Level >= Debug {
+		entry.Debug(fmt.Sprintf(format, args...))
+	}
 }
 
 func (entry *Entry) Infof(format string, args ...interface{}) {
-	entry.Info(fmt.Sprintf(format, args...))
+	if entry.logger.Level >= Info {
+		entry.Info(fmt.Sprintf(format, args...))
+	}
 }
 
 func (entry *Entry) Printf(format string, args ...interface{}) {
-	entry.Info(fmt.Sprintf(format, args...))
+	entry.Info(format, args...)
 }
 
 func (entry *Entry) Warnf(format string, args ...interface{}) {
-	entry.Warn(fmt.Sprintf(format, args...))
+	if entry.logger.Level >= Warn {
+		entry.Warn(fmt.Sprintf(format, args...))
+	}
 }
 
 func (entry *Entry) Warningf(format string, args ...interface{}) {
-	entry.Warn(fmt.Sprintf(format, args...))
+	entry.Warnf(format, args...)
 }
 
 func (entry *Entry) Errorf(format string, args ...interface{}) {
-	entry.Error(fmt.Sprintf(format, args...))
+	if entry.logger.Level >= Error {
+		entry.Error(fmt.Sprintf(format, args...))
+	}
 }
 
 func (entry *Entry) Fatalf(format string, args ...interface{}) {
-	entry.Fatal(fmt.Sprintf(format, args...))
+	if entry.logger.Level >= Fatal {
+		entry.Fatal(fmt.Sprintf(format, args...))
+	}
 }
 
 func (entry *Entry) Panicf(format string, args ...interface{}) {
-	entry.Panic(fmt.Sprintf(format, args...))
+	if entry.logger.Level >= Panic {
+		entry.Panic(fmt.Sprintf(format, args...))
+	}
 }
 
 // Entry Println family functions
 
 func (entry *Entry) Debugln(args ...interface{}) {
-	entry.Debug(fmt.Sprint(args...))
+	entry.Debug(args...)
 }
 
 func (entry *Entry) Infoln(args ...interface{}) {
-	entry.Info(fmt.Sprint(args...))
+	entry.Info(args...)
 }
 
 func (entry *Entry) Println(args ...interface{}) {
-	entry.Info(fmt.Sprint(args...))
+	entry.Info(args...)
 }
 
 func (entry *Entry) Warnln(args ...interface{}) {
-	entry.Warn(fmt.Sprint(args...))
+	entry.Warn(args...)
 }
 
 func (entry *Entry) Warningln(args ...interface{}) {
-	entry.Warn(fmt.Sprint(args...))
+	entry.Warn(args...)
 }
 
 func (entry *Entry) Errorln(args ...interface{}) {
-	entry.Error(fmt.Sprint(args...))
+	entry.Error(args...)
 }
 
 func (entry *Entry) Fatalln(args ...interface{}) {
-	entry.Fatal(fmt.Sprint(args...))
+	entry.Fatal(args...)
 }
 
 func (entry *Entry) Panicln(args ...interface{}) {
-	entry.Panic(fmt.Sprint(args...))
+	entry.Panic(args...)
 }

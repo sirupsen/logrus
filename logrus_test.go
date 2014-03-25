@@ -3,7 +3,9 @@ package logrus
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -49,4 +51,60 @@ func TestWarn(t *testing.T) {
 		assert.Equal(t, fields["msg"], "test")
 		assert.Equal(t, fields["level"], "warning")
 	})
+}
+
+type SlowString string
+
+func (s SlowString) String() string {
+	time.Sleep(time.Millisecond)
+	return string(s)
+}
+
+func getLogAtLevel(l Level) *Logger {
+	log := New()
+	log.Level = l
+	log.Out = ioutil.Discard
+	return log
+}
+
+func BenchmarkLevelDisplayed(b *testing.B) {
+	log := getLogAtLevel(Info)
+	for i := 0; i < b.N; i++ {
+		log.Info(SlowString("foo"))
+	}
+}
+
+func BenchmarkLevelHidden(b *testing.B) {
+	log := getLogAtLevel(Info)
+	for i := 0; i < b.N; i++ {
+		log.Debug(SlowString("foo"))
+	}
+}
+
+func BenchmarkLevelfDisplayed(b *testing.B) {
+	log := getLogAtLevel(Info)
+	for i := 0; i < b.N; i++ {
+		log.Infof("%s", SlowString("foo"))
+	}
+}
+
+func BenchmarkLevelfHidden(b *testing.B) {
+	log := getLogAtLevel(Info)
+	for i := 0; i < b.N; i++ {
+		log.Debugf("%s", SlowString("foo"))
+	}
+}
+
+func BenchmarkLevellnDisplayed(b *testing.B) {
+	log := getLogAtLevel(Info)
+	for i := 0; i < b.N; i++ {
+		log.Infoln(SlowString("foo"))
+	}
+}
+
+func BenchmarkLevellnHidden(b *testing.B) {
+	log := getLogAtLevel(Info)
+	for i := 0; i < b.N; i++ {
+		log.Debugln(SlowString("foo"))
+	}
 }
