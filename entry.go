@@ -141,7 +141,7 @@ func (entry *Entry) Infof(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Printf(format string, args ...interface{}) {
-	entry.Info(format, args...)
+	entry.Infof(format, args...)
 }
 
 func (entry *Entry) Warnf(format string, args ...interface{}) {
