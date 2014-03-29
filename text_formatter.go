@@ -38,7 +38,12 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 			levelColor = red
 		}
 
-		serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm%s\x1b[0m[%04d] %-45s ", levelColor, levelText, miniTS(), entry.Data["msg"]))...)
+		msg := entry.Data["msg"].(string)
+		if len(msg) > 0 {
+			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm%s\x1b[0m[%04d] %-45s ", levelColor, levelText, miniTS(), entry.Data["msg"]))...)
+		} else {
+			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm%s\x1b[0m[%04d] ", levelColor, levelText, miniTS()))...)
+		}
 
 		keys := make([]string, 0)
 		for k, _ := range entry.Data {
