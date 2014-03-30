@@ -65,7 +65,10 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	} else {
 		serialized = f.AppendKeyValue(serialized, "time", entry.Data["time"].(string))
 		serialized = f.AppendKeyValue(serialized, "level", entry.Data["level"].(string))
-		serialized = f.AppendKeyValue(serialized, "msg", entry.Data["msg"].(string))
+		msg := entry.Data["msg"].(string)
+		if len(msg) > 0 {
+			serialized = f.AppendKeyValue(serialized, "msg", msg)
+		}
 
 		for key, value := range entry.Data {
 			if key != "time" && key != "level" && key != "msg" {
