@@ -176,7 +176,7 @@ The built-in logging formatters are:
 
 Third party logging formatters:
 
-* [`github.com/aybabtme/logzalgo.ZalgoFormatter`](https://github.com/aybabtme/logzalgo): invoking the P͉̫o̳̼̊w̖͈̰͎e̬͔̭͂r͚̼̹̲ ̫͓͉̳͈ō̠͕͖̚f̝͍̠ ͕̲̞͖͑Z̖̫̤̫ͪa͉̬͈̗l͖͎g̳̥o̰̥̅!̣͔̲̻͊̄ ̙̘̦̹̦.
+* [`zalgo`](https://github.com/aybabtme/logzalgo): invoking the P͉̫o̳̼̊w̖͈̰͎e̬͔̭͂r͚̼̹̲ ̫͓͉̳͈ō̠͕͖̚f̝͍̠ ͕̲̞͖͑Z̖̫̤̫ͪa͉̬͈̗l͖͎g̳̥o̰̥̅!̣͔̲̻͊̄ ̙̘̦̹̦.
 * [`l2met`](https://github.com/meatballhat/logrus-formatters): log in [l2met](http://r.32k.io/l2met-introduction) format.
 
 You can define your formatter by implementing the `Formatter` interface,
