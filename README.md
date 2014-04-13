@@ -39,6 +39,44 @@ time='2014-03-14 13:00:31.752034139 -0400 EDT' level='info' msg='Tremendously si
 time='2014-03-14 13:00:31.752048504 -0400 EDT' level='fatal' msg='The ice breaks!' omg=true number=100
 ```
 
+#### Example
+
+Note again that Logrus is API compatible with the standardlib logger, so if you
+remove the `log` import and create a global `log` variable as below it will just
+work.
+
+```go
+package main
+
+import (
+  "github.com/Sirupsen/logrus"
+)
+
+var log = logrus.New()
+
+func init() {
+  log.Formatter = new(logrus.JSONFormatter)
+  log.Formatter = new(logrus.TextFormatter) // default
+}
+
+func main() {
+  log.WithFields(logrus.Fields{
+    "animal": "walrus",
+    "size":   10,
+  }).Info("A group of walrus emerges from the ocean")
+
+  log.WithFields(logrus.Fields{
+    "omg":    true,
+    "number": 122,
+  }).Warn("The group's number increased tremendously!")
+
+  log.WithFields(logrus.Fields{
+    "omg":    true,
+    "number": 100,
+  }).Fatal("The ice breaks!")
+}
+```
+
 #### Fields
 
 Logrus encourages careful, structured logging. It encourages the use of logging
