@@ -107,11 +107,15 @@ seen as a hint you want to add a field, however, you can still use the
 #### Hooks
 
 You can add hooks for logging levels. For example to send errors to an exception
-tracking service on `Error`, `Fatal` and `Panic` or info to StatsD.
+tracking service on `Error`, `Fatal` and `Panic` or info to StatsD. Note this is
+not the real implementation of the Airbrake hook in logrus, just a sample.
 
 ```go
-log = logrus.New()
-log.Hooks.Add(new(AirbrakeHook))
+var log = logrus.New()
+
+func init() {
+  log.Hooks.Add(new(AirbrakeHook))
+}
 
 type AirbrakeHook struct{}
 
@@ -138,6 +142,23 @@ func (hook *AirbrakeHook) Levels() []logrus.Level {
   }
 }
 ```
+
+Logrus comes with built-in hooks. Add those, or your custom hook, in `init`:
+
+```go
+import (
+  "github.com/Sirupsen/logrus"
+  "github.com/Sirupsen/logrus/hooks/airbrake"
+)
+
+func init() {
+  log.Hooks.Add(new(logrus_airbrake.AirbrakeHook))
+}
+```
+
+* [`github.com/Sirupsen/logrus/hooks/airbrake`](https://github.com/Sirupsen/logrus/blob/master/hooks/airbrake/airbrake.go).
+  Send errors to an exception tracking service compatible with the Airbrake API.
+  Uses [`airbrake-go`](https://github.com/tobi/airbrake-go) behind the scenes.
 
 #### Level logging
 
