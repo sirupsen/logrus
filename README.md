@@ -33,11 +33,11 @@ is not attached, the output is compatible with the
 [l2met](http://r.32k.io/l2met-introduction) format:
 
 ```text
-time="2014-03-14 13:00:31.751756799 -0400 EDT" level="info" msg="A group of walrus emerges from the ocean" animal="walrus" size=10
-time="2014-03-14 13:00:31.751994265 -0400 EDT" level="warning" msg="The group's number increased tremendously!" omg=true number=122
-time="2014-03-14 13:00:31.752018319 -0400 EDT" level="info" msg="A giant walrus appears!" animal="walrus" size=10
-time="2014-03-14 13:00:31.752034139 -0400 EDT" level="info" msg="Tremendously sized cow enters the ocean." animal="walrus" size=9
-time="2014-03-14 13:00:31.752048504 -0400 EDT" level="fatal" msg="The ice breaks!" omg=true number=100
+time="2014-04-20 15:36:23.830442383 -0400 EDT" level="info" msg="A group of walrus emerges from the ocean" animal="walrus" size=10
+time="2014-04-20 15:36:23.830584199 -0400 EDT" level="warning" msg="The group's number increased tremendously!" omg=true number=122
+time="2014-04-20 15:36:23.830596521 -0400 EDT" level="info" msg="A giant walrus appears!" animal="walrus" size=10
+time="2014-04-20 15:36:23.830611837 -0400 EDT" level="info" msg="Tremendously sized cow enters the ocean." animal="walrus" size=9
+time="2014-04-20 15:36:23.830626464 -0400 EDT" level="fatal" msg="The ice breaks!" omg=true number=100
 ```
 
 #### Example
