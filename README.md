@@ -28,15 +28,16 @@ ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 "time":"2014-03-10 19:57:38.562543128 -0400 EDT"}
 ```
 
-With the default `log.Formatter = new(logrus.TextFormatter)` when a TTY is not
-attached:
+With the default `log.Formatter = new(logrus.TextFormatter)` when a TTY
+is not attached, the output is compatible with the
+[l2met](http://r.32k.io/l2met-introduction) format:
 
 ```text
-time='2014-03-14 13:00:31.751756799 -0400 EDT' level='info' msg='A group of walrus emerges from the ocean' animal='walrus' size=10
-time='2014-03-14 13:00:31.751994265 -0400 EDT' level='warning' msg='The group's number increased tremendously!' omg=true number=122
-time='2014-03-14 13:00:31.752018319 -0400 EDT' level='info' msg='A giant walrus appears!' animal='walrus' size=10
-time='2014-03-14 13:00:31.752034139 -0400 EDT' level='info' msg='Tremendously sized cow enters the ocean.' animal='walrus' size=9
-time='2014-03-14 13:00:31.752048504 -0400 EDT' level='fatal' msg='The ice breaks!' omg=true number=100
+time="2014-03-14 13:00:31.751756799 -0400 EDT" level="info" msg="A group of walrus emerges from the ocean" animal="walrus" size=10
+time="2014-03-14 13:00:31.751994265 -0400 EDT" level="warning" msg="The group's number increased tremendously!" omg=true number=122
+time="2014-03-14 13:00:31.752018319 -0400 EDT" level="info" msg="A giant walrus appears!" animal="walrus" size=10
+time="2014-03-14 13:00:31.752034139 -0400 EDT" level="info" msg="Tremendously sized cow enters the ocean." animal="walrus" size=9
+time="2014-03-14 13:00:31.752048504 -0400 EDT" level="fatal" msg="The ice breaks!" omg=true number=100
 ```
 
 #### Example
@@ -215,7 +216,6 @@ The built-in logging formatters are:
 Third party logging formatters:
 
 * [`zalgo`](https://github.com/aybabtme/logzalgo): invoking the P͉̫o̳̼̊w̖͈̰͎e̬͔̭͂r͚̼̹̲ ̫͓͉̳͈ō̠͕͖̚f̝͍̠ ͕̲̞͖͑Z̖̫̤̫ͪa͉̬͈̗l͖͎g̳̥o̰̥̅!̣͔̲̻͊̄ ̙̘̦̹̦.
-* [`l2met`](https://github.com/meatballhat/logrus-formatters): log in [l2met](http://r.32k.io/l2met-introduction) format.
 
 You can define your formatter by implementing the `Formatter` interface,
 requiring a `Format` method. `Format` takes an `*Entry`. `entry.Data` is a
