@@ -74,7 +74,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 func (f *TextFormatter) AppendKeyValue(serialized []byte, key, value interface{}) []byte {
 	if _, ok := value.(string); ok {
-		return append(serialized, []byte(fmt.Sprintf("%v='%v' ", key, value))...)
+		return append(serialized, []byte(fmt.Sprintf("%v=%q ", key, value))...)
 	} else {
 		return append(serialized, []byte(fmt.Sprintf("%v=%v ", key, value))...)
 	}

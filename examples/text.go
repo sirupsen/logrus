@@ -1,12 +1,18 @@
 package main
 
 import (
+	"os"
+
 	"github.com/Sirupsen/logrus"
 )
 
 func main() {
 	log := logrus.New()
-	log.Formatter = new(logrus.JSONFormatter)
+	if os.Getenv("LOG_FORMAT") == "json" {
+		log.Formatter = new(logrus.JSONFormatter)
+	} else {
+		log.Formatter = new(logrus.TextFormatter)
+	}
 
 	for {
 		log.WithFields(logrus.Fields{
