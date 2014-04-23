@@ -2,11 +2,8 @@ package logrus
 
 import (
 	"fmt"
-	"os"
 	"sort"
 	"strings"
-
-	"github.com/burke/ttyutils"
 )
 
 const (
@@ -25,7 +22,7 @@ type TextFormatter struct {
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	var serialized []byte
 
-	if f.ForceColors || ttyutils.IsTerminal(os.Stdout.Fd()) {
+	if f.ForceColors || IsTerminal() {
 		levelText := strings.ToUpper(entry.Data["level"].(string))[0:4]
 
 		levelColor := blue
