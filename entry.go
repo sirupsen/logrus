@@ -9,7 +9,7 @@ import (
 )
 
 type Entry struct {
-	logger *Logger
+	Logger *Logger
 	Data   Fields
 }
 
@@ -25,14 +25,14 @@ func miniTS() int {
 
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
-		logger: logger,
+		Logger: logger,
 		// Default is three fields, give a little extra room
 		Data: make(Fields, 5),
 	}
 }
 
 func (entry *Entry) Reader() (*bytes.Buffer, error) {
-	serialized, err := entry.logger.Formatter.Format(entry)
+	serialized, err := entry.Logger.Formatter.Format(entry)
 	return bytes.NewBuffer(serialized), err
 }
 
@@ -67,14 +67,14 @@ func (entry *Entry) log(level string, levelInt Level, msg string) string {
 		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v", err)
 	}
 
-	if err := entry.logger.Hooks.Fire(levelInt, entry); err != nil {
+	if err := entry.Logger.Hooks.Fire(levelInt, entry); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to fire hook", err)
 	}
 
-	entry.logger.mu.Lock()
-	defer entry.logger.mu.Unlock()
+	entry.Logger.mu.Lock()
+	defer entry.Logger.mu.Unlock()
 
-	_, err = io.Copy(entry.logger.Out, reader)
+	_, err = io.Copy(entry.Logger.Out, reader)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to write to log, %v", err)
 	}
@@ -83,9 +83,9 @@ func (entry *Entry) log(level string, levelInt Level, msg string) string {
 }
 
 func (entry *Entry) Debug(args ...interface{}) {
-	if entry.logger.Level >= Debug {
+	if entry.Logger.Level >= Debug {
 		entry.log("debug", Debug, fmt.Sprint(args...))
-		entry.logger.Hooks.Fire(Debug, entry)
+		entry.Logger.Hooks.Fire(Debug, entry)
 	}
 }
 
@@ -94,32 +94,32 @@ func (entry *Entry) Print(args ...interface{}) {
 }
 
 func (entry *Entry) Info(args ...interface{}) {
-	if entry.logger.Level >= Info {
+	if entry.Logger.Level >= Info {
 		entry.log("info", Info, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Warn(args ...interface{}) {
-	if entry.logger.Level >= Warn {
+	if entry.Logger.Level >= Warn {
 		entry.log("warning", Warn, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Error(args ...interface{}) {
-	if entry.logger.Level >= Error {
+	if entry.Logger.Level >= Error {
 		entry.log("error", Error, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
-	if entry.logger.Level >= Fatal {
+	if entry.Logger.Level >= Fatal {
 		entry.log("fatal", Fatal, fmt.Sprint(args...))
 	}
 	os.Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
-	if entry.logger.Level >= Panic {
+	if entry.Logger.Level >= Panic {
 		msg := entry.log("panic", Panic, fmt.Sprint(args...))
 		panic(msg)
 	}
@@ -129,13 +129,13 @@ func (entry *Entry) Panic(args ...interface{}) {
 // Entry Printf family functions
 
 func (entry *Entry) Debugf(format string, args ...interface{}) {
-	if entry.logger.Level >= Debug {
+	if entry.Logger.Level >= Debug {
 		entry.Debug(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Infof(format string, args ...interface{}) {
-	if entry.logger.Level >= Info {
+	if entry.Logger.Level >= Info {
 		entry.Info(fmt.Sprintf(format, args...))
 	}
 }
@@ -145,7 +145,7 @@ func (entry *Entry) Printf(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Warnf(format string, args ...interface{}) {
-	if entry.logger.Level >= Warn {
+	if entry.Logger.Level >= Warn {
 		entry.Warn(fmt.Sprintf(format, args...))
 	}
 }
@@ -155,19 +155,19 @@ func (entry *Entry) Warningf(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Errorf(format string, args ...interface{}) {
-	if entry.logger.Level >= Error {
+	if entry.Logger.Level >= Error {
 		entry.Error(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Fatalf(format string, args ...interface{}) {
-	if entry.logger.Level >= Fatal {
+	if entry.Logger.Level >= Fatal {
 		entry.Fatal(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Panicf(format string, args ...interface{}) {
-	if entry.logger.Level >= Panic {
+	if entry.Logger.Level >= Panic {
 		entry.Panic(fmt.Sprintf(format, args...))
 	}
 }
