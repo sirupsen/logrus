@@ -28,8 +28,8 @@ ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 "time":"2014-03-10 19:57:38.562543128 -0400 EDT"}
 ```
 
-With the default `log.Formatter = new(logrus.TextFormatter)` when a TTY
-is not attached, the output is compatible with the
+With the default `log.Formatter = new(logrus.TextFormatter)` when a TTY is not
+attached, the output is compatible with the
 [l2met](http://r.32k.io/l2met-introduction) format:
 
 ```text
@@ -42,7 +42,7 @@ time="2014-04-20 15:36:23.830626464 -0400 EDT" level="fatal" msg="The ice breaks
 
 #### Example
 
-Note again that Logrus is API compatible with the standardlib logger, so if you
+Note again that Logrus is API compatible with the stdlib logger, so if you
 remove the `log` import and create a global `log` variable as below it will just
 work.
 
@@ -80,10 +80,10 @@ func main() {
 
 #### Fields
 
-Logrus encourages careful, structured logging. It encourages the use of logging
-fields instead of long, unparseable error messages. For example, instead of:
-`log.Fatalf("Failed to send event %s to topic %s with key %d")`, you should log
-the much more discoverable:
+Logrus encourages careful, structured logging though logging fields instead of
+long, unparseable error messages. For example, instead of: `log.Fatalf("Failed
+to send event %s to topic %s with key %d")`, you should log the much more
+discoverable:
 
 ```go
 log = logrus.New()
@@ -101,16 +101,17 @@ a single added field to a log statement that was already there would've saved us
 hours. The `WithFields` call is optional.
 
 In general, with Logrus using any of the `printf`-family functions should be
-seen as a hint you want to add a field, however, you can still use the
+seen as a hint you should add a field, however, you can still use the
 `printf`-family functions with Logrus.
 
 #### Hooks
 
 You can add hooks for logging levels. For example to send errors to an exception
-tracking service on `Error`, `Fatal` and `Panic` or info to StatsD. Note this is
-not the real implementation of the Airbrake hook in logrus, just a sample.
+tracking service on `Error`, `Fatal` and `Panic`, info to StatsD or log to
+multiple places simultaneously, e.g. syslog.
 
 ```go
+// Not the real implementation of the Airbrake hook. Just a simple sample.
 var log = logrus.New()
 
 func init() {
