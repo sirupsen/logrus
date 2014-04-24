@@ -258,10 +258,4 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 }
 ```
 
-#### TODO
-
-* Performance
-* Default fields for an instance and inheritance
-* Default available hooks (airbrake, statsd, dump cores)
-
 [godoc]: https://godoc.org/github.com/Sirupsen/logrus
