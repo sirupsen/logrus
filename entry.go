@@ -62,13 +62,13 @@ func (entry *Entry) log(level string, levelInt Level, msg string) string {
 	entry.Data["level"] = level
 	entry.Data["msg"] = msg
 
+	if err := entry.Logger.Hooks.Fire(levelInt, entry); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to fire hook", err)
+	}
+
 	reader, err := entry.Reader()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v", err)
-	}
-
-	if err := entry.Logger.Hooks.Fire(levelInt, entry); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to fire hook", err)
 	}
 
 	entry.Logger.mu.Lock()
