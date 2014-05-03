@@ -53,6 +53,54 @@ func TestWarn(t *testing.T) {
 	})
 }
 
+func TestInfolnShouldAddSpacesBetweenStrings(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.Infoln("test", "test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test test")
+	})
+}
+
+func TestInfolnShouldAddSpacesBetweenStringAndNonstring(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.Infoln("test", 10)
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test 10")
+	})
+}
+
+func TestInfolnShouldAddSpacesBetweenTwoNonStrings(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.Infoln(10, 10)
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "10 10")
+	})
+}
+
+func TestInfoShouldAddSpacesBetweenTwoNonStrings(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.Infoln(10, 10)
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "10 10")
+	})
+}
+
+func TestInfoShouldNotAddSpacesBetweenStringAndNonstring(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.Info("test", 10)
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test10")
+	})
+}
+
+func TestInfoShouldNotAddSpacesBetweenStrings(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.Info("test", "test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "testtest")
+	})
+}
+
 type SlowString string
 
 func (s SlowString) String() string {

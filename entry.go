@@ -175,33 +175,54 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 // Entry Println family functions
 
 func (entry *Entry) Debugln(args ...interface{}) {
-	entry.Debug(args...)
+	if entry.Logger.Level >= Debug {
+		entry.Debug(entry.sprintlnn(args...))
+	}
 }
 
 func (entry *Entry) Infoln(args ...interface{}) {
-	entry.Info(args...)
+	if entry.Logger.Level >= Info {
+		entry.Info(entry.sprintlnn(args...))
+	}
 }
 
 func (entry *Entry) Println(args ...interface{}) {
-	entry.Info(args...)
+	entry.Infoln(args...)
 }
 
 func (entry *Entry) Warnln(args ...interface{}) {
-	entry.Warn(args...)
+	if entry.Logger.Level >= Warn {
+		entry.Warn(entry.sprintlnn(args...))
+	}
 }
 
 func (entry *Entry) Warningln(args ...interface{}) {
-	entry.Warn(args...)
+	entry.Warnln(args...)
 }
 
 func (entry *Entry) Errorln(args ...interface{}) {
-	entry.Error(args...)
+	if entry.Logger.Level >= Error {
+		entry.Error(entry.sprintlnn(args...))
+	}
 }
 
 func (entry *Entry) Fatalln(args ...interface{}) {
-	entry.Fatal(args...)
+	if entry.Logger.Level >= Fatal {
+		entry.Fatal(entry.sprintlnn(args...))
+	}
 }
 
 func (entry *Entry) Panicln(args ...interface{}) {
-	entry.Panic(args...)
+	if entry.Logger.Level >= Panic {
+		entry.Panic(entry.sprintlnn(args...))
+	}
+}
+
+// Sprintlnn => Sprint no newline. This is to get the behavior of how
+// fmt.Sprintln where spaces are always added between operands, regardless of
+// their type. Instead of vendoring the Sprintln implementation to spare a
+// string allocation, we do the simplest thing.
+func (entry *Entry) sprintlnn(args ...interface{}) string {
+	msg := fmt.Sprintln(args...)
+	return msg[:len(msg)-1]
 }
