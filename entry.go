@@ -85,7 +85,6 @@ func (entry *Entry) log(level string, levelInt Level, msg string) string {
 func (entry *Entry) Debug(args ...interface{}) {
 	if entry.Logger.Level >= Debug {
 		entry.log("debug", Debug, fmt.Sprint(args...))
-		entry.Logger.Hooks.Fire(Debug, entry)
 	}
 }
 
