@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 )
 
 const (
@@ -13,6 +14,14 @@ const (
 	yellow  = 33
 	blue    = 34
 )
+
+func init() {
+	baseTimestamp = time.Now()
+}
+
+func miniTS() int {
+	return int(time.Since(baseTimestamp) / time.Second)
+}
 
 type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.

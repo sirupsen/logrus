@@ -15,14 +15,6 @@ type Entry struct {
 
 var baseTimestamp time.Time
 
-func init() {
-	baseTimestamp = time.Now()
-}
-
-func miniTS() int {
-	return int(time.Since(baseTimestamp) / time.Second)
-}
-
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
