@@ -11,8 +11,8 @@ import (
 // * airbrake.ApiKey
 // * airbrake.Environment (only sends exceptions when set to "production")
 //
-// Before using this hook, to send exceptions. Entries that trigger an Error,
-// Fatal or Panic should now include an "Error" field to send to Airbrake.
+// Before using this hook, to send an error. Entries that trigger an Error,
+// Fatal or Panic should now include an "error" field to send to Airbrake.
 type AirbrakeHook struct{}
 
 func (hook *AirbrakeHook) Fire(entry *logrus.Entry) error {
