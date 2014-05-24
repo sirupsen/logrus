@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
 	"strings"
@@ -29,7 +30,7 @@ type TextFormatter struct {
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
-	var serialized []byte
+	b := &bytes.Buffer{}
 
 	if f.ForceColors || IsTerminal() {
 		levelText := strings.ToUpper(entry.Data["level"].(string))[0:4]
@@ -44,7 +45,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 			levelColor = red
 		}
 
-		serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm%s\x1b[0m[%04d] %-45s ", levelColor, levelText, miniTS(), entry.Data["msg"]))...)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, miniTS(), entry.Data["msg"])
 
 		keys := make([]string, 0)
 		for k, _ := range entry.Data {
@@ -53,35 +54,30 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 			}
 		}
 		sort.Strings(keys)
-		first := true
 		for _, k := range keys {
 			v := entry.Data[k]
-			if first {
-				first = false
-			} else {
-				serialized = append(serialized, ' ')
-			}
-			serialized = append(serialized, []byte(fmt.Sprintf("\x1b[%dm%s\x1b[0m=%v", levelColor, k, v))...)
+			fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%v", levelColor, k, v)
 		}
 	} else {
-		serialized = f.AppendKeyValue(serialized, "time", entry.Data["time"].(string))
-		serialized = f.AppendKeyValue(serialized, "level", entry.Data["level"].(string))
-		serialized = f.AppendKeyValue(serialized, "msg", entry.Data["msg"].(string))
+		f.AppendKeyValue(b, "time", entry.Data["time"].(string))
+		f.AppendKeyValue(b, "level", entry.Data["level"].(string))
+		f.AppendKeyValue(b, "msg", entry.Data["msg"].(string))
 
 		for key, value := range entry.Data {
 			if key != "time" && key != "level" && key != "msg" {
-				serialized = f.AppendKeyValue(serialized, key, value)
+				f.AppendKeyValue(b, key, value)
 			}
 		}
 	}
 
-	return append(serialized, '\n'), nil
+	b.WriteByte('\n')
+	return b.Bytes(), nil
 }
 
-func (f *TextFormatter) AppendKeyValue(serialized []byte, key, value interface{}) []byte {
+func (f *TextFormatter) AppendKeyValue(b *bytes.Buffer, key, value interface{}) {
 	if _, ok := value.(string); ok {
-		return append(serialized, []byte(fmt.Sprintf("%v=%q ", key, value))...)
+		fmt.Fprintf(b, "%v=%q ", key, value)
 	} else {
-		return append(serialized, []byte(fmt.Sprintf("%v=%v ", key, value))...)
+		fmt.Fprintf(b, "%v=%v ", key, value)
 	}
 }
