@@ -7,16 +7,17 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 )
 
+type color int
+
 const (
-	nocolor = 0
-	red     = 31
-	green   = 32
-	yellow  = 33
-	blue    = 34
+	nocolor color = 0
+	red           = 31
+	green         = 32
+	yellow        = 33
+	blue          = 34
 )
 
 // {color}level{end-color}[seconds] msg    key=value key=value
@@ -46,25 +47,15 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	b := &bytes.Buffer{}
 
 	if f.ForceColors || IsTerminal() {
-		levelText := strings.ToUpper(entry.Data["level"].(string))[0:4]
+		levelText := f.stringForLevel(entry.Level)
 
-		levelColor := blue
+		levelColor := f.colorForLevel(entry.Level)
 
-		if entry.Data["level"] == "warning" {
-			levelColor = yellow
-		} else if entry.Data["level"] == "error" ||
-			entry.Data["level"] == "fatal" ||
-			entry.Data["level"] == "panic" {
-			levelColor = red
-		}
-
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, miniTS(), entry.Data["msg"])
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, miniTS(), entry.Msg)
 
 		keys := make([]string, 0)
 		for k, _ := range entry.Data {
-			if k != "level" && k != "time" && k != "msg" {
-				keys = append(keys, k)
-			}
+			keys = append(keys, k)
 		}
 		sort.Strings(keys)
 		for _, k := range keys {
@@ -72,14 +63,12 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 			fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%v", levelColor, k, v)
 		}
 	} else {
-		f.AppendKeyValue(b, "time", entry.Data["time"].(string))
-		f.AppendKeyValue(b, "level", entry.Data["level"].(string))
-		f.AppendKeyValue(b, "msg", entry.Data["msg"].(string))
+		f.AppendKeyValue(b, "time", entry.Time)
+		f.AppendKeyValue(b, "level", f.stringForLevel(entry.Level))
+		f.AppendKeyValue(b, "msg", entry.Msg)
 
 		for key, value := range entry.Data {
-			if key != "time" && key != "level" && key != "msg" {
-				f.AppendKeyValue(b, key, value)
-			}
+			f.AppendKeyValue(b, key, value)
 		}
 	}
 
@@ -117,21 +106,19 @@ func (f *TextFormatter) unformatColor(buffer []byte) (*Entry, error) {
 	var err error
 	var e Entry
 
+	e.Level, err = f.levelForString(results[1])
+	if err != nil {
+		return nil, err
+	}
+
+	e.Time, err = f.timeForOffsetString(results[2])
+	if err != nil {
+		return nil, err
+	}
+
+	e.Msg = results[3]
+
 	e.Data = make(Fields)
-
-	e.Data["level"], err = f.standardLevelForString(results[1])
-	if err != nil {
-		return nil, err
-	}
-
-	t, err := f.timeForOffsetString(results[2])
-	if err != nil {
-		return nil, err
-	}
-	e.Data["time"] = t.String()
-
-	e.Data["msg"] = results[3]
-
 	for key, value := range f.fieldsForString(results[4]) {
 		e.Data[key] = value
 	}
@@ -139,22 +126,52 @@ func (f *TextFormatter) unformatColor(buffer []byte) (*Entry, error) {
 	return &e, nil
 }
 
-func (f *TextFormatter) standardLevelForString(s string) (string, error) {
+func (f *TextFormatter) levelForString(s string) (Level, error) {
 	switch s {
 	case "PANI":
-		return "panic", nil
+		return Panic, nil
 	case "FATA":
-		return "fatal", nil
+		return Fatal, nil
 	case "ERRO":
-		return "error", nil
+		return Error, nil
 	case "WARN":
-		return "warning", nil
+		return Warn, nil
 	case "INFO":
-		return "info", nil
+		return Info, nil
 	case "DEBU":
-		return "debug", nil
+		return Debug, nil
 	default:
-		return "", fmt.Errorf("Could not parse level: %s", s)
+		return Info, fmt.Errorf("Could not parse level: %s", s)
+	}
+}
+
+func (f *TextFormatter) stringForLevel(l Level) string {
+	switch l {
+	case Panic:
+		return "PANI"
+	case Fatal:
+		return "FATA"
+	case Error:
+		return "ERRO"
+	case Warn:
+		return "WARN"
+	case Info:
+		return "INFO"
+	case Debug:
+		return "DEBU"
+	default:
+		return ""
+	}
+}
+
+func (f *TextFormatter) colorForLevel(l Level) color {
+	switch l {
+	case Panic, Fatal, Error:
+		return red
+	case Warn:
+		return yellow
+	default:
+		return blue
 	}
 }
 

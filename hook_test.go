@@ -34,7 +34,7 @@ func TestHookFires(t *testing.T) {
 		assert.Equal(t, hook.Fired, false)
 
 		log.Print("test")
-	}, func(fields Fields) {
+	}, func(entry *Entry) {
 		assert.Equal(t, hook.Fired, true)
 	})
 }
@@ -64,8 +64,8 @@ func TestHookCanModifyEntry(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Hooks.Add(hook)
 		log.WithField("wow", "elephant").Print("test")
-	}, func(fields Fields) {
-		assert.Equal(t, fields["wow"], "whale")
+	}, func(entry *Entry) {
+		assert.Equal(t, entry.Data["wow"], "whale")
 	})
 }
 
@@ -78,8 +78,8 @@ func TestCanFireMultipleHooks(t *testing.T) {
 		log.Hooks.Add(hook2)
 
 		log.WithField("wow", "elephant").Print("test")
-	}, func(fields Fields) {
-		assert.Equal(t, fields["wow"], "whale")
+	}, func(entry *Entry) {
+		assert.Equal(t, entry.Data["wow"], "whale")
 		assert.Equal(t, hook2.Fired, true)
 	})
 }
@@ -105,7 +105,7 @@ func TestErrorHookShouldntFireOnInfo(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Hooks.Add(hook)
 		log.Info("test")
-	}, func(fields Fields) {
+	}, func(entry *Entry) {
 		assert.Equal(t, hook.Fired, false)
 	})
 }
@@ -116,7 +116,7 @@ func TestErrorHookShouldFireOnError(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Hooks.Add(hook)
 		log.Error("test")
-	}, func(fields Fields) {
+	}, func(entry *Entry) {
 		assert.Equal(t, hook.Fired, true)
 	})
 }
