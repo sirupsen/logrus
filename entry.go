@@ -38,12 +38,7 @@ func (entry *Entry) String() (string, error) {
 }
 
 func (entry *Entry) WithField(key string, value interface{}) *Entry {
-	data := Fields{}
-	for k, v := range entry.Data {
-		data[k] = v
-	}
-	data[key] = value
-	return &Entry{Logger: entry.Logger, Data: data}
+	return entry.WithFields(Fields{key: value})
 }
 
 func (entry *Entry) WithFields(fields Fields) *Entry {
