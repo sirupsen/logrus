@@ -29,7 +29,7 @@ func TestPrint(t *testing.T) {
 		log.Print("test")
 	}, func(fields Fields) {
 		assert.Equal(t, fields["msg"], "test")
-		assert.Equal(t, fields["level"], "info")
+		assert.Equal(t, fields["level"], Info)
 	})
 }
 
@@ -38,7 +38,7 @@ func TestInfo(t *testing.T) {
 		log.Info("test")
 	}, func(fields Fields) {
 		assert.Equal(t, fields["msg"], "test")
-		assert.Equal(t, fields["level"], "info")
+		assert.Equal(t, fields["level"], Info)
 	})
 }
 
@@ -47,7 +47,7 @@ func TestWarn(t *testing.T) {
 		log.Warn("test")
 	}, func(fields Fields) {
 		assert.Equal(t, fields["msg"], "test")
-		assert.Equal(t, fields["level"], "warning")
+		assert.Equal(t, fields["level"], Warn)
 	})
 }
 
