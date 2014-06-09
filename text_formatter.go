@@ -33,15 +33,15 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	b := &bytes.Buffer{}
 
 	if f.ForceColors || IsTerminal() {
-		levelText := strings.ToUpper(entry.Data["level"].(string))[0:4]
+		levelText := strings.ToUpper(entry.Data["level"].(Level).String())[0:4]
 
-		levelColor := blue
-
-		if entry.Data["level"] == "warning" {
+		var levelColor int
+		switch entry.Data["level"].(Level) {
+		default:
+			levelColor = blue
+		case Warn:
 			levelColor = yellow
-		} else if entry.Data["level"] == "error" ||
-			entry.Data["level"] == "fatal" ||
-			entry.Data["level"] == "panic" {
+		case Error, Fatal, Panic:
 			levelColor = red
 		}
 
@@ -60,7 +60,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		}
 	} else {
 		f.AppendKeyValue(b, "time", entry.Data["time"].(string))
-		f.AppendKeyValue(b, "level", entry.Data["level"].(string))
+		f.AppendKeyValue(b, "level", entry.Data["level"].(Level).String())
 		f.AppendKeyValue(b, "msg", entry.Data["msg"].(string))
 
 		for key, value := range entry.Data {

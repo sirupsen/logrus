@@ -31,6 +31,20 @@ const (
 	Debug
 )
 
+var levelNames = []string{
+	"panic",
+	"fatal",
+	"error",
+	"warning",
+	"info",
+	"debug",
+}
+
+// String implements the Stringer interface (from the fmt package in the standard library).
+func (l Level) String() string {
+	return levelNames[int(l)]
+}
+
 // Won't compile if StdLogger can't be realized by a log.Logger
 var _ StdLogger = &log.Logger{}
 
