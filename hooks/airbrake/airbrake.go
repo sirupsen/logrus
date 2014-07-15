@@ -24,11 +24,21 @@ func (hook *AirbrakeHook) Fire(entry *logrus.Entry) error {
 		return nil
 	}
 
-	err := airbrake.Notify(entry.Data["error"].(error))
-	if err != nil {
+	err, ok := entry.Data["error"].(error)
+	if !ok {
 		entry.Logger.WithFields(logrus.Fields{
 			"source":   "airbrake",
 			"endpoint": airbrake.Endpoint,
+		}).Warn("Exceptions sent to Airbrake must have an `error` key of type `error`")
+		return nil
+	}
+
+	airErr := airbrake.Notify(err)
+	if airErr != nil {
+		entry.Logger.WithFields(logrus.Fields{
+			"source":   "airbrake",
+			"endpoint": airbrake.Endpoint,
+			"error":    airErr,
 		}).Warn("Failed to send error to Airbrake")
 	}
 
