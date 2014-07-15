@@ -2,100 +2,101 @@ package logrus
 
 import (
 	"bytes"
-	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func LogAndAssertJSON(t *testing.T, log func(*Logger), assertions func(fields Fields)) {
+func LogAndAssertJSON(t *testing.T, log func(*Logger), assertions func(entry *Entry)) {
 	var buffer bytes.Buffer
-	var fields Fields
 
 	logger := New()
 	logger.Out = &buffer
-	logger.Formatter = new(JSONFormatter)
+	formatter := new(JSONFormatter)
+	logger.Formatter = formatter
 
 	log(logger)
 
-	err := json.Unmarshal(buffer.Bytes(), &fields)
+	entry, err := formatter.Unformat(buffer.Bytes())
 	assert.Nil(t, err)
 
-	assertions(fields)
+	if assert.NotNil(t, entry) {
+		assertions(entry)
+	}
 }
 
 func TestPrint(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Print("test")
-	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test")
-		assert.Equal(t, fields["level"], "info")
+	}, func(entry *Entry) {
+		assert.Equal(t, entry.Msg, "test")
+		assert.Equal(t, entry.Level, Info)
 	})
 }
 
 func TestInfo(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Info("test")
-	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test")
-		assert.Equal(t, fields["level"], "info")
+	}, func(entry *Entry) {
+		assert.Equal(t, entry.Msg, "test")
+		assert.Equal(t, entry.Level, Info)
 	})
 }
 
 func TestWarn(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Warn("test")
-	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test")
-		assert.Equal(t, fields["level"], "warning")
+	}, func(entry *Entry) {
+		assert.Equal(t, entry.Msg, "test")
+		assert.Equal(t, entry.Level, Warn)
 	})
 }
 
 func TestInfolnShouldAddSpacesBetweenStrings(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Infoln("test", "test")
-	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test test")
+	}, func(entry *Entry) {
+		assert.Equal(t, entry.Msg, "test test")
 	})
 }
 
 func TestInfolnShouldAddSpacesBetweenStringAndNonstring(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Infoln("test", 10)
-	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test 10")
+	}, func(entry *Entry) {
+		assert.Equal(t, entry.Msg, "test 10")
 	})
 }
 
 func TestInfolnShouldAddSpacesBetweenTwoNonStrings(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Infoln(10, 10)
-	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "10 10")
+	}, func(entry *Entry) {
+		assert.Equal(t, entry.Msg, "10 10")
 	})
 }
 
 func TestInfoShouldAddSpacesBetweenTwoNonStrings(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Infoln(10, 10)
-	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "10 10")
+	}, func(entry *Entry) {
+		assert.Equal(t, entry.Msg, "10 10")
 	})
 }
 
 func TestInfoShouldNotAddSpacesBetweenStringAndNonstring(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Info("test", 10)
-	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test10")
+	}, func(entry *Entry) {
+		assert.Equal(t, entry.Msg, "test10")
 	})
 }
 
 func TestInfoShouldNotAddSpacesBetweenStrings(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Info("test", "test")
-	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "testtest")
+	}, func(entry *Entry) {
+		assert.Equal(t, entry.Msg, "testtest")
 	})
 }
 
