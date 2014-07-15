@@ -47,7 +47,7 @@ func New() *Logger {
 		Out:       os.Stdout,
 		Formatter: new(TextFormatter),
 		Hooks:     make(levelHooks),
-		Level:     Info,
+		Level:     InfoLevel,
 	}
 }
 

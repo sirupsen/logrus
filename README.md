@@ -137,9 +137,9 @@ func (hook *AirbrakeHook) Fire(entry *logrus.Entry) error {
 // `Levels()` returns a slice of `Levels` the hook is fired for.
 func (hook *AirbrakeHook) Levels() []logrus.Level {
   return []logrus.Level{
-    logrus.Error,
-    logrus.Fatal,
-    logrus.Panic,
+    logrus.ErrorLevel,
+    logrus.FatalLevel,
+    logrus.PanicLevel,
   }
 }
 ```

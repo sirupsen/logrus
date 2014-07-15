@@ -17,12 +17,12 @@ func (hook *TestHook) Fire(entry *Entry) error {
 
 func (hook *TestHook) Levels() []Level {
 	return []Level{
-		Debug,
-		Info,
-		Warn,
-		Error,
-		Fatal,
-		Panic,
+		DebugLevel,
+		InfoLevel,
+		WarnLevel,
+		ErrorLevel,
+		FatalLevel,
+		PanicLevel,
 	}
 }
 
@@ -49,12 +49,12 @@ func (hook *ModifyHook) Fire(entry *Entry) error {
 
 func (hook *ModifyHook) Levels() []Level {
 	return []Level{
-		Debug,
-		Info,
-		Warn,
-		Error,
-		Fatal,
-		Panic,
+		DebugLevel,
+		InfoLevel,
+		WarnLevel,
+		ErrorLevel,
+		FatalLevel,
+		PanicLevel,
 	}
 }
 
@@ -95,7 +95,7 @@ func (hook *ErrorHook) Fire(entry *Entry) error {
 
 func (hook *ErrorHook) Levels() []Level {
 	return []Level{
-		Error,
+		ErrorLevel,
 	}
 }
 
