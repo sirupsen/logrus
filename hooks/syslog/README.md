@@ -11,7 +11,7 @@ import (
 
 func main() {
   log       := logrus.New()
-  hook, err := NewSyslogHook("udp", "localhost:514", syslog.LOG_INFO, "")
+  hook, err := logrus_syslog.NewSyslogHook("udp", "localhost:514", syslog.LOG_INFO, "")
 
   if err == nil {
     log.Hooks.Add(hook)

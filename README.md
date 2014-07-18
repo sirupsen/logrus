@@ -148,12 +148,15 @@ Logrus comes with built-in hooks. Add those, or your custom hook, in `init`:
 
 ```go
 import (
+  "log/syslog"
   "github.com/Sirupsen/logrus"
   "github.com/Sirupsen/logrus/hooks/airbrake"
+  "github.com/Sirupsen/logrus/hooks/syslog"
 )
 
 func init() {
   log.Hooks.Add(new(logrus_airbrake.AirbrakeHook))
+  log.Hooks.Add(logrus_syslog.NewSyslogHook("udp", "localhost:514", syslog.LOG_INFO, ""))
 }
 ```
 
