@@ -164,6 +164,10 @@ func init() {
   Send errors to an exception tracking service compatible with the Airbrake API.
   Uses [`airbrake-go`](https://github.com/tobi/airbrake-go) behind the scenes.
 
+* [`github.com/Sirupsen/logrus/hooks/syslog`](https://github.com/Sirupsen/logrus/blob/master/hooks/syslog/syslog.go).
+  Send errors to remote syslog server.
+  Uses standard library `log/syslog` behind the scenes.
+
 #### Level logging
 
 Logrus has six logging levels: Debug, Info, Warning, Error, Fatal and Panic.
