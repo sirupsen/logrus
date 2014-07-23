@@ -78,6 +78,13 @@ func main() {
 }
 ```
 
+#### Package logging
+
+Alike the stdlib logger, logrus exposes functions that you can use to log
+to a default global logger. This is convenient to avoid passing a
+`logrus.Logger` thorough your app's packages; you can simply setup `logrus
+from your main package and use the package function directly accross your app.
+
 #### Fields
 
 Logrus encourages careful, structured logging though logging fields instead of
@@ -91,7 +98,7 @@ log = logrus.New()
 log.WithFields(logrus.Fields{
   "event": event,
   "topic": topic,
-  "key": key
+  "key": key,
 }).Fatal("Failed to send event")
 ```
 
