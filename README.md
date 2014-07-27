@@ -269,4 +269,11 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 }
 ```
 
+#### Rotation
+
+Log rotation is not provided with Logrus. Log rotation should be done by an
+external program (like `logrotated(8)`) that can compress and delete old log
+entries. It should not be a feature of the application-level logger.
+
+
 [godoc]: https://godoc.org/github.com/Sirupsen/logrus
