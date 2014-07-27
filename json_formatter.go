@@ -6,11 +6,10 @@ import (
 )
 
 type JSONFormatter struct {
-	*internalFormatter
 }
 
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
-	f.prefixFieldClashes(entry)
+	prefixFieldClashes(entry)
 
 	serialized, err := json.Marshal(entry.Data)
 	if err != nil {

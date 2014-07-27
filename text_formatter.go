@@ -27,14 +27,12 @@ func miniTS() int {
 type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
 	ForceColors bool
-
-	*internalFormatter
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	b := &bytes.Buffer{}
 
-	f.prefixFieldClashes(entry)
+	prefixFieldClashes(entry)
 
 	if f.ForceColors || IsTerminal() {
 		levelText := strings.ToUpper(entry.Data["level"].(string))[0:4]

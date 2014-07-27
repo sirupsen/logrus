@@ -18,9 +18,6 @@ type Formatter interface {
 	Format(*Entry) ([]byte, error)
 }
 
-type internalFormatter struct {
-}
-
 // This is to not silently overwrite `time`, `msg` and `level` fields when
 // dumping it. If this code wasn't there doing:
 //
@@ -33,7 +30,7 @@ type internalFormatter struct {
 //
 // It's not exported because it's still using Data in an opionated way. It's to
 // avoid code duplication between the two default formatters.
-func (f *internalFormatter) prefixFieldClashes(entry *Entry) {
+func prefixFieldClashes(entry *Entry) {
 	_, ok := entry.Data["time"]
 	if ok {
 		entry.Data["fields.time"] = entry.Data["time"]
