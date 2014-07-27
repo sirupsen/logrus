@@ -11,6 +11,15 @@ import (
 type Entry struct {
 	Logger *Logger
 	Data   Fields
+
+	// Time at which the log entry was created
+	Time time.Time
+
+	// Level the log entry was logged at: Debug, Info, Warn, Error, Fatal or Panic
+	Level Level
+
+	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
+	Message string
 }
 
 var baseTimestamp time.Time
@@ -53,9 +62,9 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 }
 
 func (entry *Entry) log(level Level, msg string) string {
-	entry.Data["time"] = time.Now().String()
-	entry.Data["level"] = level.String()
-	entry.Data["msg"] = msg
+	entry.Time = time.Now()
+	entry.Level = level
+	entry.Message = msg
 
 	if err := entry.Logger.Hooks.Fire(level, entry); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to fire hook", err)
