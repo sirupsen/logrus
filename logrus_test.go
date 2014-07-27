@@ -128,3 +128,12 @@ func TestWithFieldsShouldAllowAssignments(t *testing.T) {
 	assert.Equal(t, false, ok)
 	assert.Equal(t, "value1", fields["key1"])
 }
+
+func TestConvertLevelToString(t *testing.T) {
+	assert.Equal(t, "debug", DebugLevel.String())
+	assert.Equal(t, "info", InfoLevel.String())
+	assert.Equal(t, "warning", WarnLevel.String())
+	assert.Equal(t, "error", ErrorLevel.String())
+	assert.Equal(t, "fatal", FatalLevel.String())
+	assert.Equal(t, "panic", PanicLevel.String())
+}
