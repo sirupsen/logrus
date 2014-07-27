@@ -191,10 +191,10 @@ that severity or anything above it:
 
 ```go
 // Will log anything that is info or above (warn, error, fatal, panic). Default.
-log.Level = logrus.Info
+log.Level = logrus.InfoLevel
 ```
 
-It may be useful to set `log.Level = logrus.Debug` in a debug or verbose
+It may be useful to set `log.Level = logrus.DebugLevel` in a debug or verbose
 environment if your application has that.
 
 #### Entries
