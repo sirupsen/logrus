@@ -191,10 +191,10 @@ that severity or anything above it:
 
 ```go
 // Will log anything that is info or above (warn, error, fatal, panic). Default.
-log.Level = logrus.Info
+log.Level = logrus.InfoLevel
 ```
 
-It may be useful to set `log.Level = logrus.Debug` in a debug or verbose
+It may be useful to set `log.Level = logrus.DebugLevel` in a debug or verbose
 environment if your application has that.
 
 #### Entries
@@ -261,6 +261,9 @@ type MyJSONFormatter struct {
 log.Formatter = new(MyJSONFormatter)
 
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
+  // Note this doesn't include Time, Level and Message which are available on
+  // the Entry. Consult `godoc` on information about those fields or read the
+  // source of the official loggers.
   serialized, err := json.Marshal(entry.Data)
     if err != nil {
       return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)

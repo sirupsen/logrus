@@ -8,9 +8,24 @@ import (
 	"time"
 )
 
+// An entry is the final or intermediate Logrus logging entry. It containts all
+// the fields passed with WithField{,s}. It's finally logged when Debug, Info,
+// Warn, Error, Fatal or Panic is called on it. These objects can be reused and
+// passed around as much as you wish to avoid field duplication.
 type Entry struct {
 	Logger *Logger
-	Data   Fields
+
+	// Contains all the fields set by the user.
+	Data Fields
+
+	// Time at which the log entry was created
+	Time time.Time
+
+	// Level the log entry was logged at: Debug, Info, Warn, Error, Fatal or Panic
+	Level Level
+
+	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
+	Message string
 }
 
 var baseTimestamp time.Time
@@ -23,11 +38,14 @@ func NewEntry(logger *Logger) *Entry {
 	}
 }
 
+// Returns a reader for the entry, which is a proxy to the formatter.
 func (entry *Entry) Reader() (*bytes.Buffer, error) {
 	serialized, err := entry.Logger.Formatter.Format(entry)
 	return bytes.NewBuffer(serialized), err
 }
 
+// Returns the string representation from the reader and ultimately the
+// formatter.
 func (entry *Entry) String() (string, error) {
 	reader, err := entry.Reader()
 	if err != nil {
@@ -37,10 +55,12 @@ func (entry *Entry) String() (string, error) {
 	return reader.String(), err
 }
 
+// Add a single field to the Entry.
 func (entry *Entry) WithField(key string, value interface{}) *Entry {
 	return entry.WithFields(Fields{key: value})
 }
 
+// Add a map of fields to the Entry.
 func (entry *Entry) WithFields(fields Fields) *Entry {
 	data := Fields{}
 	for k, v := range entry.Data {
@@ -53,9 +73,9 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 }
 
 func (entry *Entry) log(level Level, msg string) string {
-	entry.Data["time"] = time.Now().String()
-	entry.Data["level"] = level.String()
-	entry.Data["msg"] = msg
+	entry.Time = time.Now()
+	entry.Level = level
+	entry.Message = msg
 
 	if err := entry.Logger.Hooks.Fire(level, entry); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to fire hook", err)

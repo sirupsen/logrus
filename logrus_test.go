@@ -129,6 +129,40 @@ func TestWithFieldsShouldAllowAssignments(t *testing.T) {
 	assert.Equal(t, "value1", fields["key1"])
 }
 
+func TestUserSuppliedFieldDoesNotOverwriteDefaults(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.WithField("msg", "hello").Info("test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test")
+	})
+}
+
+func TestUserSuppliedMsgFieldHasPrefix(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.WithField("msg", "hello").Info("test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test")
+		assert.Equal(t, fields["fields.msg"], "hello")
+	})
+}
+
+func TestUserSuppliedTimeFieldHasPrefix(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.WithField("time", "hello").Info("test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["fields.time"], "hello")
+	})
+}
+
+func TestUserSuppliedLevelFieldHasPrefix(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.WithField("level", 1).Info("test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["level"], "info")
+		assert.Equal(t, fields["fields.level"], 1)
+	})
+}
+
 func TestConvertLevelToString(t *testing.T) {
 	assert.Equal(t, "debug", DebugLevel.String())
 	assert.Equal(t, "info", InfoLevel.String())
