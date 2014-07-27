@@ -52,12 +52,12 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return &Entry{Logger: entry.Logger, Data: data}
 }
 
-func (entry *Entry) log(level string, levelInt Level, msg string) string {
+func (entry *Entry) log(level Level, msg string) string {
 	entry.Data["time"] = time.Now().String()
-	entry.Data["level"] = level
+	entry.Data["level"] = level.String()
 	entry.Data["msg"] = msg
 
-	if err := entry.Logger.Hooks.Fire(levelInt, entry); err != nil {
+	if err := entry.Logger.Hooks.Fire(level, entry); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to fire hook", err)
 	}
 
@@ -79,7 +79,7 @@ func (entry *Entry) log(level string, levelInt Level, msg string) string {
 
 func (entry *Entry) Debug(args ...interface{}) {
 	if entry.Logger.Level >= DebugLevel {
-		entry.log("debug", DebugLevel, fmt.Sprint(args...))
+		entry.log(DebugLevel, fmt.Sprint(args...))
 	}
 }
 
@@ -89,32 +89,32 @@ func (entry *Entry) Print(args ...interface{}) {
 
 func (entry *Entry) Info(args ...interface{}) {
 	if entry.Logger.Level >= InfoLevel {
-		entry.log("info", InfoLevel, fmt.Sprint(args...))
+		entry.log(InfoLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Warn(args ...interface{}) {
 	if entry.Logger.Level >= WarnLevel {
-		entry.log("warning", WarnLevel, fmt.Sprint(args...))
+		entry.log(WarnLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Error(args ...interface{}) {
 	if entry.Logger.Level >= ErrorLevel {
-		entry.log("error", ErrorLevel, fmt.Sprint(args...))
+		entry.log(ErrorLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
 	if entry.Logger.Level >= FatalLevel {
-		entry.log("fatal", FatalLevel, fmt.Sprint(args...))
+		entry.log(FatalLevel, fmt.Sprint(args...))
 	}
 	os.Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
 	if entry.Logger.Level >= PanicLevel {
-		msg := entry.log("panic", PanicLevel, fmt.Sprint(args...))
+		msg := entry.log(PanicLevel, fmt.Sprint(args...))
 		panic(msg)
 	}
 	panic(fmt.Sprint(args...))
