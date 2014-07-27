@@ -44,7 +44,7 @@ func prefixFieldClashes(entry *Entry) {
 		entry.Data["fields.msg"] = entry.Data["msg"]
 	}
 
-	entry.Data["msg"] = fmt.Sprint(entry.Args)
+	entry.Data["msg"] = fmt.Sprint(entry.Args...)
 
 	_, ok = entry.Data["level"]
 	if ok {

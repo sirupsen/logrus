@@ -99,7 +99,7 @@ func (entry *Entry) log(level Level, args ...interface{}) string {
 
 func (entry *Entry) Debug(args ...interface{}) {
 	if entry.Logger.Level >= DebugLevel {
-		entry.log(DebugLevel, args)
+		entry.log(DebugLevel, args...)
 	}
 }
 
@@ -109,32 +109,32 @@ func (entry *Entry) Print(args ...interface{}) {
 
 func (entry *Entry) Info(args ...interface{}) {
 	if entry.Logger.Level >= InfoLevel {
-		entry.log(InfoLevel, args)
+		entry.log(InfoLevel, args...)
 	}
 }
 
 func (entry *Entry) Warn(args ...interface{}) {
 	if entry.Logger.Level >= WarnLevel {
-		entry.log(WarnLevel, args)
+		entry.log(WarnLevel, args...)
 	}
 }
 
 func (entry *Entry) Error(args ...interface{}) {
 	if entry.Logger.Level >= ErrorLevel {
-		entry.log(ErrorLevel, args)
+		entry.log(ErrorLevel, args...)
 	}
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
 	if entry.Logger.Level >= FatalLevel {
-		entry.log(FatalLevel, args)
+		entry.log(FatalLevel, args...)
 	}
 	os.Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
 	if entry.Logger.Level >= PanicLevel {
-		msg := entry.log(PanicLevel, args)
+		msg := entry.log(PanicLevel, args...)
 		panic(msg)
 	}
 	panic(fmt.Sprint(args...))
