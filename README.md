@@ -55,8 +55,8 @@ import (
 )
 
 func main() {
-  log.WithFields(logrus.Fields{
-    "animal": "walrus"
+  log.WithFields(log.Fields{
+    "animal": "walrus",
   }).Info("A walrus appears")
 }
 ```
@@ -91,17 +91,17 @@ func init() {
 }
 
 func main() {
-  log.WithFields(logrus.Fields{
+  log.WithFields(log.Fields{
     "animal": "walrus",
     "size":   10,
   }).Info("A group of walrus emerges from the ocean")
 
-  log.WithFields(logrus.Fields{
+  log.WithFields(log.Fields{
     "omg":    true,
     "number": 122,
   }).Warn("The group's number increased tremendously!")
 
-  log.WithFields(logrus.Fields{
+  log.WithFields(log.Fields{
     "omg":    true,
     "number": 100,
   }).Fatal("The ice breaks!")
@@ -124,9 +124,9 @@ var log = logrus.New()
 func main() {
   // The API for setting attributes is a little different than the package level
   // exported logger. See Godoc.
-  log.Out = os.Sderr
+  log.Out = os.Stderr
 
-  log.WithFields(logrus.Fields{
+  log.WithFields(log.Fields{
     "animal": "walrus",
     "size":   10,
   }).Info("A group of walrus emerges from the ocean")
@@ -141,7 +141,7 @@ to send event %s to topic %s with key %d")`, you should log the much more
 discoverable:
 
 ```go
-log.WithFields(logrus.Fields{
+log.WithFields(log.Fields{
   "event": event,
   "topic": topic,
   "key": key,
@@ -180,7 +180,7 @@ type AirbrakeHook struct{}
 func (hook *AirbrakeHook) Fire(entry *logrus.Entry) error {
   err := airbrake.Notify(entry.Data["error"].(error))
   if err != nil {
-    log.WithFields(logrus.Fields{
+    log.WithFields(log.Fields{
       "source":   "airbrake",
       "endpoint": airbrake.Endpoint,
     }).Info("Failed to send error to Airbrake")
@@ -190,11 +190,11 @@ func (hook *AirbrakeHook) Fire(entry *logrus.Entry) error {
 }
 
 // `Levels()` returns a slice of `Levels` the hook is fired for.
-func (hook *AirbrakeHook) Levels() []logrus.Level {
-  return []logrus.Level{
-    logrus.ErrorLevel,
-    logrus.FatalLevel,
-    logrus.PanicLevel,
+func (hook *AirbrakeHook) Levels() []log.Level {
+  return []log.Level{
+    log.ErrorLevel,
+    log.FatalLevel,
+    log.PanicLevel,
   }
 }
 ```
@@ -236,7 +236,7 @@ that severity or anything above it:
 
 ```go
 // Will log anything that is info or above (warn, error, fatal, panic). Default.
-log.SetLevel(logrus.InfoLevel)
+log.SetLevel(log.InfoLevel)
 ```
 
 It may be useful to set `log.Level = logrus.DebugLevel` in a debug or verbose
