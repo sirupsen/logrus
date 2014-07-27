@@ -1,13 +1,14 @@
 package logrus
 
 import (
+	"fmt"
 	"time"
 )
 
 // The Formatter interface is used to implement a custom Formatter. It takes an
 // `Entry`. It exposes all the fields, including the default ones:
 //
-// * `entry.Data["msg"]`. The message passed from Info, Warn, Error ..
+// * `entry.Data["args"]`. The arguments passed from Info, Warn, Error ..
 // * `entry.Data["time"]`. The timestamp.
 // * `entry.Data["level"]. The level the entry was logged at.
 //
@@ -43,7 +44,7 @@ func prefixFieldClashes(entry *Entry) {
 		entry.Data["fields.msg"] = entry.Data["msg"]
 	}
 
-	entry.Data["msg"] = entry.Message
+	entry.Data["msg"] = fmt.Sprint(entry.Args)
 
 	_, ok = entry.Data["level"]
 	if ok {
