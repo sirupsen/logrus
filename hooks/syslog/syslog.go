@@ -23,13 +23,11 @@ func NewSyslogHook(network, raddr string, priority syslog.Priority, tag string) 
 }
 
 func (hook *SyslogHook) Fire(entry *logrus.Entry) error {
-	reader, err := entry.Reader()
+	line, err := entry.String()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to read entry, %v", err)
 		return err
 	}
-
-	line := reader.String()
 
 	switch entry.Data["level"] {
 	case "panic":
