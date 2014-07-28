@@ -1,17 +1,17 @@
 package logrus_syslog
 
 import (
-	"os"
 	"fmt"
-	"log/syslog"
 	"github.com/Sirupsen/logrus"
+	"log/syslog"
+	"os"
 )
 
 // SyslogHook to send logs via syslog.
-type SyslogHook struct{
-	Writer			*syslog.Writer
-	SyslogNetwork	string
-	SyslogRaddr		string
+type SyslogHook struct {
+	Writer        *syslog.Writer
+	SyslogNetwork string
+	SyslogRaddr   string
 }
 
 // Creates a hook to be added to an instance of logger. This is called with
