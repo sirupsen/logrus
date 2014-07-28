@@ -148,18 +148,25 @@ Logrus comes with built-in hooks. Add those, or your custom hook, in `init`:
 
 ```go
 import (
+  "log/syslog"
   "github.com/Sirupsen/logrus"
   "github.com/Sirupsen/logrus/hooks/airbrake"
+  "github.com/Sirupsen/logrus/hooks/syslog"
 )
 
 func init() {
   log.Hooks.Add(new(logrus_airbrake.AirbrakeHook))
+  log.Hooks.Add(logrus_syslog.NewSyslogHook("udp", "localhost:514", syslog.LOG_INFO, ""))
 }
 ```
 
 * [`github.com/Sirupsen/logrus/hooks/airbrake`](https://github.com/Sirupsen/logrus/blob/master/hooks/airbrake/airbrake.go).
   Send errors to an exception tracking service compatible with the Airbrake API.
   Uses [`airbrake-go`](https://github.com/tobi/airbrake-go) behind the scenes.
+
+* [`github.com/Sirupsen/logrus/hooks/syslog`](https://github.com/Sirupsen/logrus/blob/master/hooks/syslog/syslog.go).
+  Send errors to remote syslog server.
+  Uses standard library `log/syslog` behind the scenes.
 
 #### Level logging
 
