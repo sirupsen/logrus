@@ -49,11 +49,11 @@ func (hook *SyslogHook) Fire(entry *logrus.Entry) error {
 
 func (hook *SyslogHook) Levels() []logrus.Level {
 	return []logrus.Level{
-		logrus.Panic,
-		logrus.Fatal,
-		logrus.Error,
-		logrus.Warn,
-		logrus.Info,
-		logrus.Debug,
+		logrus.PanicLevel,
+		logrus.FatalLevel,
+		logrus.ErrorLevel,
+		logrus.WarnLevel,
+		logrus.InfoLevel,
+		logrus.DebugLevel,
 	}
 }
