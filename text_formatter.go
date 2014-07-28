@@ -32,6 +32,8 @@ type TextFormatter struct {
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	b := &bytes.Buffer{}
 
+	prefixFieldClashes(entry)
+
 	if f.ForceColors || IsTerminal() {
 		levelText := strings.ToUpper(entry.Data["level"].(string))[0:4]
 

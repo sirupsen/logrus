@@ -1,7 +1,10 @@
 # Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>&nbsp;[![Build Status](https://travis-ci.org/Sirupsen/logrus.svg?branch=master)](https://travis-ci.org/Sirupsen/logrus)
 
 Logrus is a structured logger for Go (golang), completely API compatible with
-the standard library logger. [Godoc][godoc].
+the standard library logger. [Godoc][godoc]. **Please note the Logrus API is not
+yet stable (pre 1.0), the core API is unlikely change much but please version
+control your Logrus to make sure you aren't fetching latest `master` on every
+build.**
 
 Nicely color-coded in development (when a TTY is attached, otherwise just
 plain text):
@@ -42,9 +45,71 @@ time="2014-04-20 15:36:23.830626464 -0400 EDT" level="fatal" msg="The ice breaks
 
 #### Example
 
-Note again that Logrus is API compatible with the stdlib logger, so if you
-remove the `log` import and create a global `log` variable as below it will just
-work.
+The simplest way to use Logrus is simply the package-level exported logger:
+
+```go
+package main
+
+import (
+  log "github.com/Sirupsen/logrus"
+)
+
+func main() {
+  log.WithFields(log.Fields{
+    "animal": "walrus",
+  }).Info("A walrus appears")
+}
+```
+
+Note that it's completely api-compatible with the stdlib logger, so you can
+replace your `log` imports everywhere with `log "github.com/Sirupsen/logrus"`
+and you'll now have the flexibility of Logrus. You can customize it all you
+want:
+
+```go
+package main
+
+import (
+  "os"
+  log "github.com/Sirupsen/logrus"
+  "github.com/Sirupsen/logrus/hooks/airbrake"
+)
+
+func init() {
+  // Log as JSON instead of the default ASCII formatter.
+  log.SetFormatter(logrus.JSONFormatter)
+
+  // Use the Airbrake hook to report errors that have Error severity or above to
+  // an exception tracker. You can create custom hooks, see the Hooks section.
+  log.AddHook(logrus_airbrake.AirbrakeHook)
+
+  // Output to stderr instead of stdout, could also be a file.
+  log.SetOuput(os.Stderr)
+
+  // Only log the warning severity or above.
+  log.SetLevel(logrus.WarnLevel)
+}
+
+func main() {
+  log.WithFields(log.Fields{
+    "animal": "walrus",
+    "size":   10,
+  }).Info("A group of walrus emerges from the ocean")
+
+  log.WithFields(log.Fields{
+    "omg":    true,
+    "number": 122,
+  }).Warn("The group's number increased tremendously!")
+
+  log.WithFields(log.Fields{
+    "omg":    true,
+    "number": 100,
+  }).Fatal("The ice breaks!")
+}
+```
+
+For more advanced usage such as logging to multiple locations from the same
+application, you can also create an instance of the `logrus` Logger:
 
 ```go
 package main
@@ -53,28 +118,18 @@ import (
   "github.com/Sirupsen/logrus"
 )
 
+// Create a new instance of the logger. You can have any number of instances.
 var log = logrus.New()
 
-func init() {
-  log.Formatter = new(logrus.JSONFormatter)
-  log.Formatter = new(logrus.TextFormatter) // default
-}
-
 func main() {
-  log.WithFields(logrus.Fields{
+  // The API for setting attributes is a little different than the package level
+  // exported logger. See Godoc.
+  log.Out = os.Stderr
+
+  log.WithFields(log.Fields{
     "animal": "walrus",
     "size":   10,
   }).Info("A group of walrus emerges from the ocean")
-
-  log.WithFields(logrus.Fields{
-    "omg":    true,
-    "number": 122,
-  }).Warn("The group's number increased tremendously!")
-
-  log.WithFields(logrus.Fields{
-    "omg":    true,
-    "number": 100,
-  }).Fatal("The ice breaks!")
 }
 ```
 
@@ -86,12 +141,10 @@ to send event %s to topic %s with key %d")`, you should log the much more
 discoverable:
 
 ```go
-log = logrus.New()
-
-log.WithFields(logrus.Fields{
+log.WithFields(log.Fields{
   "event": event,
   "topic": topic,
-  "key": key
+  "key": key,
 }).Fatal("Failed to send event")
 ```
 
@@ -112,10 +165,12 @@ multiple places simultaneously, e.g. syslog.
 
 ```go
 // Not the real implementation of the Airbrake hook. Just a simple sample.
-var log = logrus.New()
+import (
+  log "github.com/Sirupsen/logrus"
+)
 
 func init() {
-  log.Hooks.Add(new(AirbrakeHook))
+  log.AddHook(new(AirbrakeHook))
 }
 
 type AirbrakeHook struct{}
@@ -125,7 +180,7 @@ type AirbrakeHook struct{}
 func (hook *AirbrakeHook) Fire(entry *logrus.Entry) error {
   err := airbrake.Notify(entry.Data["error"].(error))
   if err != nil {
-    log.WithFields(logrus.Fields{
+    log.WithFields(log.Fields{
       "source":   "airbrake",
       "endpoint": airbrake.Endpoint,
     }).Info("Failed to send error to Airbrake")
@@ -135,11 +190,11 @@ func (hook *AirbrakeHook) Fire(entry *logrus.Entry) error {
 }
 
 // `Levels()` returns a slice of `Levels` the hook is fired for.
-func (hook *AirbrakeHook) Levels() []logrus.Level {
-  return []logrus.Level{
-    logrus.Error,
-    logrus.Fatal,
-    logrus.Panic,
+func (hook *AirbrakeHook) Levels() []log.Level {
+  return []log.Level{
+    log.ErrorLevel,
+    log.FatalLevel,
+    log.PanicLevel,
   }
 }
 ```
@@ -148,15 +203,14 @@ Logrus comes with built-in hooks. Add those, or your custom hook, in `init`:
 
 ```go
 import (
-  "log/syslog"
-  "github.com/Sirupsen/logrus"
+  log "github.com/Sirupsen/logrus"
   "github.com/Sirupsen/logrus/hooks/airbrake"
   "github.com/Sirupsen/logrus/hooks/syslog"
 )
 
 func init() {
-  log.Hooks.Add(new(logrus_airbrake.AirbrakeHook))
-  log.Hooks.Add(logrus_syslog.NewSyslogHook("udp", "localhost:514", syslog.LOG_INFO, ""))
+  log.AddHook(new(logrus_airbrake.AirbrakeHook))
+  log.AddHook(logrus_syslog.NewSyslogHook("udp", "localhost:514", syslog.LOG_INFO, ""))
 }
 ```
 
@@ -188,10 +242,10 @@ that severity or anything above it:
 
 ```go
 // Will log anything that is info or above (warn, error, fatal, panic). Default.
-log.Level = logrus.Info
+log.SetLevel(log.InfoLevel)
 ```
 
-It may be useful to set `log.Level = logrus.Debug` in a debug or verbose
+It may be useful to set `log.Level = logrus.DebugLevel` in a debug or verbose
 environment if your application has that.
 
 #### Entries
@@ -214,16 +268,18 @@ variable `Environment`, which is a string representation of the environment you
 could do:
 
 ```go
+import (
+  log "github.com/Sirupsen/logrus"
+)
+
 init() {
   // do something here to set environment depending on an environment variable
   // or command-line flag
-  log := logrus.New()
-
   if Environment == "production" {
-    log.Formatter = new(logrus.JSONFormatter)
+    log.SetFormatter(logrus.JSONFormatter)
   } else {
     // The TextFormatter is default, you don't actually have to do this.
-    log.Formatter = new(logrus.TextFormatter)
+    log.SetFormatter(logrus.TextFormatter)
   }
 }
 ```
@@ -255,9 +311,12 @@ default ones (see Entries section above):
 type MyJSONFormatter struct {
 }
 
-log.Formatter = new(MyJSONFormatter)
+log.SetFormatter(new(MyJSONFormatter))
 
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
+  // Note this doesn't include Time, Level and Message which are available on
+  // the Entry. Consult `godoc` on information about those fields or read the
+  // source of the official loggers.
   serialized, err := json.Marshal(entry.Data)
     if err != nil {
       return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
@@ -265,5 +324,12 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
   return append(serialized, '\n'), nil
 }
 ```
+
+#### Rotation
+
+Log rotation is not provided with Logrus. Log rotation should be done by an
+external program (like `logrotated(8)`) that can compress and delete old log
+entries. It should not be a feature of the application-level logger.
+
 
 [godoc]: https://godoc.org/github.com/Sirupsen/logrus
