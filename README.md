@@ -77,7 +77,7 @@ import (
 
 func init() {
   // Log as JSON instead of the default ASCII formatter.
-  log.SetFormatter(logrus.JSONFormatter)
+  log.SetFormatter(new(log.JSONFormatter))
 
   // Use the Airbrake hook to report errors that have Error severity or above to
   // an exception tracker. You can create custom hooks, see the Hooks section.
@@ -276,10 +276,10 @@ init() {
   // do something here to set environment depending on an environment variable
   // or command-line flag
   if Environment == "production" {
-    log.SetFormatter(logrus.JSONFormatter)
+    log.SetFormatter(new(log.JSONFormatter))
   } else {
     // The TextFormatter is default, you don't actually have to do this.
-    log.SetFormatter(logrus.TextFormatter)
+    log.SetFormatter(new(log.TextFormatter))
   }
 }
 ```
