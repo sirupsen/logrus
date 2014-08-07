@@ -84,7 +84,7 @@ func init() {
   log.AddHook(logrus_airbrake.AirbrakeHook)
 
   // Output to stderr instead of stdout, could also be a file.
-  log.SetOuput(os.Stderr)
+  log.SetOutput(os.Stderr)
 
   // Only log the warning severity or above.
   log.SetLevel(logrus.WarnLevel)
