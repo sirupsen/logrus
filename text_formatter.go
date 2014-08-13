@@ -35,7 +35,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	prefixFieldClashes(entry)
 
-	if (f.ForceColors || IsTerminal()) && !DisableColors {
+	if (f.ForceColors || IsTerminal()) && !f.DisableColors {
 		levelText := strings.ToUpper(entry.Data["level"].(string))[0:4]
 
 		levelColor := blue

@@ -296,6 +296,7 @@ The built-in logging formatters are:
   without colors.
   * *Note:* to force colored output when there is no TTY, set the `ForceColors`
     field to `true`.
+  * *Note:* to force no colored output set the `DisableColors` field to `true`
 * `logrus.JSONFormatter`. Logs fields as JSON.
 
 Third party logging formatters:
