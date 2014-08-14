@@ -77,17 +77,17 @@ import (
 
 func init() {
   // Log as JSON instead of the default ASCII formatter.
-  log.SetFormatter(logrus.JSONFormatter)
+  log.SetFormatter(&log.JSONFormatter{})
 
   // Use the Airbrake hook to report errors that have Error severity or above to
   // an exception tracker. You can create custom hooks, see the Hooks section.
   log.AddHook(logrus_airbrake.AirbrakeHook)
 
   // Output to stderr instead of stdout, could also be a file.
-  log.SetOuput(os.Stderr)
+  log.SetOutput(os.Stderr)
 
   // Only log the warning severity or above.
-  log.SetLevel(logrus.WarnLevel)
+  log.SetLevel(log.WarnLevel)
 }
 
 func main() {
