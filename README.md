@@ -222,6 +222,9 @@ func init() {
   Send errors to remote syslog server.
   Uses standard library `log/syslog` behind the scenes.
 
+* [`github.com/nubo/hiprus`](https://github.com/nubo/hiprus)
+  Send errors to a channel in hipchat.
+
 #### Level logging
 
 Logrus has six logging levels: Debug, Info, Warning, Error, Fatal and Panic.
