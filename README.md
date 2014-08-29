@@ -81,7 +81,7 @@ func init() {
 
   // Use the Airbrake hook to report errors that have Error severity or above to
   // an exception tracker. You can create custom hooks, see the Hooks section.
-  log.AddHook(logrus_airbrake.AirbrakeHook)
+  log.AddHook(&logrus_airbrake.AirbrakeHook{})
 
   // Output to stderr instead of stdout, could also be a file.
   log.SetOutput(os.Stderr)
