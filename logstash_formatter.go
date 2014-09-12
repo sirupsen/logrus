@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -57,9 +58,10 @@ func (f *LogstashFormatter) Format(entry *Entry) ([]byte, error) {
 			entry.Data["fields.line"] = entry.Data["lin"]
 		}
 		_, file, line, ok := runtime.Caller(skip)
-
 		if ok {
-			entry.Data["file"] = file
+			if slash := strings.LastIndex(file, "/"); slash >= 0 {
+				entry.Data["file"] = file[slash+1:]
+			}
 			entry.Data["line"] = line
 		}
 	}
