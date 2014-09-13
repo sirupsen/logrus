@@ -32,18 +32,8 @@ func (hook *PapertrailHook) Fire(entry *logrus.Entry) error {
 	date := time.Now().Format(format)
 	payload := fmt.Sprintf("<22> %s %s: [%s] %s", date, hook.AppName, entry.Data["level"], entry.Message)
 
-	line, err := entry.String()
 	bytesWritten, err := hook.UDPConn.Write([]byte(payload))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to read entry, %v", err)
-		return err
-	}
-
-	payload := fmt.Sprintf("<22> %s %s: [%s] %s", date, hook.AppName, entry.Data["level"], line)
-
-	_, err = hook.UDPConn.Write([]byte(payload))
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to send log line to Papertrail via UDP, %v", err)
 		fmt.Fprintf(os.Stderr, "Unable to send log line to Papertrail via UDP. Wrote %d bytes before error: %v", bytesWritten, err)
 		return err
 	}
