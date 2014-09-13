@@ -54,10 +54,11 @@ func (hook *PapertrailHook) Fire(entry *logrus.Entry) error {
 // Levels returns the available logging levels.
 func (hook *PapertrailHook) Levels() []logrus.Level {
 	return []logrus.Level{
-		logrus.Panic,
-		logrus.Fatal,
-		logrus.Error,
-		logrus.Warn,
-		logrus.Info,
+		logrus.PanicLevel,
+		logrus.FatalLevel,
+		logrus.ErrorLevel,
+		logrus.WarnLevel,
+		logrus.InfoLevel,
+		logrus.DebugLevel,
 	}
 }
