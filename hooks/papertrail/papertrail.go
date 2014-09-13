@@ -31,6 +31,7 @@ func NewPapertrailHook(host string, port int, appName string) (*PapertrailHook, 
 func (hook *PapertrailHook) Fire(entry *logrus.Entry) error {
 	defer hook.UDPConn.Close()
 	date := time.Now().Format(format)
+	payload := fmt.Sprintf("<22> %s %s: [%s] %s", date, hook.AppName, entry.Data["level"], entry.Message)
 
 	line, err := entry.String()
 	if err != nil {
