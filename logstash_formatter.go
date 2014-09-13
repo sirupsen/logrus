@@ -49,20 +49,17 @@ func (f *LogstashFormatter) Format(entry *Entry) ([]byte, error) {
 
 	// set file and line fields
 	if f.FileLineLogLevel >= entry.Level {
-		_, ok = entry.Data["file"]
+		_, ok = entry.Data["source_file"]
 		if ok {
-			entry.Data["fields.file"] = entry.Data["file"]
-		}
-		_, ok = entry.Data["line"]
-		if ok {
-			entry.Data["fields.line"] = entry.Data["lin"]
+			entry.Data["fields.source_file"] = entry.Data["source_file"]
 		}
 		_, file, line, ok := runtime.Caller(skip)
 		if ok {
-			if slash := strings.LastIndex(file, "/"); slash >= 0 {
-				entry.Data["file"] = file[slash+1:]
+			split := strings.Split(file, "/")
+			if l := len(split); l > 2 {
+				file = fmt.Sprintf("%s/%s:%d", split[l-2], split[l-1], line)
 			}
-			entry.Data["line"] = line
+			entry.Data["source_file"] = file
 		}
 	}
 
