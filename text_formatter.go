@@ -16,8 +16,14 @@ const (
 	blue    = 34
 )
 
+var (
+	baseTimestamp time.Time
+	isTerminal    bool
+)
+
 func init() {
 	baseTimestamp = time.Now()
+	isTerminal = IsTerminal()
 }
 
 func miniTS() int {
@@ -31,11 +37,12 @@ type TextFormatter struct {
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
+
 	b := &bytes.Buffer{}
 
 	prefixFieldClashes(entry)
 
-	if (f.ForceColors || IsTerminal()) && !f.DisableColors {
+	if (f.ForceColors || isTerminal) && !f.DisableColors {
 		levelText := strings.ToUpper(entry.Data["level"].(string))[0:4]
 
 		levelColor := blue
@@ -50,8 +57,8 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, miniTS(), entry.Data["msg"])
 
-		keys := make([]string, 0)
-		for k, _ := range entry.Data {
+		var keys []string
+		for k := range entry.Data {
 			if k != "level" && k != "time" && k != "msg" {
 				keys = append(keys, k)
 			}
