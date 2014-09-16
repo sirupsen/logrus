@@ -28,8 +28,6 @@ type Entry struct {
 	Message string
 }
 
-var baseTimestamp time.Time
-
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
