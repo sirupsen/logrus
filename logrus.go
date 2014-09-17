@@ -30,6 +30,23 @@ func (level Level) String() string {
 	return "unknown"
 }
 
+func SetLogLevel(level string) {
+	switch level {
+	case "panic":
+		SetLevel(PanicLevel)
+	case "fatal":
+		SetLevel(FatalLevel)
+	case "error":
+		SetLevel(ErrorLevel)
+	case "warn", "warning":
+		SetLevel(WarnLevel)
+	case "info":
+		SetLevel(InfoLevel)
+	case "debug", "dbg":
+		SetLevel(DebugLevel)
+	}
+}
+
 // These are the different logging levels. You can set the logging level to log
 // on your instance of logger, obtained with `logrus.New()`.
 const (
