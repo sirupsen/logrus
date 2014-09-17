@@ -24,8 +24,8 @@ type Entry struct {
 	// Level the log entry was logged at: Debug, Info, Warn, Error, Fatal or Panic
 	Level Level
 
-	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
-	Message string
+	// Arguments passed to Debug, Info, Warn, Error, Fatal or Panic
+	Args []interface{}
 }
 
 func NewEntry(logger *Logger) *Entry {
@@ -70,10 +70,10 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return &Entry{Logger: entry.Logger, Data: data}
 }
 
-func (entry *Entry) log(level Level, msg string) string {
+func (entry *Entry) log(level Level, args ...interface{}) string {
 	entry.Time = time.Now()
 	entry.Level = level
-	entry.Message = msg
+	entry.Args = args
 
 	if err := entry.Logger.Hooks.Fire(level, entry); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to fire hook", err)
@@ -97,7 +97,7 @@ func (entry *Entry) log(level Level, msg string) string {
 
 func (entry *Entry) Debug(args ...interface{}) {
 	if entry.Logger.Level >= DebugLevel {
-		entry.log(DebugLevel, fmt.Sprint(args...))
+		entry.log(DebugLevel, args...)
 	}
 }
 
@@ -107,32 +107,32 @@ func (entry *Entry) Print(args ...interface{}) {
 
 func (entry *Entry) Info(args ...interface{}) {
 	if entry.Logger.Level >= InfoLevel {
-		entry.log(InfoLevel, fmt.Sprint(args...))
+		entry.log(InfoLevel, args...)
 	}
 }
 
 func (entry *Entry) Warn(args ...interface{}) {
 	if entry.Logger.Level >= WarnLevel {
-		entry.log(WarnLevel, fmt.Sprint(args...))
+		entry.log(WarnLevel, args...)
 	}
 }
 
 func (entry *Entry) Error(args ...interface{}) {
 	if entry.Logger.Level >= ErrorLevel {
-		entry.log(ErrorLevel, fmt.Sprint(args...))
+		entry.log(ErrorLevel, args...)
 	}
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
 	if entry.Logger.Level >= FatalLevel {
-		entry.log(FatalLevel, fmt.Sprint(args...))
+		entry.log(FatalLevel, args...)
 	}
 	os.Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
 	if entry.Logger.Level >= PanicLevel {
-		msg := entry.log(PanicLevel, fmt.Sprint(args...))
+		msg := entry.log(PanicLevel, args...)
 		panic(msg)
 	}
 	panic(fmt.Sprint(args...))

@@ -16,20 +16,15 @@ import (
 type AirbrakeHook struct{}
 
 func (hook *AirbrakeHook) Fire(entry *logrus.Entry) error {
-	if entry.Data["error"] == nil {
-		entry.Logger.WithFields(logrus.Fields{
-			"source":   "airbrake",
-			"endpoint": airbrake.Endpoint,
-		}).Warn("Exceptions sent to Airbrake must have an 'error' key with the error")
-		return nil
-	}
-
 	err, ok := entry.Data["error"].(error)
-	if !ok {
+	if (!ok || err == nil) && len(entry.Args) >= 1 {
+		err, ok = entry.Args[0].(error)
+	}
+	if !ok || err == nil {
 		entry.Logger.WithFields(logrus.Fields{
 			"source":   "airbrake",
 			"endpoint": airbrake.Endpoint,
-		}).Warn("Exceptions sent to Airbrake must have an `error` key of type `error`")
+		}).Warn("Exceptions sent to Airbrake must have an 'error' key or message of type `error`")
 		return nil
 	}
 
