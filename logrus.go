@@ -36,7 +36,7 @@ func SetLogLevel(level string) {
 		SetLevel(PanicLevel)
 	case "fatal":
 		SetLevel(FatalLevel)
-	case "error", "err":
+	case "error":
 		SetLevel(ErrorLevel)
 	case "warn", "warning":
 		SetLevel(WarnLevel)
