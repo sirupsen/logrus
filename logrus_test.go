@@ -179,8 +179,6 @@ func TestSetLogLevel(t *testing.T) {
 	assert.Equal(t, FatalLevel, std.Level)
 	SetLogLevel("error")
 	assert.Equal(t, ErrorLevel, std.Level)
-	SetLogLevel("err")
-	assert.Equal(t, ErrorLevel, std.Level)
 	SetLogLevel("warn")
 	assert.Equal(t, WarnLevel, std.Level)
 	SetLogLevel("warning")
