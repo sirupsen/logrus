@@ -76,12 +76,12 @@ func (entry *Entry) log(level Level, msg string) string {
 	entry.Message = msg
 
 	if err := entry.Logger.Hooks.Fire(level, entry); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to fire hook", err)
+		fmt.Fprintf(os.Stderr, "Failed to fire hook\n", err)
 	}
 
 	reader, err := entry.Reader()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v", err)
+		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v\n", err)
 	}
 
 	entry.Logger.mu.Lock()
@@ -89,7 +89,7 @@ func (entry *Entry) log(level Level, msg string) string {
 
 	_, err = io.Copy(entry.Logger.Out, reader)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to write to log, %v", err)
+		fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
 	}
 
 	return reader.String()
