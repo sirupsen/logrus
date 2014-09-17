@@ -171,3 +171,25 @@ func TestConvertLevelToString(t *testing.T) {
 	assert.Equal(t, "fatal", FatalLevel.String())
 	assert.Equal(t, "panic", PanicLevel.String())
 }
+
+func TestSetLogLevel(t *testing.T) {
+	SetLogLevel("panic")
+	assert.Equal(t, PanicLevel, std.Level)
+	SetLogLevel("fatal")
+	assert.Equal(t, FatalLevel, std.Level)
+	SetLogLevel("error")
+	assert.Equal(t, ErrorLevel, std.Level)
+	SetLogLevel("err")
+	assert.Equal(t, ErrorLevel, std.Level)
+	SetLogLevel("warn")
+	assert.Equal(t, WarnLevel, std.Level)
+	SetLogLevel("warning")
+	assert.Equal(t, WarnLevel, std.Level)
+	SetLogLevel("info")
+	assert.Equal(t, InfoLevel, std.Level)
+	SetLogLevel("debug")
+	assert.Equal(t, DebugLevel, std.Level)
+	SetLogLevel("dbg")
+	assert.Equal(t, DebugLevel, std.Level)
+
+}
