@@ -92,6 +92,9 @@ func (entry *Entry) log(level Level, msg string) {
 		fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
 	}
 
+	// To avoid Entry#log() returning a value that only would make sense for
+	// panic() to use in Entry#Panic(), we avoid the allocation by checking
+	// directly here.
 	if level <= PanicLevel {
 		panic(reader.String())
 	}
