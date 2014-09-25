@@ -70,7 +70,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return &Entry{Logger: entry.Logger, Data: data}
 }
 
-func (entry *Entry) log(level Level, msg string) string {
+func (entry *Entry) log(level Level, msg string) {
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
@@ -92,7 +92,9 @@ func (entry *Entry) log(level Level, msg string) string {
 		fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
 	}
 
-	return reader.String()
+	if level <= PanicLevel {
+		panic(reader.String())
+	}
 }
 
 func (entry *Entry) Debug(args ...interface{}) {
@@ -132,8 +134,7 @@ func (entry *Entry) Fatal(args ...interface{}) {
 
 func (entry *Entry) Panic(args ...interface{}) {
 	if entry.Logger.Level >= PanicLevel {
-		msg := entry.log(PanicLevel, fmt.Sprint(args...))
-		panic(msg)
+		entry.log(PanicLevel, fmt.Sprint(args...))
 	}
 	panic(fmt.Sprint(args...))
 }
