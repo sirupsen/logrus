@@ -242,10 +242,6 @@ func TestParseLevel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, DebugLevel, l)
 
-	l, err = ParseLevel("dbg")
-	assert.Nil(t, err)
-	assert.Equal(t, DebugLevel, l)
-
 	l, err = ParseLevel("invalid")
 	assert.Equal(t, "not a valid logrus Level: \"invalid\"", err.Error())
 }
