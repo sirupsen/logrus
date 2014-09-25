@@ -31,6 +31,7 @@ func (level Level) String() string {
 	return "unknown"
 }
 
+// ParseLevel takes a string level and returns the Logrus log level constant.
 func ParseLevel(lvl string) (Level, error) {
 	switch lvl {
 	case "panic":
@@ -43,13 +44,12 @@ func ParseLevel(lvl string) (Level, error) {
 		return WarnLevel, nil
 	case "info":
 		return InfoLevel, nil
-	case "debug", "dbg":
+	case "debug":
 		return DebugLevel, nil
 	}
 
 	var l Level
 	return l, fmt.Errorf("not a valid logrus Level: %q", lvl)
-
 }
 
 // These are the different logging levels. You can set the logging level to log
