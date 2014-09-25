@@ -218,7 +218,7 @@ func init() {
   Send errors to an exception tracking service compatible with the Airbrake API.
   Uses [`airbrake-go`](https://github.com/tobi/airbrake-go) behind the scenes.
 
-* [`github.com/Sirupsen/logrus/hooks/papertrail`](https://github.com/Sirupsen/logrus/blob/master/hooks/airbrake/airbrake.go)
+* [`github.com/Sirupsen/logrus/hooks/papertrail`](https://github.com/Sirupsen/logrus/blob/master/hooks/papertrail/papertrail.go)
   Send errors to the Papertrail hosted logging service via UDP.
 
 * [`github.com/Sirupsen/logrus/hooks/syslog`](https://github.com/Sirupsen/logrus/blob/master/hooks/syslog/syslog.go)
