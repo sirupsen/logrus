@@ -212,3 +212,40 @@ func TestConvertLevelToString(t *testing.T) {
 	assert.Equal(t, "fatal", FatalLevel.String())
 	assert.Equal(t, "panic", PanicLevel.String())
 }
+
+func TestParseLevel(t *testing.T) {
+	l, err := ParseLevel("panic")
+	assert.Nil(t, err)
+	assert.Equal(t, PanicLevel, l)
+
+	l, err = ParseLevel("fatal")
+	assert.Nil(t, err)
+	assert.Equal(t, FatalLevel, l)
+
+	l, err = ParseLevel("error")
+	assert.Nil(t, err)
+	assert.Equal(t, ErrorLevel, l)
+
+	l, err = ParseLevel("warn")
+	assert.Nil(t, err)
+	assert.Equal(t, WarnLevel, l)
+
+	l, err = ParseLevel("warning")
+	assert.Nil(t, err)
+	assert.Equal(t, WarnLevel, l)
+
+	l, err = ParseLevel("info")
+	assert.Nil(t, err)
+	assert.Equal(t, InfoLevel, l)
+
+	l, err = ParseLevel("debug")
+	assert.Nil(t, err)
+	assert.Equal(t, DebugLevel, l)
+
+	l, err = ParseLevel("dbg")
+	assert.Nil(t, err)
+	assert.Equal(t, DebugLevel, l)
+
+	l, err = ParseLevel("invalid")
+	assert.Equal(t, "not a valid logrus Level: \"invalid\"", err.Error())
+}
