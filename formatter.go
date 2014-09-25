@@ -1,9 +1,5 @@
 package logrus
 
-import (
-	"time"
-)
-
 // The Formatter interface is used to implement a custom Formatter. It takes an
 // `Entry`. It exposes all the fields, including the default ones:
 //
@@ -36,19 +32,13 @@ func prefixFieldClashes(entry *Entry) {
 		entry.Data["fields.time"] = entry.Data["time"]
 	}
 
-	entry.Data["time"] = entry.Time.Format(time.RFC3339)
-
 	_, ok = entry.Data["msg"]
 	if ok {
 		entry.Data["fields.msg"] = entry.Data["msg"]
 	}
 
-	entry.Data["msg"] = entry.Message
-
 	_, ok = entry.Data["level"]
 	if ok {
 		entry.Data["fields.level"] = entry.Data["level"]
 	}
-
-	entry.Data["level"] = entry.Level.String()
 }
