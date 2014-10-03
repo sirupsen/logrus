@@ -53,11 +53,11 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	if isColored {
 		printColored(b, entry, keys)
 	} else {
-		f.AppendKeyValue(b, "time", entry.Time.Format(time.RFC3339))
-		f.AppendKeyValue(b, "level", entry.Level.String())
-		f.AppendKeyValue(b, "msg", entry.Message)
+		f.appendKeyValue(b, "time", entry.Time.Format(time.RFC3339))
+		f.appendKeyValue(b, "level", entry.Level.String())
+		f.appendKeyValue(b, "msg", entry.Message)
 		for _, key := range keys {
-			f.AppendKeyValue(b, key, entry.Data[key])
+			f.appendKeyValue(b, key, entry.Data[key])
 		}
 	}
 
@@ -85,10 +85,11 @@ func printColored(b *bytes.Buffer, entry *Entry, keys []string) {
 	}
 }
 
-func (f *TextFormatter) AppendKeyValue(b *bytes.Buffer, key, value interface{}) {
-	if _, ok := value.(string); ok {
+func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key, value interface{}) {
+	switch value.(type) {
+	case string, error:
 		fmt.Fprintf(b, "%v=%q ", key, value)
-	} else {
+	default:
 		fmt.Fprintf(b, "%v=%v ", key, value)
 	}
 }
