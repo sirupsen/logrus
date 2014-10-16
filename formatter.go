@@ -24,7 +24,7 @@ type Formatter interface {
 //
 //  {"level": "info", "fields.level": 1, "msg": "hello", "time": "..."}
 //
-// It's not exported because it's still using Data in an opionated way. It's to
+// It's not exported because it's still using Data in an opinionated way. It's to
 // avoid code duplication between the two default formatters.
 func prefixFieldClashes(entry *Entry) {
 	_, ok := entry.Data["time"]

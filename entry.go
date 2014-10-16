@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// An entry is the final or intermediate Logrus logging entry. It containts all
+// An entry is the final or intermediate Logrus logging entry. It contains all
 // the fields passed with WithField{,s}. It's finally logged when Debug, Info,
 // Warn, Error, Fatal or Panic is called on it. These objects can be reused and
 // passed around as much as you wish to avoid field duplication.
