@@ -126,7 +126,7 @@ func main() {
   // exported logger. See Godoc.
   log.Out = os.Stderr
 
-  log.WithFields(log.Fields{
+  log.WithFields(logrus.Fields{
     "animal": "walrus",
     "size":   10,
   }).Info("A group of walrus emerges from the ocean")
