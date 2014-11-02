@@ -1,4 +1,4 @@
-package sentry_hook
+package logrus_sentry
 
 import (
 	"github.com/Sirupsen/logrus"
