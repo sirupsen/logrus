@@ -7,3 +7,4 @@ install:
   - go get github.com/stretchr/testify
   - go get github.com/stvp/go-udp-testing
   - go get github.com/tobi/airbrake-go
+  - go get github.com/getsentry/raven-go
