@@ -88,10 +88,13 @@ func (entry *Entry) log(level Level, msg string) {
 		entry.Logger.mu.Unlock()
 	}
 
+	var panicBuf bytes.Buffer
+	teeOut := io.TeeReader(reader, &panicBuf)
+
 	entry.Logger.mu.Lock()
 	defer entry.Logger.mu.Unlock()
 
-	_, err = io.Copy(entry.Logger.Out, reader)
+	_, err = io.Copy(entry.Logger.Out, teeOut)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
 	}
@@ -100,7 +103,7 @@ func (entry *Entry) log(level Level, msg string) {
 	// panic() to use in Entry#Panic(), we avoid the allocation by checking
 	// directly here.
 	if level <= PanicLevel {
-		panic(reader.String())
+		panic(panicBuf.String())
 	}
 }
 
