@@ -35,21 +35,18 @@ func getAndDel(d logrus.Fields, key string) (string, bool) {
 
 // SentryHook delivers logs to a sentry server.
 type SentryHook struct {
-	// DSN for this application
-	// Modifications to this field after the call to NewSentryHook have no effect
-	DSN string
-
 	client *raven.Client
 	levels []logrus.Level
 }
 
-// NewSentryHook creates a hook to be added to an instance of logger and initializes the raven client.
+// NewSentryHook creates a hook to be added to an instance of logger
+// and initializes the raven client.
 func NewSentryHook(DSN string, levels []logrus.Level) (*SentryHook, error) {
 	client, err := raven.NewClient(DSN, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &SentryHook{DSN, client, levels}, nil
+	return &SentryHook{client, levels}, nil
 }
 
 // Called when an event should be sent to sentry
@@ -74,8 +71,8 @@ func (hook *SentryHook) Fire(entry *logrus.Entry) error {
 	}
 	packet.Extra = map[string]interface{}(d)
 
-	_, errCh := hook.client.Capture(packet, nil)
-	return <-errCh
+	hook.client.Capture(packet, nil)
+	return nil
 }
 
 // Levels returns the available logging levels.

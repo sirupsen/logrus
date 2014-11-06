@@ -25,7 +25,7 @@ func getTestLogger() *logrus.Logger {
 	return l
 }
 
-func getTestDSN(t *testing.T) (string, <-chan *raven.Packet, func()) {
+func WithTestDSN(t *testing.T, tf func(string, <-chan *raven.Packet)) {
 	pch := make(chan *raven.Packet, 1)
 	s := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		defer req.Body.Close()
@@ -38,56 +38,60 @@ func getTestDSN(t *testing.T) (string, <-chan *raven.Packet, func()) {
 
 		pch <- p
 	}))
+	defer s.Close()
 
 	fragments := strings.SplitN(s.URL, "://", 2)
-	dsn := "%s://public:secret@%s/sentry/project-id"
-
-	return fmt.Sprintf(dsn, fragments[0], fragments[1]), pch, s.Close
+	dsn := fmt.Sprintf(
+		"%s://public:secret@%s/sentry/project-id",
+		fragments[0],
+		fragments[1],
+	)
+	tf(dsn, pch)
 }
 
 func TestSpecialFields(t *testing.T) {
-	logger := getTestLogger()
-	dsn, pch, closeFn := getTestDSN(t)
-	defer closeFn()
+	WithTestDSN(t, func(dsn string, pch <-chan *raven.Packet) {
+		logger := getTestLogger()
 
-	hook, err := NewSentryHook(dsn, []logrus.Level{
-		logrus.ErrorLevel,
+		hook, err := NewSentryHook(dsn, []logrus.Level{
+			logrus.ErrorLevel,
+		})
+
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		logger.Hooks.Add(hook)
+		logger.WithFields(logrus.Fields{
+			"server_name": server_name,
+			"logger":      logger_name,
+		}).Error(message)
+
+		packet := <-pch
+		if packet.Logger != logger_name {
+			t.Errorf("logger should have been %s, was %s", logger_name, packet.Logger)
+		}
+
+		if packet.ServerName != server_name {
+			t.Errorf("server_name should have been %s, was %s", server_name, packet.ServerName)
+		}
 	})
-
-	if err != nil {
-		t.Fatal(err.Error())
-	}
-	logger.Hooks.Add(hook)
-	logger.WithFields(logrus.Fields{
-		"server_name": server_name,
-		"logger":      logger_name,
-	}).Error(message)
-
-	packet := <-pch
-	if packet.Logger != logger_name {
-		t.Errorf("logger should have been %s, was %s", logger_name, packet.Logger)
-	}
-
-	if packet.ServerName != server_name {
-		t.Errorf("server_name should have been %s, was %s", server_name, packet.ServerName)
-	}
 }
 
 func TestSentryHandler(t *testing.T) {
-	logger := getTestLogger()
-	dsn, pch, closeFn := getTestDSN(t)
-	defer closeFn()
-	hook, err := NewSentryHook(dsn, []logrus.Level{
-		logrus.ErrorLevel,
-	})
-	if err != nil {
-		t.Fatal(err.Error())
-	}
-	logger.Hooks.Add(hook)
+	WithTestDSN(t, func(dsn string, pch <-chan *raven.Packet) {
+		logger := getTestLogger()
+		hook, err := NewSentryHook(dsn, []logrus.Level{
+			logrus.ErrorLevel,
+		})
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		logger.Hooks.Add(hook)
 
-	logger.Error(message)
-	packet := <-pch
-	if packet.Message != message {
-		t.Errorf("message should have been %s, was %s", message, packet.Message)
-	}
+		logger.Error(message)
+		packet := <-pch
+		if packet.Message != message {
+			t.Errorf("message should have been %s, was %s", message, packet.Message)
+		}
+	})
 }
