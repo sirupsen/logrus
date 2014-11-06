@@ -1,8 +1,15 @@
 package logrus_sentry
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/getsentry/raven-go"
+)
+
+const (
+	timeout = 100 * time.Millisecond
 )
 
 var (
@@ -71,7 +78,14 @@ func (hook *SentryHook) Fire(entry *logrus.Entry) error {
 	}
 	packet.Extra = map[string]interface{}(d)
 
-	hook.client.Capture(packet, nil)
+	_, errCh := hook.client.Capture(packet, nil)
+	timeoutCh := time.After(timeout)
+	select {
+	case err := <-errCh:
+		return err
+	case <-timeoutCh:
+		return fmt.Errorf("no response from sentry server in %s", timeout)
+	}
 	return nil
 }
 
