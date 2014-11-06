@@ -29,9 +29,7 @@ func NewPapertrailHook(host string, port int, appName string, useHostname bool) 
 	var hostname string
 	if useHostname {
 		hn, err := os.Hostname()
-		if err != nil {
-			hostname = ""
-		} else {
+		if err == nil {
 			hostname = " " + hn
 		}
 	}
