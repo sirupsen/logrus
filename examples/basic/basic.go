@@ -12,6 +12,17 @@ func init() {
 }
 
 func main() {
+	defer func() {
+		err := recover()
+		if err != nil {
+			log.WithFields(logrus.Fields{
+				"omg":    true,
+				"err":    err,
+				"number": 100,
+			}).Fatal("The ice breaks!")
+		}
+	}()
+
 	log.WithFields(logrus.Fields{
 		"animal": "walrus",
 		"size":   10,
@@ -23,7 +34,7 @@ func main() {
 	}).Warn("The group's number increased tremendously!")
 
 	log.WithFields(logrus.Fields{
-		"omg":    true,
-		"number": 100,
-	}).Fatal("The ice breaks!")
+		"animal": "orca",
+		"size":   9009,
+	}).Panic("It's over 9000!")
 }
