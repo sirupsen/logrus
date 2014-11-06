@@ -71,8 +71,6 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 }
 
 func (entry *Entry) log(level Level, msg string) {
-	var panicBuf bytes.Buffer
-
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
@@ -93,7 +91,7 @@ func (entry *Entry) log(level Level, msg string) {
 	entry.Logger.mu.Lock()
 	defer entry.Logger.mu.Unlock()
 
-	_, err = io.Copy(io.MultiWriter(entry.Logger.Out, &panicBuf), reader)
+	_, err = io.Copy(entry.Logger.Out, reader)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
 	}
@@ -102,7 +100,7 @@ func (entry *Entry) log(level Level, msg string) {
 	// panic() to use in Entry#Panic(), we avoid the allocation by checking
 	// directly here.
 	if level <= PanicLevel {
-		panic(panicBuf.String())
+		panic(entry)
 	}
 }
 
