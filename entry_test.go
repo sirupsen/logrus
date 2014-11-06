@@ -20,7 +20,7 @@ func TestEntryPanicln(t *testing.T) {
 			assert.Equal(t, "kaboom", pVal.Message)
 			assert.Equal(t, errBoom, pVal.Data["err"])
 		default:
-			t.Fatal()
+			t.Fatalf("want type *Entry, got %T: %#v", pVal, pVal)
 		}
 	}()
 
@@ -42,7 +42,7 @@ func TestEntryPanicf(t *testing.T) {
 			assert.Equal(t, "kaboom true", pVal.Message)
 			assert.Equal(t, errBoom, pVal.Data["err"])
 		default:
-			t.Fatal()
+			t.Fatalf("want type *Entry, got %T: %#v", pVal, pVal)
 		}
 	}()
 
