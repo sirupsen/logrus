@@ -23,18 +23,8 @@ type PapertrailHook struct {
 }
 
 // NewPapertrailHook creates a hook to be added to an instance of logger.
-func NewPapertrailHook(host string, port int, appName string, useHostname bool) (*PapertrailHook, error) {
 	conn, err := net.Dial("udp", fmt.Sprintf("%s:%d", host, port))
 
-	var hostname string
-	if useHostname {
-		hn, err := os.Hostname()
-		if err == nil {
-			hostname = " " + hn
-		}
-	}
-
-	return &PapertrailHook{host, port, appName, hostname, conn}, err
 }
 
 // Fire is called when a log event is fired.
