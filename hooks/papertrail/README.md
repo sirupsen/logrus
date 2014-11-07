@@ -21,6 +21,9 @@ func main() {
   log       := logrus.New()
   hook, err := logrus_papertrail.NewPapertrailHook("logs.papertrailapp.com", YOUR_PAPERTRAIL_UDP_PORT, YOUR_APP_NAME)
 
+  // If you want to logrus to send the hostname instead of the IP Address
+  hook.UseHostname()
+
   if err == nil {
     log.Hooks.Add(hook)
   }
