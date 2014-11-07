@@ -23,8 +23,15 @@ type PapertrailHook struct {
 }
 
 // NewPapertrailHook creates a hook to be added to an instance of logger.
+func NewPapertrailHook(host string, port int, appName string) (*PapertrailHook, error) {
 	conn, err := net.Dial("udp", fmt.Sprintf("%s:%d", host, port))
 
+	return &PapertrailHook{
+		Host:    host,
+		Port:    port,
+		AppName: appName,
+		UDPConn: conn,
+	}, err
 }
 
 // Fire is called when a log event is fired.
@@ -39,6 +46,12 @@ func (hook *PapertrailHook) Fire(entry *logrus.Entry) error {
 	}
 
 	return nil
+}
+
+// UseHostname is called to send the hostname to Papertrail
+// instead of an IP Address
+func (hook *PapertrailHook) UseHostname() {
+	hook.Hostname, _ = os.Hostname()
 }
 
 // Levels returns the available logging levels.
