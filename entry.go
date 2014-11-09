@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
+	"strconv"
+	"strings"
 	"time"
+	"path/filepath"
 )
 
 // Defines the key when adding errors using WithError.
@@ -84,6 +88,11 @@ func (entry Entry) log(level Level, msg string) {
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
+	entry.Data["caller"] = context()
+
+	// if level == WarnLevel || level == InfoLevel {
+		// entry.Data["trace"] = trace()
+	// }
 
 	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
 		entry.Logger.mu.Lock()
@@ -261,4 +270,20 @@ func (entry *Entry) Panicln(args ...interface{}) {
 func (entry *Entry) sprintlnn(args ...interface{}) string {
 	msg := fmt.Sprintln(args...)
 	return msg[:len(msg)-1]
+}
+
+// Captures where the log call came from and formats it for output
+func context() string {
+	if _, file, line, ok := runtime.Caller(4); ok {
+		return strings.Join([]string{filepath.Base(file), strconv.Itoa(line)}, ":")
+	}
+	// not sure what the convention should be here
+	return "unavailable"
+}
+
+// handles getting the stack trace and returns it as a string
+func trace() string {
+	stack := make([]byte, 2048)
+	size := runtime.Stack(stack, false)
+	return string(stack[:size])
 }
