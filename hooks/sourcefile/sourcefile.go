@@ -11,23 +11,22 @@ type SourceFileHook struct {
 	LogLevel logrus.Level
 }
 
-func (hook *SourceFileHook) Fire(entry *logrus.Entry) error {
-	skip := 4
-	if len(entry.Data) == 0 {
-		skip = 6
-	}
-
-	// set source_file field
-	_, file, line, ok := runtime.Caller(skip)
-	if ok {
+func (hook *SourceFileHook) Fire(entry *logrus.Entry) (_ error) {
+	for skip := 4; skip < 7; skip++ {
+		_, file, line, _ := runtime.Caller(skip)
 		split := strings.Split(file, "/")
-		if l := len(split); l > 2 {
-			file = fmt.Sprintf("%s/%s:%d", split[l-2], split[l-1], line)
+		if l := len(split); l > 1 {
+			pkg := split[l-2]
+			if pkg != "logrus" {
+				file = fmt.Sprintf("%s/%s:%d", split[l-2], split[l-1], line)
+				// set source_file field
+				entry.Data["source_file"] = file
+				return
+			}
 		}
-		entry.Data["source_file"] = file
 	}
 
-	return nil
+	return
 }
 
 func (hook *SourceFileHook) Levels() []logrus.Level {
