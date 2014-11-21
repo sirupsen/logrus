@@ -9,8 +9,7 @@ import (
 // Formatter generates json in logstash format.
 // Logstash site: http://logstash.net/
 type LogstashFormatter struct {
-	Type             string // if not empty use for logstash type field.
-	FileLineLogLevel Level  // DEPRECATED
+	Type string // if not empty use for logstash type field.
 }
 
 func (f *LogstashFormatter) Format(entry *Entry) ([]byte, error) {
