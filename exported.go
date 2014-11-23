@@ -30,6 +30,11 @@ func SetLevel(level Level) {
 	std.Level = level
 }
 
+// GetLevel returns the standard logger level.
+func GetLevel() Level {
+	return std.Level
+}
+
 // AddHook adds a hook to the standard logger hooks.
 func AddHook(hook Hook) {
 	std.mu.Lock()
