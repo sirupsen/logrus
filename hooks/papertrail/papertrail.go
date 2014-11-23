@@ -15,22 +15,29 @@ const (
 
 // PapertrailHook to send logs to a logging service compatible with the Papertrail API.
 type PapertrailHook struct {
-	Host    string
-	Port    int
-	AppName string
-	UDPConn net.Conn
+	Host     string
+	Port     int
+	AppName  string
+	Hostname string
+	UDPConn  net.Conn
 }
 
 // NewPapertrailHook creates a hook to be added to an instance of logger.
 func NewPapertrailHook(host string, port int, appName string) (*PapertrailHook, error) {
 	conn, err := net.Dial("udp", fmt.Sprintf("%s:%d", host, port))
-	return &PapertrailHook{host, port, appName, conn}, err
+
+	return &PapertrailHook{
+		Host:    host,
+		Port:    port,
+		AppName: appName,
+		UDPConn: conn,
+	}, err
 }
 
 // Fire is called when a log event is fired.
 func (hook *PapertrailHook) Fire(entry *logrus.Entry) error {
 	date := time.Now().Format(format)
-	payload := fmt.Sprintf("<22> %s %s: [%s] %s", date, hook.AppName, entry.Data["level"], entry.Message)
+	payload := fmt.Sprintf("<22> %s %s %s: [%s] %s", date, hook.Hostname, hook.AppName, entry.Level, entry.Message)
 
 	bytesWritten, err := hook.UDPConn.Write([]byte(payload))
 	if err != nil {
@@ -39,6 +46,12 @@ func (hook *PapertrailHook) Fire(entry *logrus.Entry) error {
 	}
 
 	return nil
+}
+
+// UseHostname is called to send the hostname to Papertrail
+// instead of an IP Address
+func (hook *PapertrailHook) UseHostname() {
+	hook.Hostname, _ = os.Hostname()
 }
 
 // Levels returns the available logging levels.
