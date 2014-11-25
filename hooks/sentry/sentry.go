@@ -8,10 +8,6 @@ import (
 	"github.com/getsentry/raven-go"
 )
 
-const (
-	timeout = 100 * time.Millisecond
-)
-
 var (
 	severityMap = map[logrus.Level]raven.Severity{
 		logrus.DebugLevel: raven.DEBUG,
@@ -42,18 +38,24 @@ func getAndDel(d logrus.Fields, key string) (string, bool) {
 
 // SentryHook delivers logs to a sentry server.
 type SentryHook struct {
+	// Timeout sets the time to wait for a delivery error from the sentry server.
+	// If this is set to zero the server will not wait for any response and will
+	// consider the message correctly sent
+	Timeout time.Duration
+
 	client *raven.Client
 	levels []logrus.Level
 }
 
 // NewSentryHook creates a hook to be added to an instance of logger
 // and initializes the raven client.
+// This method sets the timeout to 100 milliseconds.
 func NewSentryHook(DSN string, levels []logrus.Level) (*SentryHook, error) {
 	client, err := raven.NewClient(DSN, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &SentryHook{client, levels}, nil
+	return &SentryHook{100 * time.Millisecond, client, levels}, nil
 }
 
 // Called when an event should be sent to sentry
@@ -79,12 +81,15 @@ func (hook *SentryHook) Fire(entry *logrus.Entry) error {
 	packet.Extra = map[string]interface{}(d)
 
 	_, errCh := hook.client.Capture(packet, nil)
-	timeoutCh := time.After(timeout)
-	select {
-	case err := <-errCh:
-		return err
-	case <-timeoutCh:
-		return fmt.Errorf("no response from sentry server in %s", timeout)
+	timeout := hook.Timeout
+	if timeout != 0 {
+		timeoutCh := time.After(timeout)
+		select {
+		case err := <-errCh:
+			return err
+		case <-timeoutCh:
+			return fmt.Errorf("no response from sentry server in %s", timeout)
+		}
 	}
 	return nil
 }
