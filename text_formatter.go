@@ -68,6 +68,10 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 func printColored(b *bytes.Buffer, entry *Entry, keys []string) {
 	var levelColor int
 	switch entry.Level {
+    case DebugLevel:
+        levelColor: blue
+    case InfoLevel:
+        levelColor: green
 	case WarnLevel:
 		levelColor = yellow
 	case ErrorLevel, FatalLevel, PanicLevel:
