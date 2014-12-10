@@ -204,6 +204,38 @@ func TestDefaultFieldsAreNotPrefixed(t *testing.T) {
 	})
 }
 
+func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
+
+	var buffer bytes.Buffer
+	var fields Fields
+
+	logger := New()
+	logger.Out = &buffer
+	logger.Formatter = new(JSONFormatter)
+
+	llog := logger.WithField("context", "eating raw fish")
+
+	llog.Info("looks delicious")
+
+	err := json.Unmarshal(buffer.Bytes(), &fields)
+	assert.NoError(t, err, "should have decoded first message")
+	assert.Len(t, fields, 4, "should only have msg/time/level/context fields")
+	assert.Equal(t, fields["msg"], "looks delicious")
+	assert.Equal(t, fields["context"], "eating raw fish")
+
+	buffer.Reset()
+
+	llog.Warn("omg it is!")
+
+	err = json.Unmarshal(buffer.Bytes(), &fields)
+	assert.NoError(t, err, "should have decoded second message")
+	assert.Len(t, fields, 4, "should only have msg/time/level/context fields")
+	assert.Equal(t, fields["msg"], "omg it is!")
+	assert.Equal(t, fields["context"], "eating raw fish")
+	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
+
+}
+
 func TestConvertLevelToString(t *testing.T) {
 	assert.Equal(t, "debug", DebugLevel.String())
 	assert.Equal(t, "info", InfoLevel.String())
