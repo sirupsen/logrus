@@ -235,6 +235,9 @@ func init() {
 * [`github.com/nubo/hiprus`](https://github.com/nubo/hiprus)
   Send errors to a channel in hipchat.
 
+* [`github.com/sebest/logrusly`](https://github.com/sebest/logrusly)
+  Send logs to Loggly (https://www.loggly.com/)
+
 #### Level logging
 
 Logrus has six logging levels: Debug, Info, Warning, Error, Fatal and Panic.
