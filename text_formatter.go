@@ -3,6 +3,7 @@ package logrus
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -19,11 +20,13 @@ const (
 var (
 	baseTimestamp time.Time
 	isTerminal    bool
+	noQuoteNeeded *regexp.Regexp
 )
 
 func init() {
 	baseTimestamp = time.Now()
 	isTerminal = IsTerminal()
+	noQuoteNeeded, _ = regexp.Compile("^[a-zA-Z0-9.-]*$")
 }
 
 func miniTS() int {
@@ -87,8 +90,18 @@ func printColored(b *bytes.Buffer, entry *Entry, keys []string) {
 
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key, value interface{}) {
 	switch value.(type) {
-	case string, error:
-		fmt.Fprintf(b, "%v=%q ", key, value)
+	case string:
+		if noQuoteNeeded.MatchString(value.(string)) {
+			fmt.Fprintf(b, "%v=%s ", key, value)
+		} else {
+			fmt.Fprintf(b, "%v=%q ", key, value)
+		}
+	case error:
+		if noQuoteNeeded.MatchString(value.(error).Error()) {
+			fmt.Fprintf(b, "%v=%s ", key, value)
+		} else {
+			fmt.Fprintf(b, "%v=%q ", key, value)
+		}
 	default:
 		fmt.Fprintf(b, "%v=%v ", key, value)
 	}
