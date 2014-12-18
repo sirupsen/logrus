@@ -26,7 +26,6 @@ var (
 func init() {
 	baseTimestamp = time.Now()
 	isTerminal = IsTerminal()
-	noQuoteNeeded, _ = regexp.Compile("^[a-zA-Z0-9.-]*$")
 }
 
 func miniTS() int {
@@ -88,16 +87,28 @@ func printColored(b *bytes.Buffer, entry *Entry, keys []string) {
 	}
 }
 
+func needsQuoting(text string) bool {
+	for _, ch := range text {
+		if !((ch >= 'a' && ch <= 'z') ||
+			(ch >= 'A' && ch <= 'Z') ||
+			(ch >= '0' && ch < '9') ||
+			ch == '-' || ch == '.') {
+			return false
+		}
+	}
+	return true
+}
+
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key, value interface{}) {
 	switch value.(type) {
 	case string:
-		if noQuoteNeeded.MatchString(value.(string)) {
+		if needsQuoting(value.(string)) {
 			fmt.Fprintf(b, "%v=%s ", key, value)
 		} else {
 			fmt.Fprintf(b, "%v=%q ", key, value)
 		}
 	case error:
-		if noQuoteNeeded.MatchString(value.(error).Error()) {
+		if needsQuoting(value.(error).Error()) {
 			fmt.Fprintf(b, "%v=%s ", key, value)
 		} else {
 			fmt.Fprintf(b, "%v=%q ", key, value)
