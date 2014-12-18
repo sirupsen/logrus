@@ -8,12 +8,12 @@ import (
 )
 
 func TestQuoting(t *testing.T) {
-	tf := new(TextFormatter)
+	tf := &TextFormatter{DisableColors: true}
 
 	checkQuoting := func(q bool, value interface{}) {
 		b, _ := tf.Format(WithField("test", value))
-		idx := bytes.LastIndex(b, []byte{'='})
-		cont := bytes.Contains(b[idx:], []byte{'"'})
+		idx := bytes.Index(b, ([]byte)("test="))
+		cont := bytes.Contains(b[idx+5:], []byte{'"'})
 		if cont != q {
 			if q {
 				t.Errorf("quoting expected for: %#v", value)
