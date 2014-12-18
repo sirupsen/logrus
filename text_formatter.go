@@ -3,6 +3,7 @@ package logrus
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -19,6 +20,7 @@ const (
 var (
 	baseTimestamp time.Time
 	isTerminal    bool
+	noQuoteNeeded *regexp.Regexp
 )
 
 func init() {
@@ -90,10 +92,32 @@ func printColored(b *bytes.Buffer, entry *Entry, keys []string) {
 	}
 }
 
+func needsQuoting(text string) bool {
+	for _, ch := range text {
+		if !((ch >= 'a' && ch <= 'z') ||
+			(ch >= 'A' && ch <= 'Z') ||
+			(ch >= '0' && ch < '9') ||
+			ch == '-' || ch == '.') {
+			return false
+		}
+	}
+	return true
+}
+
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key, value interface{}) {
 	switch value.(type) {
-	case string, error:
-		fmt.Fprintf(b, "%v=%q ", key, value)
+	case string:
+		if needsQuoting(value.(string)) {
+			fmt.Fprintf(b, "%v=%s ", key, value)
+		} else {
+			fmt.Fprintf(b, "%v=%q ", key, value)
+		}
+	case error:
+		if needsQuoting(value.(error).Error()) {
+			fmt.Fprintf(b, "%v=%s ", key, value)
+		} else {
+			fmt.Fprintf(b, "%v=%q ", key, value)
+		}
 	default:
 		fmt.Fprintf(b, "%v=%v ", key, value)
 	}

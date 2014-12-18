@@ -44,8 +44,12 @@ func LogAndAssertText(t *testing.T, log func(*Logger), assertions func(fields ma
 		}
 		kvArr := strings.Split(kv, "=")
 		key := strings.TrimSpace(kvArr[0])
-		val, err := strconv.Unquote(kvArr[1])
-		assert.NoError(t, err)
+		val := kvArr[1]
+		if kvArr[1][0] == '"' {
+			var err error
+			val, err = strconv.Unquote(val)
+			assert.NoError(t, err)
+		}
 		fields[key] = val
 	}
 	assertions(fields)
