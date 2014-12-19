@@ -44,8 +44,12 @@ func LogAndAssertText(t *testing.T, log func(*Logger), assertions func(fields ma
 		}
 		kvArr := strings.Split(kv, "=")
 		key := strings.TrimSpace(kvArr[0])
-		val, err := strconv.Unquote(kvArr[1])
-		assert.NoError(t, err)
+		val := kvArr[1]
+		if kvArr[1][0] == '"' {
+			var err error
+			val, err = strconv.Unquote(val)
+			assert.NoError(t, err)
+		}
 		fields[key] = val
 	}
 	assertions(fields)
@@ -202,6 +206,38 @@ func TestDefaultFieldsAreNotPrefixed(t *testing.T) {
 			}
 		}
 	})
+}
+
+func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
+
+	var buffer bytes.Buffer
+	var fields Fields
+
+	logger := New()
+	logger.Out = &buffer
+	logger.Formatter = new(JSONFormatter)
+
+	llog := logger.WithField("context", "eating raw fish")
+
+	llog.Info("looks delicious")
+
+	err := json.Unmarshal(buffer.Bytes(), &fields)
+	assert.NoError(t, err, "should have decoded first message")
+	assert.Len(t, fields, 4, "should only have msg/time/level/context fields")
+	assert.Equal(t, fields["msg"], "looks delicious")
+	assert.Equal(t, fields["context"], "eating raw fish")
+
+	buffer.Reset()
+
+	llog.Warn("omg it is!")
+
+	err = json.Unmarshal(buffer.Bytes(), &fields)
+	assert.NoError(t, err, "should have decoded second message")
+	assert.Len(t, fields, 4, "should only have msg/time/level/context fields")
+	assert.Equal(t, fields["msg"], "omg it is!")
+	assert.Equal(t, fields["context"], "eating raw fish")
+	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
+
 }
 
 func TestConvertLevelToString(t *testing.T) {
