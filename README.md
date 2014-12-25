@@ -228,6 +228,9 @@ func init() {
 * [`github.com/Sirupsen/logrus/hooks/papertrail`](https://github.com/Sirupsen/logrus/blob/master/hooks/papertrail/papertrail.go)
   Send errors to the Papertrail hosted logging service via UDP.
 
+* [`github.com/Sirupsen/logrus/hooks/caller`](https://github.com/Sirupsen/logrus/blob/master/hooks/caller)
+  Include `caller=<file>:<line>` in log entries.
+
 * [`github.com/Sirupsen/logrus/hooks/syslog`](https://github.com/Sirupsen/logrus/blob/master/hooks/syslog/syslog.go)
   Send errors to remote syslog server.
   Uses standard library `log/syslog` behind the scenes.
