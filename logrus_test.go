@@ -223,7 +223,7 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	err := json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded first message")
-	assert.Len(t, fields, 4, "should only have msg/time/level/context fields")
+	assert.Equal(t, len(fields), 4, "should only have msg/time/level/context fields")
 	assert.Equal(t, fields["msg"], "looks delicious")
 	assert.Equal(t, fields["context"], "eating raw fish")
 
@@ -233,7 +233,7 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	err = json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded second message")
-	assert.Len(t, fields, 4, "should only have msg/time/level/context fields")
+	assert.Equal(t, len(fields), 4, "should only have msg/time/level/context fields")
 	assert.Equal(t, fields["msg"], "omg it is!")
 	assert.Equal(t, fields["context"], "eating raw fish")
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
