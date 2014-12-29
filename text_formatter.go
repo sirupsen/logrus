@@ -28,8 +28,12 @@ func init() {
 	isTerminal = IsTerminal()
 }
 
-func miniTS() int {
-	return int(time.Since(baseTimestamp) / time.Second)
+func miniTS() string {
+	return fmt.Sprintf("%04d", int(time.Since(baseTimestamp)/time.Second))
+}
+
+func fullTS() string {
+	return time.Now().Format("2006/01/02 15:04:05")
 }
 
 type TextFormatter struct {
@@ -39,6 +43,8 @@ type TextFormatter struct {
 	// Set to true to disable timestamp logging (useful when the output
 	// is redirected to a logging system already adding a timestamp)
 	DisableTimestamp bool
+	// Set to true to enable logging time like a '2006/01/02 15:04:05'
+	FullDateTime bool
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
@@ -56,7 +62,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	isColored := (f.ForceColors || isTerminal) && !f.DisableColors
 
 	if isColored {
-		printColored(b, entry, keys)
+		printColored(b, entry, keys, f.FullDateTime)
 	} else {
 		if !f.DisableTimestamp {
 			f.appendKeyValue(b, "time", entry.Time.Format(time.RFC3339))
@@ -72,7 +78,8 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func printColored(b *bytes.Buffer, entry *Entry, keys []string) {
+func printColored(
+	b *bytes.Buffer, entry *Entry, keys []string, fullDateTime bool) {
 	var levelColor int
 	switch entry.Level {
 	case WarnLevel:
@@ -85,7 +92,16 @@ func printColored(b *bytes.Buffer, entry *Entry, keys []string) {
 
 	levelText := strings.ToUpper(entry.Level.String())[0:4]
 
-	fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, miniTS(), entry.Message)
+	var ts string
+	if fullDateTime {
+		ts = fullTS()
+	} else {
+		ts = miniTS()
+	}
+
+	fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ",
+		levelColor, levelText, ts, entry.Message)
+
 	for _, k := range keys {
 		v := entry.Data[k]
 		fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%v", levelColor, k, v)
