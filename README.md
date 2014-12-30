@@ -238,6 +238,9 @@ func init() {
 * [`github.com/sebest/logrusly`](https://github.com/sebest/logrusly)
   Send logs to Loggly (https://www.loggly.com/)
 
+* [`github.com/johntdyer/slackrus`](https://github.com/johntdyer/slackrus)
+  Hook for Slack chat.
+
 #### Level logging
 
 Logrus has six logging levels: Debug, Info, Warning, Error, Fatal and Panic.
