@@ -31,3 +31,30 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(false, errors.New("invalid"))
 	checkQuoting(true, errors.New("invalid argument"))
 }
+
+func TestTextPrint(t *testing.T) {
+	tf := &TextFormatter{DisableColors: true}
+	byts, _ := tf.Format(&Entry{Message: "msg content"})
+
+	// make sure no leading or trailing spaces
+	if string(byts) !=
+		"time=\"0001-01-01T00:00:00Z\" level=panic msg=\"msg content\"\n" {
+		t.Errorf("not expected: %q", string(byts))
+	}
+}
+
+func TestColorPrint(t *testing.T) {
+	tf := &TextFormatter{ForceColors: true}
+	entry := WithField("testkey", "value")
+	entry.Message = "msg content"
+	byts, _ := tf.Format(entry)
+
+	// make sure no leading or trailing spaces
+	if string(byts) !=
+		"\x1b[31mPANI\x1b[0m[0000] " +
+			// length 44 plus one space
+			"msg content                                  " +
+			"\x1b[31mtestkey\x1b[0m=value\n" {
+		t.Errorf("not expected: %q", string(byts))
+	}
+}
