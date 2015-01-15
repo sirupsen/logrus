@@ -114,7 +114,7 @@ func printKeyValue(b *bytes.Buffer, key, value interface{}) {
 		fmt.Fprintf(b, " %v=%v", key, value)
 	}
 
-	if needsQuoting(value.(string)) {
+	if str, ok := value.(string); ok && needsQuoting(str) {
 		fmt.Fprintf(b, " %v=%s", key, value)
 	} else {
 		fmt.Fprintf(b, " %v=%q", key, value)
