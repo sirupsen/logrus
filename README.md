@@ -33,7 +33,7 @@ ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 
 With the default `log.Formatter = new(logrus.TextFormatter)` when a TTY is not
 attached, the output is compatible with the
-[l2met](http://r.32k.io/l2met-introduction) format:
+[logfmt](http://godoc.org/github.com/kr/logfmt) format:
 
 ```text
 time="2014-04-20 15:36:23.830442383 -0400 EDT" level="info" msg="A group of walrus emerges from the ocean" animal="walrus" size=10
