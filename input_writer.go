@@ -21,8 +21,9 @@ func (logger *Logger) inputWriterScanner(inputReader *io.PipeReader) {
 		logger.Print(scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
-		logger.Fatal(err)
+		logger.Errorf("Error while reading from InputWriter: %s", err)
 	}
+	inputReader.Close()
 }
 
 func inputWriterFinalizer(inputWriter *io.PipeWriter) {
