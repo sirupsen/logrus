@@ -345,6 +345,24 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 }
 ```
 
+#### Logger as an `io.Writer`
+
+Logrus can be transormed into an `io.Writer`. That writer is the end of an `io.Pipe` and it is your responsability to close it.
+
+```go
+w := logger.Writer()
+defer w.Close()
+
+srv := http.Server{
+    // create a stdlib log.Logger that writes to
+    // logrus.Logger.
+    ErrorLog: log.New(w, "", 0),
+}
+```
+
+Each line written to that writer will be printed the usual way, using formatters
+and hooks. The level for those entries is `info`.
+
 #### Rotation
 
 Log rotation is not provided with Logrus. Log rotation should be done by an
