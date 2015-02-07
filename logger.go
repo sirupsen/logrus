@@ -51,6 +51,93 @@ func New() *Logger {
 	}
 }
 
+// Reports whether log level is at least debug level.
+//
+// This method can be used to prevent evaluation of arguments if
+// the log level isn't high enough:
+//
+//      if log.IsDebug() {
+//           log.Debugf("π = %v", calculatePi())
+//      }
+//
+// In this case the method `calculatePi` will not be evaluated
+// when the log level isn't at least debug.
+func (logger *Logger) IsDebug() bool {
+	return logger.Level >= DebugLevel
+}
+
+// Reports whether log level is at least info level.
+//
+// This method can be used to prevent evaluation of arguments if
+// the log level isn't high enough:
+//
+//      if log.IsDebug() {
+//           log.Debugf("π = %v", calculatePi())
+//      }
+//
+// In this case the method `calculatePi` will not be evaluated
+// when the log level isn't at least debug.
+func (logger *Logger) IsInfo() bool {
+	return logger.Level >= InfoLevel
+}
+
+// Reports whether log level is at least warning level.
+//
+// This method can be used to prevent evaluation of arguments if
+// the log level isn't high enough:
+//
+//      if log.IsDebug() {
+//           log.Debugf("π = %v", calculatePi())
+//      }
+//
+// In this case the method `calculatePi` will not be evaluated
+// when the log level isn't at least debug.
+func (logger *Logger) IsWarn() bool {
+	return logger.Level >= WarnLevel
+}
+
+// Reports whether log level is at least error level.
+//
+// This method can be used to prevent evaluation of arguments if
+// the log level isn't high enough:
+//
+//      if log.IsDebug() {
+//           log.Debugf("π = %v", calculatePi())
+//      }
+//
+// In this case the method `calculatePi` will not be evaluated
+func (logger *Logger) IsError() bool {
+	return logger.Level >= ErrorLevel
+}
+
+// Reports whether log level is at least fatal level.
+//
+// This method can be used to prevent evaluation of arguments if
+// the log level isn't high enough:
+//
+//      if log.IsDebug() {
+//           log.Debugf("π = %v", calculatePi())
+//      }
+//
+// In this case the method `calculatePi` will not be evaluated
+func (logger *Logger) IsFatal() bool {
+	return logger.Level >= FatalLevel
+}
+
+// Reports whether log level is at least panic level.
+//
+// This method can be used to prevent evaluation of arguments if
+// the log level isn't high enough:
+//
+//      if log.IsDebug() {
+//           log.Debugf("π = %v", calculatePi())
+//      }
+//
+// In this case the method `calculatePi` will not be evaluated
+func (logger *Logger) IsPanic() bool {
+	return logger.Level >= PanicLevel
+}
+
 // Adds a field to the log entry, note that you it doesn't log until you call
 // Debug, Print, Info, Warn, Fatal or Panic. It only creates a log entry.
 // Ff you want multiple fields, use `WithFields`.
