@@ -208,6 +208,61 @@ func TestDefaultFieldsAreNotPrefixed(t *testing.T) {
 	})
 }
 
+func TestDebugLevel(t *testing.T) {
+	log := New()
+	log.Level = DebugLevel
+
+	assert.True(t, log.IsDebug())
+	assert.True(t, log.IsInfo())
+	assert.True(t, log.IsWarn())
+	assert.True(t, log.IsError())
+	assert.True(t, log.IsPanic())
+}
+
+func TestInfoLevel(t *testing.T) {
+	log := New()
+	log.Level = InfoLevel
+
+	assert.False(t, log.IsDebug())
+	assert.True(t, log.IsInfo())
+	assert.True(t, log.IsWarn())
+	assert.True(t, log.IsError())
+	assert.True(t, log.IsPanic())
+}
+
+func TestWarnLevel(t *testing.T) {
+	log := New()
+	log.Level = WarnLevel
+
+	assert.False(t, log.IsDebug())
+	assert.False(t, log.IsInfo())
+	assert.True(t, log.IsWarn())
+	assert.True(t, log.IsError())
+	assert.True(t, log.IsPanic())
+}
+
+func TestErrorLevel(t *testing.T) {
+	log := New()
+	log.Level = ErrorLevel
+
+	assert.False(t, log.IsDebug())
+	assert.False(t, log.IsInfo())
+	assert.False(t, log.IsWarn())
+	assert.True(t, log.IsError())
+	assert.True(t, log.IsPanic())
+}
+
+func TestPanicLevel(t *testing.T) {
+	log := New()
+	log.Level = PanicLevel
+
+	assert.False(t, log.IsDebug())
+	assert.False(t, log.IsInfo())
+	assert.False(t, log.IsWarn())
+	assert.False(t, log.IsError())
+	assert.True(t, log.IsPanic())
+}
+
 func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	var buffer bytes.Buffer
