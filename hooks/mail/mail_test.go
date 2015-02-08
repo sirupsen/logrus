@@ -22,10 +22,4 @@ func TestNewMailAuthHook(t *testing.T) {
 		t.Errorf("no error on invalid email address")
 	}
 
-	// all good
-	_, err = NewMailAuthHook("testapp", "smtp.gmail.com", 587, "user.name@gmail.com", "user.name@gmail.com", "user.name", "password")
-	if err != nil {
-		t.Errorf("error for valid parameters")
-	}
-
 }
