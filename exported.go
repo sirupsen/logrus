@@ -39,6 +39,93 @@ func GetLevel() Level {
 	return std.Level
 }
 
+// Reports whether log level is at least debug level.
+//
+// This method can be used to prevent evaluation of arguments if
+// the log level isn't high enough:
+//
+//      if log.IsDebug() {
+//           log.Debugf("π = %v", calculatePi())
+//      }
+//
+// In this case the method `calculatePi` will not be evaluated
+// when the log level isn't at least debug.
+func IsDebug() bool {
+	return std.Level >= DebugLevel
+}
+
+// Reports whether log level is at least info level.
+//
+// This method can be used to prevent evaluation of arguments if
+// the log level isn't high enough:
+//
+//      if log.IsDebug() {
+//           log.Debugf("π = %v", calculatePi())
+//      }
+//
+// In this case the method `calculatePi` will not be evaluated
+// when the log level isn't at least debug.
+func IsInfo() bool {
+	return std.Level >= InfoLevel
+}
+
+// Reports whether log level is at least warning level.
+//
+// This method can be used to prevent evaluation of arguments if
+// the log level isn't high enough:
+//
+//      if log.IsDebug() {
+//           log.Debugf("π = %v", calculatePi())
+//      }
+//
+// In this case the method `calculatePi` will not be evaluated
+// when the log level isn't at least debug.
+func IsWarn() bool {
+	return std.Level >= WarnLevel
+}
+
+// Reports whether log level is at least error level.
+//
+// This method can be used to prevent evaluation of arguments if
+// the log level isn't high enough:
+//
+//      if log.IsDebug() {
+//           log.Debugf("π = %v", calculatePi())
+//      }
+//
+// In this case the method `calculatePi` will not be evaluated
+func IsError() bool {
+	return std.Level >= ErrorLevel
+}
+
+// Reports whether log level is at least fatal level.
+//
+// This method can be used to prevent evaluation of arguments if
+// the log level isn't high enough:
+//
+//      if log.IsDebug() {
+//           log.Debugf("π = %v", calculatePi())
+//      }
+//
+// In this case the method `calculatePi` will not be evaluated
+func IsFatal() bool {
+	return std.Level >= FatalLevel
+}
+
+// Reports whether log level is at least panic level.
+//
+// This method can be used to prevent evaluation of arguments if
+// the log level isn't high enough:
+//
+//      if log.IsDebug() {
+//           log.Debugf("π = %v", calculatePi())
+//      }
+//
+// In this case the method `calculatePi` will not be evaluated
+func IsPanic() bool {
+	return std.Level >= PanicLevel
+}
+
 // AddHook adds a hook to the standard logger hooks.
 func AddHook(hook Hook) {
 	std.mu.Lock()
