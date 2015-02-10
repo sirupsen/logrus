@@ -347,7 +347,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 
 #### Logger as an `io.Writer`
 
-Logrus can be transormed into an `io.Writer`. That writer is the end of an `io.Pipe` and it is your responsability to close it.
+Logrus can be transormed into an `io.Writer`. That writer is the end of an `io.Pipe` and it is your responsibility to close it.
 
 ```go
 w := logger.Writer()
@@ -366,7 +366,7 @@ and hooks. The level for those entries is `info`.
 #### Rotation
 
 Log rotation is not provided with Logrus. Log rotation should be done by an
-external program (like `logrotated(8)`) that can compress and delete old log
+external program (like `logrotate(8)`) that can compress and delete old log
 entries. It should not be a feature of the application-level logger.
 
 
