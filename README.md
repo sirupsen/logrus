@@ -2,9 +2,10 @@
 
 Logrus is a structured logger for Go (golang), completely API compatible with
 the standard library logger. [Godoc][godoc]. **Please note the Logrus API is not
-yet stable (pre 1.0), the core API is unlikely to change much but please version
-control your Logrus to make sure you aren't fetching latest `master` on every
-build.**
+yet stable (pre 1.0). Logrus itself is completely stable and has been used in
+many large deployments. The core API is unlikely to change much but please
+version control your Logrus to make sure you aren't fetching latest `master` on
+every build.**
 
 Nicely color-coded in development (when a TTY is attached, otherwise just
 plain text):
