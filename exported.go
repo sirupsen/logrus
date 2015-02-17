@@ -36,6 +36,8 @@ func SetLevel(level Level) {
 
 // GetLevel returns the standard logger level.
 func GetLevel() Level {
+	std.mu.Lock()
+	defer std.mu.Unlock()
 	return std.Level
 }
 
