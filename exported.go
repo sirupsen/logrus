@@ -2,6 +2,7 @@ package logrus
 
 import (
 	"io"
+	"sync/atomic"
 )
 
 var (
@@ -29,14 +30,12 @@ func SetFormatter(formatter Formatter) {
 
 // SetLevel sets the standard logger level.
 func SetLevel(level Level) {
-	std.mu.Lock()
-	defer std.mu.Unlock()
-	std.Level = level
+	atomic.StoreUint32((*uint32)(&std.Level), uint32(level))
 }
 
 // GetLevel returns the standard logger level.
 func GetLevel() Level {
-	return std.Level
+	return Level(atomic.LoadUint32((*uint32)(&std.Level)))
 }
 
 // AddHook adds a hook to the standard logger hooks.
