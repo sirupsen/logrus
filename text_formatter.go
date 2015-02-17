@@ -43,7 +43,7 @@ type TextFormatter struct {
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
-	var keys []string
+	var keys []string = make([]string, 0, len(entry.Data))
 	for k := range entry.Data {
 		keys = append(keys, k)
 	}
