@@ -8,8 +8,8 @@ Add `source_file` field to entries with predefined log levels. Format of the fie
 package main
 
 import (
-  "github.com/flowhealth/logrus"
-  "github.com/flowhealth/logrus/hooks/sourcefile"
+  "github.com/Sirupsen/logrus"
+  "github.com/Sirupsen/logrus/hooks/sourcefile"
 )
 
 func main() {
