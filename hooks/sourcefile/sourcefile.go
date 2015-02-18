@@ -12,7 +12,7 @@ type SourceFileHook struct {
 }
 
 func (hook *SourceFileHook) Fire(entry *logrus.Entry) (_ error) {
-	for skip := 4; skip < 8; skip++ {
+	for skip := 4; skip < 9; skip++ {
 		_, file, line, _ := runtime.Caller(skip)
 		split := strings.Split(file, "/")
 		if l := len(split); l > 1 {
