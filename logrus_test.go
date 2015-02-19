@@ -281,3 +281,41 @@ func TestParseLevel(t *testing.T) {
 	l, err = ParseLevel("invalid")
 	assert.Equal(t, "not a valid logrus Level: \"invalid\"", err.Error())
 }
+
+func TestGetSetLevelRace(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		go func(i int) {
+			if i%2 == 0 {
+				SetLevel(InfoLevel)
+			} else {
+				GetLevel()
+			}
+		}(i)
+	}
+}
+
+func BenchmarkGetlevelConcurrent(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		a := make(chan struct{})
+		for j := 0; j <= 100; j++ {
+			go func(i int) {
+				if i%10 == 0 {
+					SetLevel(InfoLevel)
+				} else {
+					GetLevel()
+				}
+
+				if i == 100 {
+					close(a)
+				}
+			}(j)
+		}
+		<-a
+	}
+}
+
+func BenchmarkGetlevel(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		GetLevel()
+	}
+}
