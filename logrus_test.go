@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -280,4 +281,21 @@ func TestParseLevel(t *testing.T) {
 
 	l, err = ParseLevel("invalid")
 	assert.Equal(t, "not a valid logrus Level: \"invalid\"", err.Error())
+}
+
+func TestGetSetLevelRace(t *testing.T) {
+	wg := sync.WaitGroup{}
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			if i%2 == 0 {
+				SetLevel(InfoLevel)
+			} else {
+				GetLevel()
+			}
+		}(i)
+
+	}
+	wg.Wait()
 }
