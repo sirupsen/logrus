@@ -323,6 +323,10 @@ The built-in logging formatters are:
 * `logrus.JSONFormatter`. Logs fields as JSON.
 * `logrus.LogstashFormatter`. Logs fields as Logstash Events (http://logstash.net).
 
+    ```go
+      logrus.SetFormatter(&logrus.LogstashFormatter{Type: “application_name"})
+    ```
+
 Third party logging formatters:
 
 * [`zalgo`](https://github.com/aybabtme/logzalgo): invoking the P͉̫o̳̼̊w̖͈̰͎e̬͔̭͂r͚̼̹̲ ̫͓͉̳͈ō̠͕͖̚f̝͍̠ ͕̲̞͖͑Z̖̫̤̫ͪa͉̬͈̗l͖͎g̳̥o̰̥̅!̣͔̲̻͊̄ ̙̘̦̹̦.
