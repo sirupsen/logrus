@@ -35,12 +35,18 @@ func miniTS() int {
 
 type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
-	ForceColors   bool
+	ForceColors bool
+
+	// Force disabling colors.
 	DisableColors bool
-	// Set to true to disable timestamp logging (useful when the output
-	// is redirected to a logging system already adding a timestamp)
+
+	// Disable timestamp logging. useful when output is redirected to logging
+	// system that already adds timestamps.
 	DisableTimestamp bool
-	FullTimestamp    bool
+
+	// Enable logging the full timestamp when a TTY is attached instead of just
+	// the time passed since beginning of execution.
+	FullTimestamp bool
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
