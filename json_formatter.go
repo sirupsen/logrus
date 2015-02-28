@@ -12,7 +12,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data := make(Fields, len(entry.Data)+3)
 	for k, v := range entry.Data {
 		if err, ok := v.(error); ok {
-			data[k+".msg"] = fmt.Sprintf("%s", v)
+			data[k+".msg"] = err.Error()
 		}
 		data[k] = v
 	}
