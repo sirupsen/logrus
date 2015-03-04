@@ -25,6 +25,7 @@ func TestQuoting(t *testing.T) {
 
 	checkQuoting(false, "abcd")
 	checkQuoting(false, "v1.0")
+	checkQuoting(false, "1234567890")
 	checkQuoting(true, "/foobar")
 	checkQuoting(true, "x y")
 	checkQuoting(true, "x,y")
