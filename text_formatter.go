@@ -110,7 +110,7 @@ func needsQuoting(text string) bool {
 	for _, ch := range text {
 		if !((ch >= 'a' && ch <= 'z') ||
 			(ch >= 'A' && ch <= 'Z') ||
-			(ch >= '0' && ch < '9') ||
+			(ch >= '0' && ch <= '9') ||
 			ch == '-' || ch == '.') {
 			return false
 		}
