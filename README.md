@@ -321,10 +321,10 @@ The built-in logging formatters are:
     field to `true`.  To force no colored output even if there is a TTY  set the
     `DisableColors` field to `true`
 * `logrus.JSONFormatter`. Logs fields as JSON.
-* `logrus.LogstashFormatter`. Logs fields as Logstash Events (http://logstash.net).
+* `logrus_logstash.LogstashFormatter`. Logs fields as Logstash Events (http://logstash.net).
 
     ```go
-      logrus.SetFormatter(&logrus.LogstashFormatter{Type: “application_name"})
+      logrus.SetFormatter(&logrus_logstash.LogstashFormatter{Type: “application_name"})
     ```
 
 Third party logging formatters:

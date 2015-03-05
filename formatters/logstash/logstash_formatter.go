@@ -1,8 +1,9 @@
-package logrus
+package logrus_logstash
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"time"
 )
 
@@ -12,7 +13,7 @@ type LogstashFormatter struct {
 	Type string // if not empty use for logstash type field.
 }
 
-func (f *LogstashFormatter) Format(entry *Entry) ([]byte, error) {
+func (f *LogstashFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	entry.Data["@version"] = 1
 	entry.Data["@timestamp"] = entry.Time.Format(time.RFC3339)
 
