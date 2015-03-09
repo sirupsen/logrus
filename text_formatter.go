@@ -47,15 +47,22 @@ type TextFormatter struct {
 	// Enable logging the full timestamp when a TTY is attached instead of just
 	// the time passed since beginning of execution.
 	FullTimestamp bool
+
+	// The fields are sorted by default for a consistent output. For applications
+	// that log extremely frequently and don't use the JSON formatter this may not
+	// be desired.
+	DisableSorting bool
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
-
 	var keys []string = make([]string, 0, len(entry.Data))
 	for k := range entry.Data {
 		keys = append(keys, k)
 	}
-	sort.Strings(keys)
+
+	if !f.DisableSorting {
+		sort.Strings(keys)
+	}
 
 	b := &bytes.Buffer{}
 
