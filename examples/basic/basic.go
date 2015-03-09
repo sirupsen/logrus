@@ -9,6 +9,7 @@ var log = logrus.New()
 func init() {
 	log.Formatter = new(logrus.JSONFormatter)
 	log.Formatter = new(logrus.TextFormatter) // default
+	log.Level = logrus.DebugLevel
 }
 
 func main() {
@@ -25,6 +26,11 @@ func main() {
 
 	log.WithFields(logrus.Fields{
 		"animal": "walrus",
+		"number": 8,
+	}).Debug("Started observing beach")
+
+	log.WithFields(logrus.Fields{
+		"animal": "walrus",
 		"size":   10,
 	}).Info("A group of walrus emerges from the ocean")
 
@@ -32,6 +38,10 @@ func main() {
 		"omg":    true,
 		"number": 122,
 	}).Warn("The group's number increased tremendously!")
+
+	log.WithFields(logrus.Fields{
+		"temperature": -4,
+	}).Debug("Temperature changes")
 
 	log.WithFields(logrus.Fields{
 		"animal": "orca",
