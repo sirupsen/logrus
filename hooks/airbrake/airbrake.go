@@ -1,4 +1,4 @@
-package logrus_airbrake
+package airbrake
 
 import (
 	"github.com/Sirupsen/logrus"
