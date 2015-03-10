@@ -164,43 +164,8 @@ You can add hooks for logging levels. For example to send errors to an exception
 tracking service on `Error`, `Fatal` and `Panic`, info to StatsD or log to
 multiple places simultaneously, e.g. syslog.
 
-```go
-// Not the real implementation of the Airbrake hook. Just a simple sample.
-import (
-  log "github.com/Sirupsen/logrus"
-)
-
-func init() {
-  log.AddHook(new(AirbrakeHook))
-}
-
-type AirbrakeHook struct{}
-
-// `Fire()` takes the entry that the hook is fired for. `entry.Data[]` contains
-// the fields for the entry. See the Fields section of the README.
-func (hook *AirbrakeHook) Fire(entry *logrus.Entry) error {
-  err := airbrake.Notify(entry.Data["error"].(error))
-  if err != nil {
-    log.WithFields(log.Fields{
-      "source":   "airbrake",
-      "endpoint": airbrake.Endpoint,
-    }).Info("Failed to send error to Airbrake")
-  }
-
-  return nil
-}
-
-// `Levels()` returns a slice of `Levels` the hook is fired for.
-func (hook *AirbrakeHook) Levels() []log.Level {
-  return []log.Level{
-    log.ErrorLevel,
-    log.FatalLevel,
-    log.PanicLevel,
-  }
-}
-```
-
-Logrus comes with built-in hooks. Add those, or your custom hook, in `init`:
+Logrus comes with [built-in hooks](hooks/). Add those, or your custom hook, in
+`init`:
 
 ```go
 import (
