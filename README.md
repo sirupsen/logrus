@@ -266,6 +266,14 @@ that severity or anything above it:
 ```go
 // Will log anything that is info or above (warn, error, fatal, panic). Default.
 log.SetLevel(log.InfoLevel)
+
+// Set the Level directly for a New() logger, you may use the ParseLevel() helper.
+level, err := logrus.ParseLevel("debug")
+if err != nil {
+  // Parse error ...
+}
+
+logger.Level = level
 ```
 
 It may be useful to set `log.Level = logrus.DebugLevel` in a debug or verbose
