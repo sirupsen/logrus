@@ -74,7 +74,6 @@ import (
   "os"
   log "github.com/Sirupsen/logrus"
   "github.com/Sirupsen/logrus/hooks/airbrake"
-  "github.com/Sirupsen/logrus/hooks/bugsnag"
 )
 
 func init() {
@@ -84,11 +83,6 @@ func init() {
   // Use the Airbrake hook to report errors that have Error severity or above to
   // an exception tracker. You can create custom hooks, see the Hooks section.
   log.AddHook(airbrake.NewHook("https://example.com", "xyz", "development"))
-
-  // Use the Bugsnag hook to report errors that have Error severity or above to
-  // an exception tracker. You can create custom hooks, see the Hooks section.
-  bugsnagHook, _ = logrus_bugsnag.NewBugsnagHook()
-  log.AddHook(bugsnagHook)
 
   // Output to stderr instead of stdout, could also be a file.
   log.SetOutput(os.Stderr)
@@ -203,6 +197,9 @@ func init() {
 * [`github.com/Sirupsen/logrus/hooks/syslog`](https://github.com/Sirupsen/logrus/blob/master/hooks/syslog/syslog.go)
   Send errors to remote syslog server.
   Uses standard library `log/syslog` behind the scenes.
+
+* [`github.com/Sirupsen/logrus/hooks/bugsnag`](https://github.com/Sirupsen/logrus/blob/master/hooks/bugsnag/bugsnag.go)
+  Send errors to the Bugsnag exception tracking service.
 
 * [`github.com/nubo/hiprus`](https://github.com/nubo/hiprus)
   Send errors to a channel in hipchat.
