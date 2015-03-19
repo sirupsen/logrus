@@ -37,7 +37,7 @@ func TestNoticeReceived(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	hook := &BugsnagHook{}
+	hook := &bugsnagHook{}
 
 	bugsnag.Configure(bugsnag.Configuration{
 		Endpoint:     ts.URL,

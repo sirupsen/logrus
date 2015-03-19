@@ -74,6 +74,7 @@ import (
   "os"
   log "github.com/Sirupsen/logrus"
   "github.com/Sirupsen/logrus/hooks/airbrake"
+  "github.com/Sirupsen/logrus/hooks/bugsnag"
 )
 
 func init() {
@@ -83,6 +84,11 @@ func init() {
   // Use the Airbrake hook to report errors that have Error severity or above to
   // an exception tracker. You can create custom hooks, see the Hooks section.
   log.AddHook(&logrus_airbrake.AirbrakeHook{})
+
+  // Use the Bugsnag hook to report errors that have Error severity or above to
+  // an exception tracker. You can create custom hooks, see the Hooks section.
+  bugsnagHook, _ = logrus_bugsnag.NewBugsnagHook()
+  log.AddHook(bugsnagHook)
 
   // Output to stderr instead of stdout, could also be a file.
   log.SetOutput(os.Stderr)
