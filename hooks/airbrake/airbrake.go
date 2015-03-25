@@ -25,6 +25,11 @@ func NewHook(endpoint, apiKey, env string) *airbrakeHook {
 }
 
 func (hook *airbrakeHook) Fire(entry *logrus.Entry) error {
+	go hook.fire(entry) // Don't block logging
+	return nil
+}
+
+func (hook *airbrakeHook) fire(entry *logrus.Entry) error {
 	airbrake.ApiKey = hook.APIKey
 	airbrake.Endpoint = hook.Endpoint
 	airbrake.Environment = hook.Environment
