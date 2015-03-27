@@ -9,7 +9,7 @@ var log = logrus.New()
 
 func init() {
 	log.Formatter = new(logrus.TextFormatter) // default
-	log.Hooks.Add(airbrake.NewHook("https://example.com", "xyz", "development"))
+	log.Hooks.Add(airbrake.NewHook(123, "xyz", "development"))
 }
 
 func main() {
