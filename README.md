@@ -189,31 +189,18 @@ func init() {
 }
 ```
 
-* [`github.com/Sirupsen/logrus/hooks/airbrake`](https://github.com/Sirupsen/logrus/blob/master/hooks/airbrake/airbrake.go)
-  Send errors to an exception tracking service compatible with the Airbrake API.
-  Uses [`airbrake-go`](https://github.com/tobi/airbrake-go) behind the scenes.
 
-* [`github.com/Sirupsen/logrus/hooks/papertrail`](https://github.com/Sirupsen/logrus/blob/master/hooks/papertrail/papertrail.go)
-  Send errors to the Papertrail hosted logging service via UDP.
-
-* [`github.com/Sirupsen/logrus/hooks/syslog`](https://github.com/Sirupsen/logrus/blob/master/hooks/syslog/syslog.go)
-  Send errors to remote syslog server.
-  Uses standard library `log/syslog` behind the scenes.
-
-* [`github.com/Sirupsen/logrus/hooks/bugsnag`](https://github.com/Sirupsen/logrus/blob/master/hooks/bugsnag/bugsnag.go)
-  Send errors to the Bugsnag exception tracking service.
-
-* [`github.com/nubo/hiprus`](https://github.com/nubo/hiprus)
-  Send errors to a channel in hipchat.
-
-* [`github.com/sebest/logrusly`](https://github.com/sebest/logrusly)
-  Send logs to Loggly (https://www.loggly.com/)
-
-* [`github.com/johntdyer/slackrus`](https://github.com/johntdyer/slackrus)
-  Hook for Slack chat.
-
-* [`github.com/wercker/journalhook`](https://github.com/wercker/journalhook).
-  Hook for logging to `systemd-journald`.
+| Hook  | Description |
+| ----- | ----------- |
+| [Airbrake](https://github.com/Sirupsen/logrus/blob/master/hooks/airbrake/airbrake.go) | Send errors to an exception tracking service compatible with the Airbrake API. Uses [`airbrake-go`](https://github.com/tobi/airbrake-go) behind the scenes. |
+| [Papertrail](https://github.com/Sirupsen/logrus/blob/master/hooks/papertrail/papertrail.go) | Send errors to the Papertrail hosted logging service via UDP. |
+| [Syslog](https://github.com/Sirupsen/logrus/blob/master/hooks/syslog/syslog.go) | Send errors to remote syslog server. Uses standard library `log/syslog` behind the scenes. |
+| [BugSnag](https://github.com/Sirupsen/logrus/blob/master/hooks/bugsnag/bugsnag.go) | Send errors to the Bugsnag exception tracking service. |
+| [Hiprus](https://github.com/nubo/hiprus) | Send errors to a channel in hipchat. |
+| [Logrusly](https://github.com/sebest/logrusly) | Send logs to [Loggly](https://www.loggly.com/) |
+| [Slackrus](https://github.com/johntdyer/slackrus) | Hook for Slack chat. |
+| [Journalhook](https://github.com/wercker/journalhook) | Hook for logging to `systemd-journald` |
+| [Graylog](https://github.com/gemnasium/logrus-hooks/tree/master/graylog) | Hook for logging to [Graylog](http://graylog2.org/) |
 
 #### Level logging
 
