@@ -1,22 +1,16 @@
 package airbrake
 
 import (
-	"encoding/xml"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/airbrake/gobrake"
 )
-
-type notice struct {
-	Error NoticeError `xml:"error"`
-}
-type NoticeError struct {
-	Class   string `xml:"class"`
-	Message string `xml:"message"`
-}
 
 type customErr struct {
 	msg string
@@ -35,7 +29,7 @@ const (
 )
 
 var (
-	noticeError = make(chan NoticeError, 1)
+	noticeError = make(chan *gobrake.Error, 1)
 )
 
 // TestLogEntryMessageReceived checks if invoking Logrus' log.Error
@@ -43,10 +37,7 @@ var (
 // by a HTTP server emulating an Airbrake-compatible endpoint.
 func TestLogEntryMessageReceived(t *testing.T) {
 	log := logrus.New()
-	ts := startAirbrakeServer(t)
-	defer ts.Close()
-
-	hook := NewHook(ts.URL, testAPIKey, "production")
+	hook := newTestHook()
 	log.Hooks.Add(hook)
 
 	log.Error(expectedMsg)
@@ -67,10 +58,7 @@ func TestLogEntryMessageReceived(t *testing.T) {
 // rather than the logrus.Entry.Message string.
 func TestLogEntryWithErrorReceived(t *testing.T) {
 	log := logrus.New()
-	ts := startAirbrakeServer(t)
-	defer ts.Close()
-
-	hook := NewHook(ts.URL, testAPIKey, "production")
+	hook := newTestHook()
 	log.Hooks.Add(hook)
 
 	log.WithFields(logrus.Fields{
@@ -82,8 +70,8 @@ func TestLogEntryWithErrorReceived(t *testing.T) {
 		if received.Message != expectedMsg {
 			t.Errorf("Unexpected message received: %s", received.Message)
 		}
-		if received.Class != expectedClass {
-			t.Errorf("Unexpected error class: %s", received.Class)
+		if received.Type != expectedClass {
+			t.Errorf("Unexpected error class: %s", received.Type)
 		}
 	case <-time.After(time.Second):
 		t.Error("Timed out; no notice received by Airbrake API")
@@ -98,10 +86,7 @@ func TestLogEntryWithErrorReceived(t *testing.T) {
 // logrus.WithFields().
 func TestLogEntryWithNonErrorTypeNotReceived(t *testing.T) {
 	log := logrus.New()
-	ts := startAirbrakeServer(t)
-	defer ts.Close()
-
-	hook := NewHook(ts.URL, testAPIKey, "production")
+	hook := newTestHook()
 	log.Hooks.Add(hook)
 
 	log.WithFields(logrus.Fields{
@@ -118,16 +103,34 @@ func TestLogEntryWithNonErrorTypeNotReceived(t *testing.T) {
 	}
 }
 
-func startAirbrakeServer(t *testing.T) *httptest.Server {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var notice notice
-		if err := xml.NewDecoder(r.Body).Decode(&notice); err != nil {
-			t.Error(err)
-		}
-		r.Body.Close()
+// Returns a new airbrakeHook with the test server proxied
+func newTestHook() *airbrakeHook {
+	// Make a http.Client with the transport
+	httpClient := &http.Client{Transport: &FakeRoundTripper{}}
 
-		noticeError <- notice.Error
-	}))
+	hook := NewHook(123, testAPIKey, "production")
+	hook.Airbrake.Client = httpClient
+	return hook
+}
 
-	return ts
+// gobrake API doesn't allow to override endpoint, we need a http.Roundtripper
+type FakeRoundTripper struct {
+}
+
+func (rt *FakeRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	notice := &gobrake.Notice{}
+	err = json.Unmarshal(b, notice)
+	noticeError <- notice.Errors[0]
+
+	res := &http.Response{
+		StatusCode: http.StatusCreated,
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+		Header:     make(http.Header),
+	}
+	return res, nil
 }

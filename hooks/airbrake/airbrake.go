@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/tobi/airbrake-go"
+	"github.com/airbrake/gobrake"
 )
 
 // Set graylog.BufSize = <value> _before_ calling NewHook
@@ -15,45 +15,40 @@ var BufSize uint = 1024
 // AirbrakeHook to send exceptions to an exception-tracking service compatible
 // with the Airbrake API.
 type airbrakeHook struct {
-	APIKey      string
-	Endpoint    string
-	Environment string
-	entryChan   chan *logrus.Entry
+	Airbrake   *gobrake.Notifier
+	noticeChan chan *gobrake.Notice
 }
 
-func NewHook(endpoint, apiKey, env string) *airbrakeHook {
+func NewHook(projectID int64, apiKey, env string) *airbrakeHook {
+	airbrake := gobrake.NewNotifier(projectID, apiKey)
+	airbrake.SetContext("environment", env)
 	hook := &airbrakeHook{
-		APIKey:      apiKey,
-		Endpoint:    endpoint,
-		Environment: env,
-		entryChan:   make(chan *logrus.Entry, BufSize),
+		Airbrake:   airbrake,
+		noticeChan: make(chan *gobrake.Notice, BufSize),
 	}
 	go hook.fire()
 	return hook
 }
 
 func (hook *airbrakeHook) Fire(entry *logrus.Entry) error {
-	hook.entryChan <- entry
+	var notifyErr error
+	err, ok := entry.Data["error"].(error)
+	if ok {
+		notifyErr = err
+	} else {
+		notifyErr = errors.New(entry.Message)
+	}
+	notice := hook.Airbrake.Notice(notifyErr, nil, 3)
+	hook.noticeChan <- notice
 	return nil
 }
 
 // fire sends errors to airbrake when an entry is available on entryChan
 func (hook *airbrakeHook) fire() {
 	for {
-		entry := <-hook.entryChan
-		airbrake.ApiKey = hook.APIKey
-		airbrake.Endpoint = hook.Endpoint
-		airbrake.Environment = hook.Environment
+		notice := <-hook.noticeChan
 
-		var notifyErr error
-		err, ok := entry.Data["error"].(error)
-		if ok {
-			notifyErr = err
-		} else {
-			notifyErr = errors.New(entry.Message)
-		}
-
-		if err = airbrake.Notify(notifyErr); err != nil {
+		if err := hook.Airbrake.SendNotice(notice); err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to send error to Airbrake: %v\n", err)
 		}
 
