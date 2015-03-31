@@ -109,8 +109,8 @@ func main() {
     "number": 100,
   }).Fatal("The ice breaks!")
 
-  # A common pattern is to re-use fields between logging statements by re-using
-  # the logrus.Entry returned from WithFields()
+  // A common pattern is to re-use fields between logging statements by re-using
+  // the logrus.Entry returned from WithFields()
   contextLogger := log.WithFields(log.Fields{
     "common": "this is a common field",
     "other": "I also should be logged always",
