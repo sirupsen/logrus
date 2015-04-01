@@ -84,7 +84,7 @@ func init() {
 
   // Use the Airbrake hook to report errors that have Error severity or above to
   // an exception tracker. You can create custom hooks, see the Hooks section.
-  log.AddHook(airbrake.NewHook("https://example.com", "xyz", "development"))
+  log.AddHook(airbrake.NewHook(123, "xyz", "development"))
 
   // Output to stderr instead of stdout, could also be a file.
   log.SetOutput(os.Stderr)
@@ -188,7 +188,9 @@ import (
 )
 
 func init() {
-  log.AddHook(airbrake.NewHook("https://example.com", "xyz", "development"))
+  projectID := 123
+  apiKey := "xyz"
+  log.AddHook(airbrake.NewHook(projectID, apiKey, "development"))
 
   hook, err := logrus_syslog.NewSyslogHook("udp", "localhost:514", syslog.LOG_INFO, "")
   if err != nil {
