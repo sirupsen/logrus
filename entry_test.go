@@ -8,6 +8,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestEntryWithError(t *testing.T) {
+
+	err := fmt.Errorf("kaboom at layer %d", 4711)
+
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	entry := NewEntry(logger)
+
+	assert.Equal(t, err, entry.WithError(err).Data["error"])
+
+	ErrorKey = "err"
+	assert.Equal(t, err, entry.WithError(err).Data["err"])
+
+}
+
 func TestEntryPanicln(t *testing.T) {
 	errBoom := fmt.Errorf("boom time")
 
