@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Defines the key when adding error using WithError.
+// Defines the key when adding errors using WithError.
 var ErrorKey = "error"
 
 // An entry is the final or intermediate Logrus logging entry. It contains all
@@ -56,7 +56,7 @@ func (entry *Entry) String() (string, error) {
 	return reader.String(), err
 }
 
-// Add an error as single field (with key "error") to the Entry.
+// Add an error as single field (using the key defined in ErrorKey) to the Entry.
 func (entry *Entry) WithError(err error) *Entry {
 	return entry.WithField(ErrorKey, err)
 }
