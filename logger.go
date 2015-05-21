@@ -44,7 +44,7 @@ type Logger struct {
 // It's recommended to make this a global instance called `log`.
 func New() *Logger {
 	return &Logger{
-		Out:       os.Stdout,
+		Out:       os.Stderr,
 		Formatter: new(TextFormatter),
 		Hooks:     make(levelHooks),
 		Level:     InfoLevel,
