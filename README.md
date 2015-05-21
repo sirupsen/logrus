@@ -32,7 +32,7 @@ ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 "time":"2014-03-10 19:57:38.562543128 -0400 EDT"}
 ```
 
-With the default `log.Formatter = new(logrus.TextFormatter)` when a TTY is not
+With the default `log.Formatter = new(&log.TextFormatter{})` when a TTY is not
 attached, the output is compatible with the
 [logfmt](http://godoc.org/github.com/kr/logfmt) format:
 
@@ -269,7 +269,7 @@ init() {
     log.SetFormatter(logrus.JSONFormatter)
   } else {
     // The TextFormatter is default, you don't actually have to do this.
-    log.SetFormatter(logrus.TextFormatter)
+    log.SetFormatter(&log.TextFormatter{})
   }
 }
 ```
