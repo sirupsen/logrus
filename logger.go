@@ -102,6 +102,7 @@ func (logger *Logger) Fatalf(format string, args ...interface{}) {
 	if logger.Level >= FatalLevel {
 		NewEntry(logger).Fatalf(format, args...)
 	}
+	os.Exit(1)
 }
 
 func (logger *Logger) Panicf(format string, args ...interface{}) {
@@ -148,6 +149,7 @@ func (logger *Logger) Fatal(args ...interface{}) {
 	if logger.Level >= FatalLevel {
 		NewEntry(logger).Fatal(args...)
 	}
+	os.Exit(1)
 }
 
 func (logger *Logger) Panic(args ...interface{}) {
@@ -194,6 +196,7 @@ func (logger *Logger) Fatalln(args ...interface{}) {
 	if logger.Level >= FatalLevel {
 		NewEntry(logger).Fatalln(args...)
 	}
+	os.Exit(1)
 }
 
 func (logger *Logger) Panicln(args ...interface{}) {
