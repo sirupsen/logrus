@@ -1,6 +1,8 @@
 # 0.8
 
 logrus: defaults to stderr instead of stdout
+hooks/sentry: add special field for `*http.Request`
+formatter/text: ignore Windows for colors
 
 # 0.7.3
 
