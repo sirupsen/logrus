@@ -1,4 +1,8 @@
-# 0.8
+# 0.8.1
+
+logrus: fix not exiting on `Fatalf` and `Fatalln`
+
+# 0.8.0
 
 logrus: defaults to stderr instead of stdout
 hooks/sentry: add special field for `*http.Request`
