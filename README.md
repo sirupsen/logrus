@@ -183,7 +183,7 @@ Logrus comes with [built-in hooks](hooks/). Add those, or your custom hook, in
 import (
   log "github.com/Sirupsen/logrus"
   "github.com/Sirupsen/logrus/hooks/airbrake"
-  "github.com/Sirupsen/logrus/hooks/syslog"
+  logrus_syslog "github.com/Sirupsen/logrus/hooks/syslog"
   "log/syslog"
 )
 
