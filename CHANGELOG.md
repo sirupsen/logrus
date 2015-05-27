@@ -1,3 +1,7 @@
+# 0.8.2
+
+logrus: fix more Fatal family functions
+
 # 0.8.1
 
 logrus: fix not exiting on `Fatalf` and `Fatalln`
