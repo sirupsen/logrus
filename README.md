@@ -212,6 +212,7 @@ func init() {
 | [Journalhook](https://github.com/wercker/journalhook) | Hook for logging to `systemd-journald` |
 | [Graylog](https://github.com/gemnasium/logrus-hooks/tree/master/graylog) | Hook for logging to [Graylog](http://graylog2.org/) |
 | [Raygun](https://github.com/squirkle/logrus-raygun-hook) | Hook for logging to [Raygun.io](http://raygun.io/) |
+| [LFShook](https://github.com/rifflock/lfshook) | Hook for logging to the local filesystem |
 
 #### Level logging
 
