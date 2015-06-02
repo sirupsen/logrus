@@ -2,8 +2,8 @@ package logrus_sentry
 
 import (
 	"fmt"
-	"time"
 	"net/http"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/getsentry/raven-go"
@@ -60,8 +60,9 @@ type SentryHook struct {
 	// consider the message correctly sent
 	Timeout time.Duration
 
-	client *raven.Client
-	levels []logrus.Level
+	client          *raven.Client
+	levels          []logrus.Level
+	stacktraceLevel *logrus.Level
 }
 
 // NewSentryHook creates a hook to be added to an instance of logger
@@ -72,7 +73,12 @@ func NewSentryHook(DSN string, levels []logrus.Level) (*SentryHook, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &SentryHook{100 * time.Millisecond, client, levels}, nil
+	return &SentryHook{100 * time.Millisecond, client, levels, nil}, nil
+}
+
+// SetStacktraceLevel sets logging level at which to capture stacktrace.
+func (hook *SentryHook) SetStacktraceLevel(stacktraceLevel logrus.Level) {
+	hook.stacktraceLevel = &stacktraceLevel
 }
 
 // Called when an event should be sent to sentry
@@ -97,6 +103,9 @@ func (hook *SentryHook) Fire(entry *logrus.Entry) error {
 	}
 	if req, ok := getAndDelRequest(d, "http_request"); ok {
 		packet.Interfaces = append(packet.Interfaces, raven.NewHttp(req))
+	}
+	if hook.stacktraceLevel != nil && entry.Level <= *hook.stacktraceLevel {
+		packet.Interfaces = append(packet.Interfaces, raven.NewStacktrace(5, 0, nil))
 	}
 	packet.Extra = map[string]interface{}(d)
 
