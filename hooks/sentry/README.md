@@ -68,7 +68,14 @@ with:
 
 ```go
 hook, _ := logrus_sentry.NewSentryHook(...)
-hook.SetStacktraceLevel(logrus.ErrorLevel)
+hook.StacktraceConfiguration.Enable = true
 ```
 
 Subsequent calls to `logger.Error` and above will create a stacktrace.
+
+Other configuration options are:
+- `StacktraceConfiguration.Level` the logrus level at which to start capturing stacktraces.
+- `StacktraceConfiguration.Skip` how many stack frames to skip before stacktrace starts recording.
+- `StacktraceConfiguration.Context` the number of lines to include around a stack frame for context.
+- `StacktraceConfiguration.InAppPrefixes` the prefixes that will be matched against the stack frame to identify it as in_app
+

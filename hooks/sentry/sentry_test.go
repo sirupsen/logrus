@@ -28,6 +28,8 @@ func getTestLogger() *logrus.Logger {
 	return l
 }
 
+// raven.Packet does not have a json directive for deserializing interfaces
+// so need to explicitly construct one for purpose of test
 type resultPacket struct {
 	raven.Packet
 	Stacktrace raven.Stacktrace `json:"sentry.interfaces.Stacktrace"`
@@ -39,6 +41,7 @@ func WithTestDSN(t *testing.T, tf func(string, <-chan *resultPacket)) {
 		defer req.Body.Close()
 		contentType := req.Header.Get("Content-Type")
 		var bodyReader io.Reader = req.Body
+		// underlying client will compress and encode payload above certain size
 		if contentType == "application/octet-stream" {
 			bodyReader = base64.NewDecoder(base64.StdEncoding, bodyReader)
 			bodyReader, _ = zlib.NewReader(bodyReader)
@@ -120,18 +123,23 @@ func TestSentryStacktrace(t *testing.T) {
 			logrus.ErrorLevel,
 			logrus.InfoLevel,
 		})
-		hook.SetStacktraceLevel(logrus.ErrorLevel)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
 		logger.Hooks.Add(hook)
 
-		logger.Error(message) // this is the call that the last frame of stacktrace should capture
+		logger.Error(message)
 		packet := <-pch
-		if packet.Message != message {
-			t.Errorf("message should have been %s, was %s", message, packet.Message)
-		}
 		stacktraceSize := len(packet.Stacktrace.Frames)
+		if stacktraceSize != 0 {
+			t.Error("Stacktrace should be empty as it is not enabled")
+		}
+
+		hook.StacktraceConfiguration.Enable = true
+
+		logger.Error(message) // this is the call that the last frame of stacktrace should capture
+		packet = <-pch
+		stacktraceSize = len(packet.Stacktrace.Frames)
 		if stacktraceSize == 0 {
 			t.Error("Stacktrace should not be empty")
 		}
@@ -140,19 +148,31 @@ func TestSentryStacktrace(t *testing.T) {
 		if lastFrame.Filename != expectedFilename {
 			t.Errorf("File name should have been %s, was %s", expectedFilename, lastFrame.Filename)
 		}
-		expectedLineno := 129
+		expectedLineno := 140
 		if lastFrame.Lineno != expectedLineno {
 			t.Errorf("Line number should have been %s, was %s", expectedLineno, lastFrame.Lineno)
 		}
-
-		logger.Info(message)
-		packet = <-pch
-		if packet.Message != message {
-			t.Errorf("message should have been %s, was %s", message, packet.Message)
+		if lastFrame.InApp {
+			t.Error("Frame should not be identified as in_app without prefixes")
 		}
+
+		hook.StacktraceConfiguration.InAppPrefixes = []string{"github.com/Sirupsen/logrus"}
+		hook.StacktraceConfiguration.Context = 2
+		hook.StacktraceConfiguration.Skip = 2
+
+		logger.Error(message)
+		packet = <-pch
 		stacktraceSize = len(packet.Stacktrace.Frames)
-		if stacktraceSize > 0 {
-			t.Error("Stacktrace should be empty")
+		if stacktraceSize == 0 {
+			t.Error("Stacktrace should not be empty")
+		}
+		lastFrame = packet.Stacktrace.Frames[stacktraceSize-1]
+		expectedFilename = "github.com/Sirupsen/logrus/entry.go"
+		if lastFrame.Filename != expectedFilename {
+			t.Errorf("File name should have been %s, was %s", expectedFilename, lastFrame.Filename)
+		}
+		if !lastFrame.InApp {
+			t.Error("Frame should be identified as in_app")
 		}
 	})
 }
