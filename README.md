@@ -214,6 +214,7 @@ func init() {
 | [Raygun](https://github.com/squirkle/logrus-raygun-hook) | Hook for logging to [Raygun.io](http://raygun.io/) |
 | [LFShook](https://github.com/rifflock/lfshook) | Hook for logging to the local filesystem |
 | [Honeybadger](https://github.com/agonzalezro/logrus_honeybadger) | Hook for sending exceptions to Honeybadger |
+| [Mail](https://github.com/zbindenren/logrus_mail) | Hook for sending exceptions via mail |
 
 #### Level logging
 
