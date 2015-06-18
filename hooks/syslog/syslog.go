@@ -42,6 +42,8 @@ func (hook *SyslogHook) Fire(entry *logrus.Entry) error {
 		return hook.Writer.Info(line)
 	case logrus.DebugLevel:
 		return hook.Writer.Debug(line)
+	case logrus.TraceLevel:
+		return hook.Writer.Debug(line)
 	default:
 		return nil
 	}
@@ -55,5 +57,6 @@ func (hook *SyslogHook) Levels() []logrus.Level {
 		logrus.WarnLevel,
 		logrus.InfoLevel,
 		logrus.DebugLevel,
+		logrus.TraceLevel,
 	}
 }

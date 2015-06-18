@@ -64,6 +64,12 @@ func (logger *Logger) WithFields(fields Fields) *Entry {
 	return NewEntry(logger).WithFields(fields)
 }
 
+func (logger *Logger) Tracef(format string, args ...interface{}) {
+	if logger.Level >= TraceLevel {
+		NewEntry(logger).Tracef(format, args...)
+	}
+}
+
 func (logger *Logger) Debugf(format string, args ...interface{}) {
 	if logger.Level >= DebugLevel {
 		NewEntry(logger).Debugf(format, args...)
@@ -111,6 +117,12 @@ func (logger *Logger) Panicf(format string, args ...interface{}) {
 	}
 }
 
+func (logger *Logger) Trace(args ...interface{}) {
+	if logger.Level >= TraceLevel {
+		NewEntry(logger).Trace(args...)
+	}
+}
+
 func (logger *Logger) Debug(args ...interface{}) {
 	if logger.Level >= DebugLevel {
 		NewEntry(logger).Debug(args...)
@@ -155,6 +167,12 @@ func (logger *Logger) Fatal(args ...interface{}) {
 func (logger *Logger) Panic(args ...interface{}) {
 	if logger.Level >= PanicLevel {
 		NewEntry(logger).Panic(args...)
+	}
+}
+
+func (logger *Logger) Traceln(args ...interface{}) {
+	if logger.Level >= TraceLevel {
+		NewEntry(logger).Traceln(args...)
 	}
 }
 
