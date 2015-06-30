@@ -131,21 +131,28 @@ func needsQuoting(text string) bool {
 	return true
 }
 
-func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key, value interface{}) {
-	switch value.(type) {
+func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interface{}) {
+
+	b.WriteString(key)
+	b.WriteByte('=')
+
+	switch value := value.(type) {
 	case string:
-		if needsQuoting(value.(string)) {
-			fmt.Fprintf(b, "%v=%s ", key, value)
+		if needsQuoting(value) {
+			b.WriteString(value)
 		} else {
-			fmt.Fprintf(b, "%v=%q ", key, value)
+			fmt.Fprintf(b, "%q", value)
 		}
 	case error:
-		if needsQuoting(value.(error).Error()) {
-			fmt.Fprintf(b, "%v=%s ", key, value)
+		errmsg := value.Error()
+		if needsQuoting(errmsg) {
+			b.WriteString(errmsg)
 		} else {
-			fmt.Fprintf(b, "%v=%q ", key, value)
+			fmt.Fprintf(b, "%q", value)
 		}
 	default:
-		fmt.Fprintf(b, "%v=%v ", key, value)
+		fmt.Fprint(b, value)
 	}
+
+	b.WriteByte(' ')
 }
