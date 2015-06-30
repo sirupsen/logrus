@@ -1,3 +1,8 @@
+# (Unreleased)
+
+logrus/core: improve performance of text formatter by 40%
+logrus/core: expose `LevelHooks` type
+
 # 0.8.2
 
 logrus: fix more Fatal family functions
