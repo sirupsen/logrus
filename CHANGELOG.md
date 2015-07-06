@@ -2,6 +2,7 @@
 
 logrus/core: improve performance of text formatter by 40%
 logrus/core: expose `LevelHooks` type
+logrus/core: add support for DragonflyBSD and NetBSD
 
 # 0.8.2
 
