@@ -1,5 +1,6 @@
 # (Unreleased)
 
+logrus: fix entry log level (#208)
 logrus/core: improve performance of text formatter by 40%
 logrus/core: expose `LevelHooks` type
 
