@@ -31,6 +31,22 @@ func main() {
 }
 ```
 
+If you wish to initialize a SentryHook with tags, you can use the `NewWithTagsSentryHook` constructor to provide default tags:
+
+```go
+tags := map[string]string{
+  "site": "example.com",
+}
+levels := []logrus.Level{
+  logrus.PanicLevel,
+  logrus.FatalLevel,
+  logrus.ErrorLevel,
+}
+hook, err := logrus_sentry.NewWithTagsSentryHook(YOUR_DSN, tags, levels)
+
+```
+
+
 ## Special fields
 
 Some logrus fields have a special meaning in this hook,
