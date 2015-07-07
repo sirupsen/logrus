@@ -1,9 +1,10 @@
-# (Unreleased)
+# 0.8.3
 
-logrus: fix entry log level (#208)
+logrus/core: fix entry log level (#208)
 logrus/core: improve performance of text formatter by 40%
 logrus/core: expose `LevelHooks` type
 logrus/core: add support for DragonflyBSD and NetBSD
+formatter/text: print structs more verbosely
 
 # 0.8.2
 
