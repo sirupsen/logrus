@@ -100,6 +100,28 @@ func TestSentryHandler(t *testing.T) {
 	})
 }
 
+func TestSentryWithClient(t *testing.T) {
+	WithTestDSN(t, func(dsn string, pch <-chan *raven.Packet) {
+		logger := getTestLogger()
+
+		client, _ := raven.New(dsn)
+
+		hook, err := NewWithClientSentryHook(client, []logrus.Level{
+			logrus.ErrorLevel,
+		})
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		logger.Hooks.Add(hook)
+
+		logger.Error(message)
+		packet := <-pch
+		if packet.Message != message {
+			t.Errorf("message should have been %s, was %s", message, packet.Message)
+		}
+	})
+}
+
 func TestSentryTags(t *testing.T) {
 	WithTestDSN(t, func(dsn string, pch <-chan *raven.Packet) {
 		logger := getTestLogger()

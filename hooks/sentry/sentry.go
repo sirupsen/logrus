@@ -86,6 +86,12 @@ func NewWithTagsSentryHook(DSN string, tags map[string]string, levels []logrus.L
 	return &SentryHook{100 * time.Millisecond, client, levels}, nil
 }
 
+// NewWithClientSentryHook creates a hook using an initialized raven client.
+// This method sets the timeout to 100 milliseconds.
+func NewWithClientSentryHook(client *raven.Client, levels []logrus.Level) (*SentryHook, error) {
+	return &SentryHook{100 * time.Millisecond, client, levels}, nil
+}
+
 // Called when an event should be sent to sentry
 // Special fields that sentry uses to give more information to the server
 // are extracted from entry.Data (if they are found)
