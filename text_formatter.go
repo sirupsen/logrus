@@ -73,14 +73,15 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
 	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
 
-	if f.TimestampFormat == "" {
-		f.TimestampFormat = DefaultTimestampFormat
+	timestampFormat := f.TimestampFormat
+	if timestampFormat == "" {
+		timestampFormat = DefaultTimestampFormat
 	}
 	if isColored {
 		f.printColored(b, entry, keys)
 	} else {
 		if !f.DisableTimestamp {
-			f.appendKeyValue(b, "time", entry.Time.Format(f.TimestampFormat))
+			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
 		}
 		f.appendKeyValue(b, "level", entry.Level.String())
 		f.appendKeyValue(b, "msg", entry.Message)
