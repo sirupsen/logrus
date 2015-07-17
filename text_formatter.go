@@ -36,6 +36,10 @@ type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
 	ForceColors bool
 
+	// Set to true to bypass checking for a TTY. Formatting and colors will be
+	// overridden as if the session is taking place inside of one.
+	ForceTTY bool
+
 	// Force disabling colors.
 	DisableColors bool
 
@@ -70,7 +74,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	prefixFieldClashes(entry.Data)
 
-	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
+	isColorTerminal := f.ForceTTY || isTerminal && (runtime.GOOS != "windows")
 	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
 
 	if f.TimestampFormat == "" {
