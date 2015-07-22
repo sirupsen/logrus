@@ -1,3 +1,7 @@
+# 0.8.4
+
+formatter/text: fix data race (#218)
+
 # 0.8.3
 
 logrus/core: fix entry log level (#208)
