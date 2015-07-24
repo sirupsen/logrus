@@ -1,3 +1,7 @@
+# 0.8.5
+
+logrus/core: revert #208
+
 # 0.8.4
 
 formatter/text: fix data race (#218)

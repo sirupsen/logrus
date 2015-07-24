@@ -32,8 +32,7 @@ func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
 		// Default is three fields, give a little extra room
-		Data: 	make(Fields, 5),
-		Level:	logger.Level,
+		Data: make(Fields, 5),
 	}
 }
 
@@ -68,7 +67,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data, Level: entry.Level}
+	return &Entry{Logger: entry.Logger, Data: data}
 }
 
 func (entry *Entry) log(level Level, msg string) {
@@ -106,7 +105,7 @@ func (entry *Entry) log(level Level, msg string) {
 }
 
 func (entry *Entry) Debug(args ...interface{}) {
-	if entry.Level >= DebugLevel {
+	if entry.Logger.Level >= DebugLevel {
 		entry.log(DebugLevel, fmt.Sprint(args...))
 	}
 }
@@ -116,13 +115,13 @@ func (entry *Entry) Print(args ...interface{}) {
 }
 
 func (entry *Entry) Info(args ...interface{}) {
-	if entry.Level >= InfoLevel {
+	if entry.Logger.Level >= InfoLevel {
 		entry.log(InfoLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Warn(args ...interface{}) {
-	if entry.Level >= WarnLevel {
+	if entry.Logger.Level >= WarnLevel {
 		entry.log(WarnLevel, fmt.Sprint(args...))
 	}
 }
@@ -132,20 +131,20 @@ func (entry *Entry) Warning(args ...interface{}) {
 }
 
 func (entry *Entry) Error(args ...interface{}) {
-	if entry.Level >= ErrorLevel {
+	if entry.Logger.Level >= ErrorLevel {
 		entry.log(ErrorLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
-	if entry.Level >= FatalLevel {
+	if entry.Logger.Level >= FatalLevel {
 		entry.log(FatalLevel, fmt.Sprint(args...))
 	}
 	os.Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
-	if entry.Level >= PanicLevel {
+	if entry.Logger.Level >= PanicLevel {
 		entry.log(PanicLevel, fmt.Sprint(args...))
 	}
 	panic(fmt.Sprint(args...))
@@ -154,13 +153,13 @@ func (entry *Entry) Panic(args ...interface{}) {
 // Entry Printf family functions
 
 func (entry *Entry) Debugf(format string, args ...interface{}) {
-	if entry.Level >= DebugLevel {
+	if entry.Logger.Level >= DebugLevel {
 		entry.Debug(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Infof(format string, args ...interface{}) {
-	if entry.Level >= InfoLevel {
+	if entry.Logger.Level >= InfoLevel {
 		entry.Info(fmt.Sprintf(format, args...))
 	}
 }
@@ -170,7 +169,7 @@ func (entry *Entry) Printf(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Warnf(format string, args ...interface{}) {
-	if entry.Level >= WarnLevel {
+	if entry.Logger.Level >= WarnLevel {
 		entry.Warn(fmt.Sprintf(format, args...))
 	}
 }
@@ -180,20 +179,20 @@ func (entry *Entry) Warningf(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Errorf(format string, args ...interface{}) {
-	if entry.Level >= ErrorLevel {
+	if entry.Logger.Level >= ErrorLevel {
 		entry.Error(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Fatalf(format string, args ...interface{}) {
-	if entry.Level >= FatalLevel {
+	if entry.Logger.Level >= FatalLevel {
 		entry.Fatal(fmt.Sprintf(format, args...))
 	}
 	os.Exit(1)
 }
 
 func (entry *Entry) Panicf(format string, args ...interface{}) {
-	if entry.Level >= PanicLevel {
+	if entry.Logger.Level >= PanicLevel {
 		entry.Panic(fmt.Sprintf(format, args...))
 	}
 }
@@ -201,13 +200,13 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 // Entry Println family functions
 
 func (entry *Entry) Debugln(args ...interface{}) {
-	if entry.Level >= DebugLevel {
+	if entry.Logger.Level >= DebugLevel {
 		entry.Debug(entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Infoln(args ...interface{}) {
-	if entry.Level >= InfoLevel {
+	if entry.Logger.Level >= InfoLevel {
 		entry.Info(entry.sprintlnn(args...))
 	}
 }
@@ -217,7 +216,7 @@ func (entry *Entry) Println(args ...interface{}) {
 }
 
 func (entry *Entry) Warnln(args ...interface{}) {
-	if entry.Level >= WarnLevel {
+	if entry.Logger.Level >= WarnLevel {
 		entry.Warn(entry.sprintlnn(args...))
 	}
 }
@@ -227,20 +226,20 @@ func (entry *Entry) Warningln(args ...interface{}) {
 }
 
 func (entry *Entry) Errorln(args ...interface{}) {
-	if entry.Level >= ErrorLevel {
+	if entry.Logger.Level >= ErrorLevel {
 		entry.Error(entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Fatalln(args ...interface{}) {
-	if entry.Level >= FatalLevel {
+	if entry.Logger.Level >= FatalLevel {
 		entry.Fatal(entry.sprintlnn(args...))
 	}
 	os.Exit(1)
 }
 
 func (entry *Entry) Panicln(args ...interface{}) {
-	if entry.Level >= PanicLevel {
+	if entry.Logger.Level >= PanicLevel {
 		entry.Panic(entry.sprintlnn(args...))
 	}
 }
