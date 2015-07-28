@@ -64,6 +64,13 @@ type SentryHook struct {
 	levels []logrus.Level
 }
 
+// NewWithClient creates a hook when you already have a client configured
+// and want to use with with sentry. This method sets the timeout to
+// 100 milliseconds.
+func NewWithClientSentryHook(client *raven.Client, levels []logrus.Level) *SentryHook {
+	return &SentryHook{100 * time.Millisecond, client, levels}
+}
+
 // NewSentryHook creates a hook to be added to an instance of logger
 // and initializes the raven client.
 // This method sets the timeout to 100 milliseconds.
