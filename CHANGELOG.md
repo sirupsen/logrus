@@ -1,3 +1,7 @@
+# 0.8.6
+
+* hooks/raven: allow passing an initialized client
+
 # 0.8.5
 
 * logrus/core: revert #208
