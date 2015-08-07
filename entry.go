@@ -70,6 +70,8 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return &Entry{Logger: entry.Logger, Data: data}
 }
 
+// This function is not declared with a pointer value because otherwise
+// race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
 	entry.Time = time.Now()
 	entry.Level = level
