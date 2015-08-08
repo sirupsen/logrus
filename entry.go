@@ -70,12 +70,14 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return &Entry{Logger: entry.Logger, Data: data}
 }
 
-func (entry *Entry) log(level Level, msg string) {
+// This function is not declared with a pointer value because otherwise
+// race conditions will occur when using multiple goroutines
+func (entry Entry) log(level Level, msg string) {
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
 
-	if err := entry.Logger.Hooks.Fire(level, entry); err != nil {
+	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
 		entry.Logger.mu.Lock()
 		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
 		entry.Logger.mu.Unlock()
@@ -100,7 +102,7 @@ func (entry *Entry) log(level Level, msg string) {
 	// panic() to use in Entry#Panic(), we avoid the allocation by checking
 	// directly here.
 	if level <= PanicLevel {
-		panic(entry)
+		panic(&entry)
 	}
 }
 
