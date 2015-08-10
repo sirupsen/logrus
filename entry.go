@@ -2,11 +2,14 @@ package logrus
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"time"
 )
+
+var Suppress = errors.New("suppressed log message")
 
 // An entry is the final or intermediate Logrus logging entry. It contains all
 // the fields passed with WithField{,s}. It's finally logged when Debug, Info,
@@ -78,6 +81,10 @@ func (entry Entry) log(level Level, msg string) {
 	entry.Message = msg
 
 	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
+		// Allow hooks to cause messages to be supressed.
+		if err == Suppress {
+			return
+		}
 		entry.Logger.mu.Lock()
 		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
 		entry.Logger.mu.Unlock()
