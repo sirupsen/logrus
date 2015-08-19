@@ -273,7 +273,7 @@ init() {
   // do something here to set environment depending on an environment variable
   // or command-line flag
   if Environment == "production" {
-    log.SetFormatter(&logrus.JSONFormatter{})
+    log.SetFormatter(&log.JSONFormatter{})
   } else {
     // The TextFormatter is default, you don't actually have to do this.
     log.SetFormatter(&log.TextFormatter{})
