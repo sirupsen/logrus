@@ -218,6 +218,7 @@ func init() {
 | [Mail](https://github.com/zbindenren/logrus_mail) | Hook for sending exceptions via mail |
 | [Rollrus](https://github.com/heroku/rollrus) | Hook for sending errors to rollbar |
 | [Fluentd](https://github.com/evalphobia/logrus_fluent) | Hook for logging to fluentd |
+| [Mongodb](https://github.com/weekface/mgorus) | Hook for logging to mongodb |
 
 #### Level logging
 
