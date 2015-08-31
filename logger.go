@@ -28,6 +28,8 @@ type Logger struct {
 	Level Level
 	// Used to sync writing to the log.
 	mu sync.Mutex
+	// Contains all the fields set by the user.
+	Data Fields
 }
 
 // Creates a new logger. Configuration should be set by changing `Formatter`,
@@ -48,6 +50,7 @@ func New() *Logger {
 		Formatter: new(TextFormatter),
 		Hooks:     make(LevelHooks),
 		Level:     InfoLevel,
+		Data: make(Fields, 5),
 	}
 }
 
@@ -203,4 +206,21 @@ func (logger *Logger) Panicln(args ...interface{}) {
 	if logger.Level >= PanicLevel {
 		NewEntry(logger).Panicln(args...)
 	}
+}
+
+// Add a single field to the global log context
+func (logger *Logger) SetContextField(key string, value interface{}) {
+	logger.SetContextFields(Fields{key: value})
+}
+
+// Add a map of fields to the global log context
+func (logger *Logger) SetContextFields(fields Fields) {
+	data := Fields{}
+	for k, v := range logger.Data {
+		data[k] = v
+	}
+	for k, v := range fields {
+		data[k] = v
+	}
+	logger.Data=data
 }

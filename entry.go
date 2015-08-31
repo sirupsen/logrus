@@ -29,10 +29,15 @@ type Entry struct {
 }
 
 func NewEntry(logger *Logger) *Entry {
+	// Default is three fields, give a little extra room
+	entry_data := make(Fields,len(logger.Data)+5)
+	for k, v := range logger.Data {
+		entry_data[k] = v
+	}
+
 	return &Entry{
 		Logger: logger,
-		// Default is three fields, give a little extra room
-		Data: make(Fields, 5),
+		Data: entry_data,
 	}
 }
 
