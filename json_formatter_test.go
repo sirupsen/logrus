@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 
@@ -116,5 +117,76 @@ func TestJSONEntryEndsWithNewline(t *testing.T) {
 
 	if b[len(b)-1] != '\n' {
 		t.Fatal("Expected JSON log entry to end with a newline")
+	}
+}
+
+func TestHasFieldsWithJsonFormatter(t *testing.T) {
+	p := &Person{
+		Name:  "Bruce",
+		Alias: "Batman",
+		Hideout: &Hideout{
+			Name:        "JLU Tower",
+			DimensionId: 52,
+		},
+	}
+
+	jf := &JSONFormatter{}
+	b, err := jf.Format(&Entry{
+		Message: "the dark knight", Data: Fields{"hero": p}})
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	if bytes.Index(b, ([]byte)(`"name":"Bruce"`)) < 0 {
+		t.Fatalf(`missing "name":"Bruce"`)
+	}
+
+	if bytes.Index(b, ([]byte)(`"alias":"Batman"`)) < 0 {
+		t.Fatalf(`missing "alias":"Batman"`)
+	}
+
+	if bytes.Index(b, ([]byte)(`"hideout.name":"JLU Tower"`)) < 0 {
+		t.Fatalf(`missing "hideout.name":"JLU Tower"`)
+	}
+
+	if bytes.Index(b, ([]byte)(`"hideout.dimensionId":52`)) < 0 {
+		t.Fatalf(`missing "hideout.dimensionId":52`)
+	}
+}
+
+func TestHasTypeFieldsExceptWithJsonFormatter(t *testing.T) {
+	p := &Person{
+		Name:  "Bruce",
+		Alias: "Batman",
+		Hideout: &Hideout{
+			Name:        "JLU Tower",
+			DimensionId: 52,
+			except:      []string{"dimensionId"},
+		},
+		useTypeFields: true,
+		except:        []string{"name"},
+	}
+
+	jf := &JSONFormatter{}
+	b, err := jf.Format(&Entry{
+		Message: "the dark knight", Data: Fields{"hero": p}})
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	if bytes.Index(b, ([]byte)(`"name":"Bruce"`)) >= 0 {
+		t.Fatalf(`has "name":"Bruce"`)
+	}
+
+	if bytes.Index(b, ([]byte)(`"alias":"Batman"`)) < 0 {
+		t.Fatalf(`missing "alias":"Batman"`)
+	}
+
+	if bytes.Index(b, ([]byte)(`"hideout.name":"JLU Tower"`)) < 0 {
+		t.Fatalf(`missing "hideout.name":"JLU Tower"`)
+	}
+
+	if bytes.Index(b, ([]byte)(`"hideout.dimensionId":52`)) >= 0 {
+		t.Fatalf(`has "hideout.dimensionId":52`)
 	}
 }

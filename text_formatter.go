@@ -134,6 +134,16 @@ func needsQuoting(text string) bool {
 
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interface{}) {
 
+	switch value := value.(type) {
+	case HasFields:
+		fields := map[string]interface{}{}
+		parseFields(key, value, fields)
+		for k, v := range fields {
+			f.appendKeyValue(b, k, v)
+		}
+		return
+	}
+
 	b.WriteString(key)
 	b.WriteByte('=')
 
