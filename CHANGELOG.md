@@ -1,3 +1,7 @@
+# (Unreleased)
+
+logrus/core: fix entry log level(#225)
+
 # 0.8.6
 
 * hooks/raven: allow passing an initialized client
