@@ -29,6 +29,10 @@ type Entry struct {
 
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
 	Message string
+
+	// A receive-only notification channel for knowing when all hooks have
+	// finished firing.
+	HooksDone <-chan struct{}
 }
 
 func NewEntry(logger *Logger) *Entry {
@@ -87,17 +91,13 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 }
 
 // This function is not declared with a pointer value because otherwise
-// race conditions will occur when using multiple goroutines
-func (entry Entry) log(level Level, msg string) {
+// race conditions will occur when using multiple goroutines.
+func (entry Entry) log(level Level, msg string, hooksDone chan struct{}) {
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
 
-	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
-		entry.Logger.mu.Lock()
-		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
-		entry.Logger.mu.Unlock()
-	}
+	entry.Logger.Hooks.Fire(level, &entry, hooksDone)
 
 	reader, err := entry.Reader()
 	if err != nil {
@@ -124,7 +124,9 @@ func (entry Entry) log(level Level, msg string) {
 
 func (entry *Entry) Debug(args ...interface{}) *Entry {
 	if entry.Logger.Level >= DebugLevel {
-		entry.log(DebugLevel, fmt.Sprint(args...))
+		hooksDone := make(chan struct{}, 1)
+		entry.HooksDone = hooksDone
+		entry.log(DebugLevel, fmt.Sprint(args...), hooksDone)
 	}
 	return entry
 }
@@ -135,14 +137,18 @@ func (entry *Entry) Print(args ...interface{}) *Entry {
 
 func (entry *Entry) Info(args ...interface{}) *Entry {
 	if entry.Logger.Level >= InfoLevel {
-		entry.log(InfoLevel, fmt.Sprint(args...))
+		hooksDone := make(chan struct{}, 1)
+		entry.HooksDone = hooksDone
+		entry.log(InfoLevel, fmt.Sprint(args...), hooksDone)
 	}
 	return entry
 }
 
 func (entry *Entry) Warn(args ...interface{}) *Entry {
 	if entry.Logger.Level >= WarnLevel {
-		entry.log(WarnLevel, fmt.Sprint(args...))
+		hooksDone := make(chan struct{}, 1)
+		entry.HooksDone = hooksDone
+		entry.log(WarnLevel, fmt.Sprint(args...), hooksDone)
 	}
 	return entry
 }
@@ -153,21 +159,27 @@ func (entry *Entry) Warning(args ...interface{}) *Entry {
 
 func (entry *Entry) Error(args ...interface{}) *Entry {
 	if entry.Logger.Level >= ErrorLevel {
-		entry.log(ErrorLevel, fmt.Sprint(args...))
+		hooksDone := make(chan struct{}, 1)
+		entry.HooksDone = hooksDone
+		entry.log(ErrorLevel, fmt.Sprint(args...), hooksDone)
 	}
 	return entry
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
 	if entry.Logger.Level >= FatalLevel {
-		entry.log(FatalLevel, fmt.Sprint(args...))
+		hooksDone := make(chan struct{}, 1)
+		entry.HooksDone = hooksDone
+		entry.log(FatalLevel, fmt.Sprint(args...), hooksDone)
 	}
 	os.Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
 	if entry.Logger.Level >= PanicLevel {
-		entry.log(PanicLevel, fmt.Sprint(args...))
+		hooksDone := make(chan struct{}, 1)
+		entry.HooksDone = hooksDone
+		entry.log(PanicLevel, fmt.Sprint(args...), hooksDone)
 	}
 	panic(fmt.Sprint(args...))
 }

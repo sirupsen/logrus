@@ -1,13 +1,24 @@
 package logrus
 
+import (
+	"fmt"
+	"os"
+	"sync"
+)
+
 // A hook to be fired when logging on the logging levels returned from
-// `Levels()` on your implementation of the interface. Note that this is not
-// fired in a goroutine or a channel with workers, you should handle such
-// functionality yourself if your call is non-blocking and you don't wish for
-// the logging calls for levels returned from `Levels()` to block.
+// `Levels()` on your implementation of the interface.
 type Hook interface {
 	Levels() []Level
 	Fire(*Entry) error
+}
+
+// A hook that should be fired asynchronously. The Async() method is
+// a no-op that simply distinguishes asynchronous hooks from regular,
+// synchronous ones.
+type AsyncHook interface {
+	Hook
+	Async()
 }
 
 // Internal type for storing the hooks on a logger instance.
@@ -21,14 +32,37 @@ func (hooks LevelHooks) Add(hook Hook) {
 	}
 }
 
+func hookFailed(entry *Entry, err error) {
+	entry.Logger.mu.Lock()
+	defer entry.Logger.mu.Unlock()
+	fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
+}
+
 // Fire all the hooks for the passed level. Used by `entry.log` to fire
 // appropriate hooks for a log entry.
-func (hooks LevelHooks) Fire(level Level, entry *Entry) error {
+func (hooks LevelHooks) Fire(level Level, entry *Entry, done chan<- struct{}) {
+	var wg sync.WaitGroup
+	wg.Add(len(hooks[level]))
 	for _, hook := range hooks[level] {
-		if err := hook.Fire(entry); err != nil {
-			return err
+		if _, ok := hook.(AsyncHook); ok {
+			go func(h Hook) {
+				err := h.Fire(entry)
+				if err != nil {
+					hookFailed(entry, err)
+				}
+				wg.Done()
+			}(hook)
+		} else {
+			err := hook.Fire(entry)
+			if err != nil {
+				hookFailed(entry, err)
+			}
+			wg.Done()
 		}
 	}
-
-	return nil
+	go func() {
+		wg.Wait()
+		done <- struct{}{}
+		close(done)
+	}()
 }
