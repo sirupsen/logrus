@@ -8,23 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var err = fmt.Errorf("kaboom at layer %d", 4711)
-
-func TestToError(t *testing.T) {
-
-	assert := assert.New(t)
-
-	ctx := WithField("foo", "bar")
-	assert.Equal(nil, ctx.Debug("Hello").ToError())
-
-	ctx.Data[ErrorKey] = "error"
-	assert.Equal(nil, ctx.Debug("Hello").ToError())
-
-	ctx = ctx.WithError(err)
-	assert.Equal(err, ctx.Debug("Hello").ToError())
-
-}
-
 func TestEntryWithError(t *testing.T) {
 
 	assert := assert.New(t)
@@ -32,6 +15,8 @@ func TestEntryWithError(t *testing.T) {
 	defer func() {
 		ErrorKey = "error"
 	}()
+
+	err := fmt.Errorf("kaboom at layer %d", 4711)
 
 	assert.Equal(err, WithError(err).Data["error"])
 
