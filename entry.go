@@ -67,12 +67,12 @@ func (entry *Entry) WithField(key string, value interface{}) *Entry {
 }
 
 // Add a map of fields to the Entry.
-func (entry *Entry) WithFields(fields Fields) *Entry {
+func (entry *Entry) WithFields(fields FieldsConverter) *Entry {
 	data := Fields{}
 	for k, v := range entry.Data {
 		data[k] = v
 	}
-	for k, v := range fields {
+	for k, v := range fields.ToFields() {
 		data[k] = v
 	}
 	return &Entry{Logger: entry.Logger, Data: data}

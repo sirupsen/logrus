@@ -8,6 +8,16 @@ import (
 // Fields type, used to pass to `WithFields`.
 type Fields map[string]interface{}
 
+//FieldsConverter has a ToFields method that returns the map representation of the struct
+type FieldsConverter interface {
+	ToFields() Fields
+}
+
+//ToFields returns the map representation of the struct
+func (f Fields) ToFields() Fields {
+	return f
+}
+
 // Level type
 type Level uint8
 

@@ -60,7 +60,7 @@ func (logger *Logger) WithField(key string, value interface{}) *Entry {
 
 // Adds a struct of fields to the log entry. All it does is call `WithField` for
 // each `Field`.
-func (logger *Logger) WithFields(fields Fields) *Entry {
+func (logger *Logger) WithFields(fields FieldsConverter) *Entry {
 	return NewEntry(logger).WithFields(fields)
 }
 
