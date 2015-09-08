@@ -1,3 +1,9 @@
+# 0.8.7
+
+* logrus/core: fix possible race (#216)
+* logrus/doc: small typo fixes and doc improvements
+
+
 # 0.8.6
 
 * hooks/raven: allow passing an initialized client
