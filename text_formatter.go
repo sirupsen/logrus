@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/akutz/golf"
 )
 
 const (
@@ -116,7 +118,26 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
-		fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%+v", levelColor, k, v)
+
+		switch v.(type) {
+		case golf.Golfs:
+			fields := golf.Fore(k, v)
+			for kk, vv := range fields {
+				switch vvt := vv.(type) {
+				case string:
+					if needsQuoting(vvt) {
+						fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%s", levelColor, kk, vvt)
+					} else {
+						fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%q", levelColor, kk, vvt)
+					}
+				default:
+					fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%+v", levelColor, kk, vvt)
+				}
+
+			}
+		default:
+			fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%+v", levelColor, k, v)
+		}
 	}
 }
 
@@ -133,6 +154,14 @@ func needsQuoting(text string) bool {
 }
 
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interface{}) {
+
+	switch value.(type) {
+	case golf.Golfs:
+		for ck, cv := range golf.Fore(key, value) {
+			f.appendKeyValue(b, ck, cv)
+		}
+		return
+	}
 
 	b.WriteString(key)
 	b.WriteByte('=')

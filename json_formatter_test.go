@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 
@@ -116,5 +117,58 @@ func TestJSONEntryEndsWithNewline(t *testing.T) {
 
 	if b[len(b)-1] != '\n' {
 		t.Fatal("Expected JSON log entry to end with a newline")
+	}
+}
+
+func TestGolfsWithJsonFormatter(t *testing.T) {
+	p := &Person{
+		Name:  "Bruce",
+		Alias: "Batman",
+		Hideout: &Hideout{
+			Name:        "JLU Tower",
+			DimensionId: 52,
+		},
+	}
+
+	jf := &JSONFormatter{}
+	b, err := jf.Format(&Entry{
+		Message: "the dark knight", Data: Fields{"hero": p}})
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	if bytes.Index(b, ([]byte)(`"hero.name":"Bruce"`)) < 0 {
+		t.Fatalf(`missing "hero.name":"Bruce"`)
+	}
+
+	if bytes.Index(b, ([]byte)(`"hero.alias":"Batman"`)) < 0 {
+		t.Fatalf(`missing "hero.alias":"Batman"`)
+	}
+
+	if bytes.Index(b, ([]byte)(`"hero.hideout.name":"JLU Tower"`)) < 0 {
+		t.Fatalf(`missing "hero.hideout.name":"JLU Tower"`)
+	}
+
+	if bytes.Index(b, ([]byte)(`"hero.hideout.dimensionId":52`)) < 0 {
+		t.Fatalf(`missing "hero.hideout.dimensionId":52`)
+	}
+}
+
+func TestGolfsWithJsonFormatterAndNonGolfer(t *testing.T) {
+	h := &Hideout{
+		Name:        "JLU Tower",
+		DimensionId: 52,
+	}
+
+	jf := &JSONFormatter{}
+	b, err := jf.Format(&Entry{
+		Message: "secret base", Data: Fields{"hideout": h}})
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+	t.Log(string(b))
+
+	if bytes.Index(b, ([]byte)(`"hideout":{"Name":"JLU Tower","DimensionId":52}`)) < 0 {
+		t.Fatalf(`missing "hideout":{"Name":"JLU Tower","DimensionId":52}`)
 	}
 }

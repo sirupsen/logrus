@@ -3,6 +3,8 @@ package logrus
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/akutz/golf"
 )
 
 type JSONFormatter struct {
@@ -14,6 +16,10 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data := make(Fields, len(entry.Data)+3)
 	for k, v := range entry.Data {
 		switch v := v.(type) {
+		case golf.Golfs:
+			for ck, cv := range golf.Fore(k, v) {
+				data[ck] = cv
+			}
 		case error:
 			// Otherwise errors are ignored by `encoding/json`
 			// https://github.com/Sirupsen/logrus/issues/137
