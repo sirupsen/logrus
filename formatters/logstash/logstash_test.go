@@ -3,9 +3,11 @@ package logstash
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"testing"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestLogstashFormatter(t *testing.T) {
@@ -22,7 +24,7 @@ func TestLogstashFormatter(t *testing.T) {
 		"bool":    true,
 	}
 
-	entry := logrus.WithFields(fields)
+	entry := logrus.WithFields(fields).WithError(errors.New("test error"))
 	entry.Message = "msg"
 	entry.Level = logrus.InfoLevel
 
@@ -31,7 +33,7 @@ func TestLogstashFormatter(t *testing.T) {
 	var data map[string]interface{}
 	dec := json.NewDecoder(bytes.NewReader(b))
 	dec.UseNumber()
-	dec.Decode(&data)
+	_ = dec.Decode(&data)
 
 	// base fields
 	assert.Equal(json.Number("1"), data["@version"])
@@ -39,6 +41,9 @@ func TestLogstashFormatter(t *testing.T) {
 	assert.Equal("abc", data["type"])
 	assert.Equal("msg", data["message"])
 	assert.Equal("info", data["level"])
+
+	// error field
+	assert.Equal("test error", data["error"])
 
 	// substituted fields
 	assert.Equal("def", data["fields.message"])

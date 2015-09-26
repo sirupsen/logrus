@@ -48,6 +48,12 @@ func (f *LogstashFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		entry.Data["type"] = f.Type
 	}
 
+	if v, ok := entry.Data[logrus.ErrorKey]; ok {
+		if err, ok := v.(error); ok {
+			entry.Data[logrus.ErrorKey] = err.Error()
+		}
+	}
+
 	serialized, err := json.Marshal(entry.Data)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
