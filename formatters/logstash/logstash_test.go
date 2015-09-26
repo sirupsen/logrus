@@ -11,7 +11,7 @@ import (
 func TestLogstashFormatter(t *testing.T) {
 	assert := assert.New(t)
 
-	lf := LogstashFormatter{Type: "abc"}
+	lf := Formatter{Type: "abc"}
 
 	fields := logrus.Fields{
 		"message": "def",
