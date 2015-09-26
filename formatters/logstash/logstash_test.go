@@ -16,12 +16,13 @@ func TestLogstashFormatter(t *testing.T) {
 	lf := LogstashFormatter{Type: "abc"}
 
 	fields := logrus.Fields{
-		"message": "def",
-		"level":   "ijk",
-		"type":    "lmn",
-		"one":     1,
-		"pi":      3.14,
-		"bool":    true,
+		"message":      "def",
+		"level":        "ijk",
+		"type":         "lmn",
+		"one":          1,
+		"pi":           3.14,
+		"bool":         true,
+		"custom_error": errors.New("test custom error"),
 	}
 
 	entry := logrus.WithFields(fields).WithError(errors.New("test error"))
@@ -42,8 +43,9 @@ func TestLogstashFormatter(t *testing.T) {
 	assert.Equal("msg", data["message"])
 	assert.Equal("info", data["level"])
 
-	// error field
-	assert.Equal("test error", data["error"])
+	// error fields
+	assert.Equal("test error", data[logrus.ErrorKey])
+	assert.Equal("test custom error", data["custom_error"])
 
 	// substituted fields
 	assert.Equal("def", data["fields.message"])

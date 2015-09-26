@@ -49,9 +49,10 @@ func (f *LogstashFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		entry.Data["type"] = f.Type
 	}
 
-	if v, ok := entry.Data[logrus.ErrorKey]; ok {
+	// convert all errors to string.
+	for k, v := range entry.Data {
 		if err, ok := v.(error); ok {
-			entry.Data[logrus.ErrorKey] = err.Error()
+			entry.Data[k] = err.Error()
 		}
 	}
 
