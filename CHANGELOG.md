@@ -1,3 +1,7 @@
+# 0.9.0 (Unreleased)
+
+* logrus/text_formatter: don't emit empty msg
+
 # 0.8.7
 
 * logrus/core: fix possible race (#216)
