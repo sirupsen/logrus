@@ -31,24 +31,6 @@ func (level Level) String() string {
 	return "unknown"
 }
 
-// UnmarshalText decodes text to the level.
-func (level *Level) UnmarshalText(text []byte) error {
-	if len(text) == 0 {
-		return nil
-	}
-	parsed, err := ParseLevel(string(text))
-	if err != nil {
-		return err
-	}
-	*level = parsed
-	return nil
-}
-
-// MarshalText encodes the level into UTF-8-encoded text and returns the result.
-func (level Level) MarshalText() (text []byte, err error) {
-	return []byte(level.String()), nil
-}
-
 // ParseLevel takes a string level and returns the Logrus log level constant.
 func ParseLevel(lvl string) (Level, error) {
 	switch lvl {
