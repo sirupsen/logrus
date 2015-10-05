@@ -329,6 +329,44 @@ func (f *MyJSONFormatter) Format(entry *Entry) ([]byte, error) {
 }
 ```
 
+* [`golf`](https://akutz.github.io/golf): Go List Fields (golf) Text/JSON Formatters
+
+Golf is a go project designed to make it easy to introspect any object through interfaces or reflection and retrieve a list of fields about that object useful for things like logging. Therefore the golf project supplies custom text and JSON formatters for Logrus so that everyone's favorite Go-logging framework can hit the links:
+
+```go
+package main
+
+import (
+  log "github.com/Sirupsen/logrus"
+  logolf "github.com/akutz/golf/logrus"
+)
+
+type Person struct {
+  Name string
+}
+
+func (p *Person) PlayGolf() bool {
+  return true
+}
+
+func main() {
+  // make a batman
+  p := &Person{"Batman"}
+
+  // use the golf text formatter
+  log.SetFormatter(&logolf.TextFormatter{log.TextFormatter{}})
+
+  // log the person
+  log.WithField("person", p).Info("a person appeared")
+}
+```
+
+The above example would emit the following:
+
+```bash
+INFO[0000] a person appeared                             person.Name=Batman
+```
+
 #### Logger as an `io.Writer`
 
 Logrus can be transformed into an `io.Writer`. That writer is the end of an `io.Pipe` and it is your responsibility to close it.
