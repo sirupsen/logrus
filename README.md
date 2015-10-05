@@ -198,7 +198,7 @@ func init() {
   }
 }
 ```
-
+Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/var/run/syslog" or "/var/run/log"). For the detail, please check the [syslog hook README](hooks/syslog/README.md).
 
 | Hook  | Description |
 | ----- | ----------- |
