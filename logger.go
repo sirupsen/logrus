@@ -64,38 +64,43 @@ func (logger *Logger) WithFields(fields Fields) *Entry {
 	return NewEntry(logger).WithFields(fields)
 }
 
-func (logger *Logger) Debugf(format string, args ...interface{}) {
+func (logger *Logger) Debugf(format string, args ...interface{}) *Entry {
 	if logger.Level >= DebugLevel {
-		NewEntry(logger).Debugf(format, args...)
+		return NewEntry(logger).Debugf(format, args...)
 	}
+	return nil
 }
 
-func (logger *Logger) Infof(format string, args ...interface{}) {
+func (logger *Logger) Infof(format string, args ...interface{}) *Entry {
 	if logger.Level >= InfoLevel {
-		NewEntry(logger).Infof(format, args...)
+		return NewEntry(logger).Infof(format, args...)
 	}
+	return nil
 }
 
-func (logger *Logger) Printf(format string, args ...interface{}) {
-	NewEntry(logger).Printf(format, args...)
+func (logger *Logger) Printf(format string, args ...interface{}) *Entry {
+	return NewEntry(logger).Printf(format, args...)
 }
 
-func (logger *Logger) Warnf(format string, args ...interface{}) {
+func (logger *Logger) Warnf(format string, args ...interface{}) *Entry {
 	if logger.Level >= WarnLevel {
-		NewEntry(logger).Warnf(format, args...)
+		return NewEntry(logger).Warnf(format, args...)
 	}
+	return nil
 }
 
-func (logger *Logger) Warningf(format string, args ...interface{}) {
+func (logger *Logger) Warningf(format string, args ...interface{}) *Entry {
 	if logger.Level >= WarnLevel {
-		NewEntry(logger).Warnf(format, args...)
+		return NewEntry(logger).Warnf(format, args...)
 	}
+	return nil
 }
 
-func (logger *Logger) Errorf(format string, args ...interface{}) {
+func (logger *Logger) Errorf(format string, args ...interface{}) *Entry {
 	if logger.Level >= ErrorLevel {
-		NewEntry(logger).Errorf(format, args...)
+		return NewEntry(logger).Errorf(format, args...)
 	}
+	return nil
 }
 
 func (logger *Logger) Fatalf(format string, args ...interface{}) {
@@ -111,38 +116,43 @@ func (logger *Logger) Panicf(format string, args ...interface{}) {
 	}
 }
 
-func (logger *Logger) Debug(args ...interface{}) {
+func (logger *Logger) Debug(args ...interface{}) *Entry {
 	if logger.Level >= DebugLevel {
-		NewEntry(logger).Debug(args...)
+		return NewEntry(logger).Debug(args...)
 	}
+	return nil
 }
 
-func (logger *Logger) Info(args ...interface{}) {
+func (logger *Logger) Info(args ...interface{}) *Entry {
 	if logger.Level >= InfoLevel {
-		NewEntry(logger).Info(args...)
+		return NewEntry(logger).Info(args...)
 	}
+	return nil
 }
 
-func (logger *Logger) Print(args ...interface{}) {
-	NewEntry(logger).Info(args...)
+func (logger *Logger) Print(args ...interface{}) *Entry {
+	return NewEntry(logger).Info(args...)
 }
 
-func (logger *Logger) Warn(args ...interface{}) {
+func (logger *Logger) Warn(args ...interface{}) *Entry {
 	if logger.Level >= WarnLevel {
-		NewEntry(logger).Warn(args...)
+		return NewEntry(logger).Warn(args...)
 	}
+	return nil
 }
 
-func (logger *Logger) Warning(args ...interface{}) {
+func (logger *Logger) Warning(args ...interface{}) *Entry {
 	if logger.Level >= WarnLevel {
-		NewEntry(logger).Warn(args...)
+		return NewEntry(logger).Warn(args...)
 	}
+	return nil
 }
 
-func (logger *Logger) Error(args ...interface{}) {
+func (logger *Logger) Error(args ...interface{}) *Entry {
 	if logger.Level >= ErrorLevel {
-		NewEntry(logger).Error(args...)
+		return NewEntry(logger).Error(args...)
 	}
+	return nil
 }
 
 func (logger *Logger) Fatal(args ...interface{}) {
@@ -158,38 +168,43 @@ func (logger *Logger) Panic(args ...interface{}) {
 	}
 }
 
-func (logger *Logger) Debugln(args ...interface{}) {
+func (logger *Logger) Debugln(args ...interface{}) *Entry {
 	if logger.Level >= DebugLevel {
-		NewEntry(logger).Debugln(args...)
+		return NewEntry(logger).Debugln(args...)
 	}
+	return nil
 }
 
-func (logger *Logger) Infoln(args ...interface{}) {
+func (logger *Logger) Infoln(args ...interface{}) *Entry {
 	if logger.Level >= InfoLevel {
-		NewEntry(logger).Infoln(args...)
+		return NewEntry(logger).Infoln(args...)
 	}
+	return nil
 }
 
-func (logger *Logger) Println(args ...interface{}) {
-	NewEntry(logger).Println(args...)
+func (logger *Logger) Println(args ...interface{}) *Entry {
+	return NewEntry(logger).Println(args...)
 }
 
-func (logger *Logger) Warnln(args ...interface{}) {
+func (logger *Logger) Warnln(args ...interface{}) *Entry {
 	if logger.Level >= WarnLevel {
-		NewEntry(logger).Warnln(args...)
+		return NewEntry(logger).Warnln(args...)
 	}
+	return nil
 }
 
-func (logger *Logger) Warningln(args ...interface{}) {
+func (logger *Logger) Warningln(args ...interface{}) *Entry {
 	if logger.Level >= WarnLevel {
-		NewEntry(logger).Warnln(args...)
+		return NewEntry(logger).Warnln(args...)
 	}
+	return nil
 }
 
-func (logger *Logger) Errorln(args ...interface{}) {
+func (logger *Logger) Errorln(args ...interface{}) *Entry {
 	if logger.Level >= ErrorLevel {
-		NewEntry(logger).Errorln(args...)
+		return NewEntry(logger).Errorln(args...)
 	}
+	return nil
 }
 
 func (logger *Logger) Fatalln(args ...interface{}) {

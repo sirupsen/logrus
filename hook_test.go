@@ -2,6 +2,7 @@ package logrus
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -117,6 +118,46 @@ func TestErrorHookShouldFireOnError(t *testing.T) {
 		log.Hooks.Add(hook)
 		log.Error("test")
 	}, func(fields Fields) {
+		assert.Equal(t, hook.Fired, true)
+	})
+}
+
+type SlowHook struct {
+	Fired bool
+}
+
+func (hook *SlowHook) Fire(entry *Entry) error {
+	time.Sleep(500 * time.Millisecond)
+	hook.Fired = true
+	return nil
+}
+
+func (hook *SlowHook) Async() {}
+
+func (hook *SlowHook) Levels() []Level {
+	return []Level{
+		DebugLevel,
+		InfoLevel,
+		WarnLevel,
+		ErrorLevel,
+		FatalLevel,
+		PanicLevel,
+	}
+}
+
+func TestHookAsync(t *testing.T) {
+	hook := new(SlowHook)
+	var entry *Entry
+
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.Hooks.Add(hook)
+		assert.Equal(t, hook.Fired, false)
+
+		entry = log.Print("test")
+	}, func(fields Fields) {
+		assert.Equal(t, hook.Fired, false)
+		assert.Equal(t, <-entry.HooksDone, struct{}{})
+		assert.Empty(t, entry.HooksDone)
 		assert.Equal(t, hook.Fired, true)
 	})
 }
