@@ -283,46 +283,6 @@ func TestParseLevel(t *testing.T) {
 	assert.Equal(t, "not a valid logrus Level: \"invalid\"", err.Error())
 }
 
-func TestUnmarshalLogLevel(t *testing.T) {
-	jsonString := `["debug","info","warning","error","fatal","panic"]`
-	var levels []Level
-
-	err := json.Unmarshal([]byte(jsonString), &levels)
-	t.Logf("%v", levels)
-
-	assert.Nil(t, err)
-	assert.Equal(t, 6, len(levels))
-	assert.Equal(t, DebugLevel, levels[0])
-	assert.Equal(t, InfoLevel, levels[1])
-	assert.Equal(t, WarnLevel, levels[2])
-	assert.Equal(t, ErrorLevel, levels[3])
-	assert.Equal(t, FatalLevel, levels[4])
-	assert.Equal(t, PanicLevel, levels[5])
-}
-
-func TestMarshalLogLevel(t *testing.T) {
-	str := struct {
-		Debug Level
-		Info  Level
-		Warn  Level
-		Error Level
-		Fatal Level
-		Panic Level
-	}{DebugLevel, InfoLevel, WarnLevel, ErrorLevel, FatalLevel, PanicLevel}
-
-	text, err := json.Marshal(str)
-	testStr := string(text)
-	t.Logf("%s", testStr)
-
-	assert.Nil(t, err)
-	assert.Contains(t, testStr, `"Debug":"debug"`)
-	assert.Contains(t, testStr, `"Info":"info"`)
-	assert.Contains(t, testStr, `"Warn":"warning"`)
-	assert.Contains(t, testStr, `"Error":"error"`)
-	assert.Contains(t, testStr, `"Fatal":"fatal"`)
-	assert.Contains(t, testStr, `"Panic":"panic"`)
-}
-
 func TestGetSetLevelRace(t *testing.T) {
 	wg := sync.WaitGroup{}
 	for i := 0; i < 100; i++ {
