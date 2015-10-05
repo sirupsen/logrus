@@ -11,6 +11,7 @@ import (
 
 var (
 	severityMap = map[logrus.Level]raven.Severity{
+		logrus.TraceLevel: raven.DEBUG,
 		logrus.DebugLevel: raven.DEBUG,
 		logrus.InfoLevel:  raven.INFO,
 		logrus.WarnLevel:  raven.WARNING,

@@ -16,6 +16,9 @@ With `log.Formatter = new(logrus.JSONFormatter)`, for easy parsing by logstash
 or Splunk:
 
 ```json
+{"level":"trace","msg":"The tiniest detail","planck_length":
+1.61619926e-35,"time":"2014-03-10 09:15:29.562264112 -0400 EDT"}
+
 {"animal":"walrus","level":"info","msg":"A group of walrus emerges from the
 ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 
@@ -37,6 +40,7 @@ attached, the output is compatible with the
 [logfmt](http://godoc.org/github.com/kr/logfmt) format:
 
 ```text
+time="2015-03-26T01:27:38-04:00" level=trace msg="The tiniest detail" planck_length=1.61619926e-35
 time="2015-03-26T01:27:38-04:00" level=debug msg="Started observing beach" animal=walrus number=8
 time="2015-03-26T01:27:38-04:00" level=info msg="A group of walrus emerges from the ocean" animal=walrus size=10
 time="2015-03-26T01:27:38-04:00" level=warning msg="The group's number increased tremendously!" number=122 omg=true
@@ -222,9 +226,10 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 
 #### Level logging
 
-Logrus has six logging levels: Debug, Info, Warning, Error, Fatal and Panic.
+Logrus has seven  logging levels: Trace, Debug, Info, Warning, Error, Fatal and Panic.
 
 ```go
+log.Trace("Potentially spammy, low-level debug information")
 log.Debug("Useful debugging information.")
 log.Info("Something noteworthy happened!")
 log.Warn("You should probably take a look at this.")
