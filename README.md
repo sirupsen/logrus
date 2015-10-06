@@ -75,7 +75,6 @@ package main
 import (
   "os"
   log "github.com/Sirupsen/logrus"
-  "github.com/gemnasium/logrus-airbrake-hook"
 )
 
 func init() {
