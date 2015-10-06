@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/Sirupsen/logrus/hooks/airbrake"
+	"github.com/gemnasium/logrus-airbrake-hook"
 )
 
 var log = logrus.New()
