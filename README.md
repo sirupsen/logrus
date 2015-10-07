@@ -205,7 +205,7 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Papertrail](https://github.com/Sirupsen/logrus/blob/master/hooks/papertrail/papertrail.go) | Send errors to the Papertrail hosted logging service via UDP. |
 | [Syslog](https://github.com/Sirupsen/logrus/blob/master/hooks/syslog/syslog.go) | Send errors to remote syslog server. Uses standard library `log/syslog` behind the scenes. |
 | [BugSnag](https://github.com/Sirupsen/logrus/blob/master/hooks/bugsnag/bugsnag.go) | Send errors to the Bugsnag exception tracking service. |
-| [Sentry](https://github.com/Sirupsen/logrus/blob/master/hooks/sentry/sentry.go) | Send errors to the Sentry error logging and aggregation service. |
+| [Sentry](https://github.com/evalphobia/logrus_sentry) | Send errors to the Sentry error logging and aggregation service. |
 | [Hiprus](https://github.com/nubo/hiprus) | Send errors to a channel in hipchat. |
 | [Logrusly](https://github.com/sebest/logrusly) | Send logs to [Loggly](https://www.loggly.com/) |
 | [Slackrus](https://github.com/johntdyer/slackrus) | Hook for Slack chat. |
