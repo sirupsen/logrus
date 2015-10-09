@@ -3,6 +3,7 @@
 * logrus/text_formatter: don't emit empty msg
 * logrus/hooks/airbrake: move out of main repository
 * logrus/hooks/sentry: move out of main repository
+* logrus/hooks/papertrail: move out of main repository
 
 # 0.8.7
 
