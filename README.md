@@ -365,4 +365,21 @@ entries. It should not be a feature of the application-level logger.
 | ---- | ----------- |
 |[Logrus Mate](https://github.com/gogap/logrus_mate)|Logrus mate is a tool for Logrus to manage loggers, you can initial logger's level, hook and formatter by config file, the logger will generated with different config at different environment.|
 
-[godoc]: https://godoc.org/github.com/Sirupsen/logrus
+#### Testing
+
+Logrus has a built in facility for asserting the presence of log messages. This is implemented through the `test` hook and provides:
+
+* decorators for existing logger (`test.NewLocal` and `test.NewGlobal`) which basically just add the `test` hook
+* a test logger (`test.NewNullLogger`) that just records log messages (and does not output any):
+
+```go
+logger, hook := NewNullLogger()
+logger.Error("Hello error")
+
+assert.Equal(1, len(hook.Entries))
+assert.Equal(logrus.ErrorLevel, hook.LastEntry().Level)
+assert.Equal("Hello error", hook.LastEntry().Message)
+
+hook.Reset()
+assert.Nil(hook.LastEntry())
+```
