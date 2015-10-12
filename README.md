@@ -218,6 +218,7 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Rollrus](https://github.com/heroku/rollrus) | Hook for sending errors to rollbar |
 | [Fluentd](https://github.com/evalphobia/logrus_fluent) | Hook for logging to fluentd |
 | [Mongodb](https://github.com/weekface/mgorus) | Hook for logging to mongodb |
+| [InfluxDB](https://github.com/Abramovic/logrus_influxdb) | Hook for logging to influxdb |
 
 #### Level logging
 
