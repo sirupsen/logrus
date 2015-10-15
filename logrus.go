@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"flag"
 	"fmt"
 	"log"
 )
@@ -30,6 +31,26 @@ func (level Level) String() string {
 
 	return "unknown"
 }
+
+// Set implements the flag.Value Set() API.  This lets you do something like:
+//   var logLevel logrus.Level = logrus.InfoLevel
+//   func init() {
+//     flag.Var(&logLevel, "log-level", "logrus log level")
+//   }
+//   func main() {
+//     flag.Parse()
+//     logrus.SetLevel(logLevel)
+//   }
+func (level *Level) Set(lvl string) error {
+	parsed, err := ParseLevel(lvl)
+	if err != nil {
+		return err
+	}
+	*level = parsed
+	return nil
+}
+
+var _ flag.Value = new(Level)
 
 // ParseLevel takes a string level and returns the Logrus log level constant.
 func ParseLevel(lvl string) (Level, error) {
