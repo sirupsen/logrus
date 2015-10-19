@@ -353,5 +353,10 @@ Log rotation is not provided with Logrus. Log rotation should be done by an
 external program (like `logrotate(8)`) that can compress and delete old log
 entries. It should not be a feature of the application-level logger.
 
+#### Tools
+
+| Tool | Description |
+| ---- | ----------- |
+|[Logrus Mate](github.com/gogap/logrus_mate)|Logrus mate is a tool for Logrus to management loggers, you can initial logger's level, hook and formatter by config file, the logger will generated with different config at different environment.|
 
 [godoc]: https://godoc.org/github.com/Sirupsen/logrus
