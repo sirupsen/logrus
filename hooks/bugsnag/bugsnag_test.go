@@ -13,16 +13,24 @@ import (
 	"github.com/bugsnag/bugsnag-go"
 )
 
+type stackFrame struct {
+	Method     string `json:"method"`
+	File       string `json:"file"`
+	LineNumber int    `json:"lineNumber"`
+}
+
+type exception struct {
+	Message    string       `json:"message"`
+	Stacktrace []stackFrame `json:"stacktrace"`
+}
 type notice struct {
 	Events []struct {
-		Exceptions []struct {
-			Message string `json:"message"`
-		} `json:"exceptions"`
+		Exceptions []exception `json:"exceptions"`
 	} `json:"events"`
 }
 
 func TestNoticeReceived(t *testing.T) {
-	msg := make(chan string, 1)
+	msg := make(chan exception, 1)
 	expectedMsg := "foo"
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +41,7 @@ func TestNoticeReceived(t *testing.T) {
 		}
 		_ = r.Body.Close()
 
-		msg <- notice.Events[0].Exceptions[0].Message
+		msg <- notice.Events[0].Exceptions[0]
 	}))
 	defer ts.Close()
 
@@ -55,8 +63,16 @@ func TestNoticeReceived(t *testing.T) {
 
 	select {
 	case received := <-msg:
-		if received != expectedMsg {
+		message := received.Message
+		if message != expectedMsg {
 			t.Errorf("Unexpected message received: %s", received)
+		}
+		if len(received.Stacktrace) < 1 {
+			t.Error("Bugsnag error does not have a stack trace")
+		}
+		topFrame := received.Stacktrace[0]
+		if topFrame.Method != "TestNoticeReceived" {
+			t.Errorf("Unexpected method on top of call stack: '%s' (should be 'TestNoticeReceived')", topFrame.Method)
 		}
 	case <-time.After(time.Second):
 		t.Error("Timed out; no notice received by Bugsnag API")

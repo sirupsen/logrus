@@ -5,6 +5,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/bugsnag/bugsnag-go"
+	bugsnag_errors "github.com/bugsnag/bugsnag-go/errors"
 )
 
 type bugsnagHook struct{}
@@ -38,6 +39,9 @@ func NewBugsnagHook() (*bugsnagHook, error) {
 	return &bugsnagHook{}, nil
 }
 
+// skipStackFrames skips logrus stack frames before logging to Bugsnag.
+const skipStackFrames = 4
+
 // Fire forwards an error to Bugsnag. Given a logrus.Entry, it extracts the
 // "error" field (or the Message if the error isn't present) and sends it off.
 func (hook *bugsnagHook) Fire(entry *logrus.Entry) error {
@@ -49,7 +53,8 @@ func (hook *bugsnagHook) Fire(entry *logrus.Entry) error {
 		notifyErr = errors.New(entry.Message)
 	}
 
-	bugsnagErr := bugsnag.Notify(notifyErr)
+	errWithStack := bugsnag_errors.New(notifyErr, skipStackFrames)
+	bugsnagErr := bugsnag.Notify(errWithStack)
 	if bugsnagErr != nil {
 		return ErrBugsnagSendFailed{bugsnagErr}
 	}
