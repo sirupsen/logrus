@@ -6,10 +6,7 @@ import (
 	"io"
 	"os"
 	"runtime"
-	"strconv"
-	"strings"
 	"time"
-	"path/filepath"
 )
 
 // Defines the key when adding errors using WithError.
@@ -33,13 +30,17 @@ type Entry struct {
 
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
 	Message string
+
+	// Trace information
+	Trace string
 }
 
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
 		// Default is three fields, give a little extra room
-		Data: make(Fields, 5),
+		Data:  make(Fields, 5),
+		Trace: "",
 	}
 }
 
@@ -82,17 +83,25 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return &Entry{Logger: entry.Logger, Data: data}
 }
 
+// WithTrace adds a stack trace back from where the log entry was created
+func (entry *Entry) WithTrace() *Entry {
+	// don't actually do the trace here otherwise it'll be wrong
+	entry.Trace = "placeholder"
+	return entry
+}
+
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
-	entry.Data["caller"] = context()
 
-	// if level == WarnLevel || level == InfoLevel {
-		// entry.Data["trace"] = trace()
-	// }
+	if entry.Trace == "placeholder" {
+		stack := make([]byte, 2048)
+		size := runtime.Stack(stack, false)
+		entry.Trace = string(stack[:size])
+	}
 
 	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
 		entry.Logger.mu.Lock()
@@ -270,20 +279,4 @@ func (entry *Entry) Panicln(args ...interface{}) {
 func (entry *Entry) sprintlnn(args ...interface{}) string {
 	msg := fmt.Sprintln(args...)
 	return msg[:len(msg)-1]
-}
-
-// Captures where the log call came from and formats it for output
-func context() string {
-	if _, file, line, ok := runtime.Caller(4); ok {
-		return strings.Join([]string{filepath.Base(file), strconv.Itoa(line)}, ":")
-	}
-	// not sure what the convention should be here
-	return "unavailable"
-}
-
-// handles getting the stack trace and returns it as a string
-func trace() string {
-	stack := make([]byte, 2048)
-	size := runtime.Stack(stack, false)
-	return string(stack[:size])
 }

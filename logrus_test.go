@@ -62,7 +62,7 @@ func TestPrint(t *testing.T) {
 	}, func(fields Fields) {
 		assert.Equal(t, fields["msg"], "test")
 		assert.Equal(t, fields["level"], "info")
-		assert.Equal(t, fields["caller"], "logrus_test.go:56")
+		assert.Nil(t, fields["trace"])
 	})
 }
 
@@ -72,7 +72,7 @@ func TestInfo(t *testing.T) {
 	}, func(fields Fields) {
 		assert.Equal(t, fields["msg"], "test")
 		assert.Equal(t, fields["level"], "info")
-		assert.Equal(t, fields["caller"], "logrus_test.go:66")
+		assert.Nil(t, fields["trace"])
 	})
 }
 
@@ -82,6 +82,17 @@ func TestWarn(t *testing.T) {
 	}, func(fields Fields) {
 		assert.Equal(t, fields["msg"], "test")
 		assert.Equal(t, fields["level"], "warning")
+		assert.Nil(t, fields["trace"])
+	})
+}
+
+func TestWithTrace(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.WithTrace().Warn("test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test")
+		assert.Equal(t, fields["level"], "warning")
+		assert.NotNil(t, fields["trace"])
 	})
 }
 
@@ -236,7 +247,7 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	err = json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded second message")
-	assert.Equal(t, len(fields), 4, "should only have msg/time/level/context fields")
+	assert.Equal(t, len(fields), 4, "should only have msg/time/level/context/caller fields")
 	assert.Equal(t, fields["msg"], "omg it is!")
 	assert.Equal(t, fields["context"], "eating raw fish")
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
