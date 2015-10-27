@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -29,13 +30,17 @@ type Entry struct {
 
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
 	Message string
+
+	// Trace information
+	Trace string
 }
 
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
 		// Default is three fields, give a little extra room
-		Data: make(Fields, 5),
+		Data:  make(Fields, 5),
+		Trace: "",
 	}
 }
 
@@ -78,12 +83,25 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return &Entry{Logger: entry.Logger, Data: data}
 }
 
+// WithTrace adds a stack trace back from where the log entry was created
+func (entry *Entry) WithTrace() *Entry {
+	// don't actually do the trace here otherwise it'll be wrong
+	entry.Trace = "placeholder"
+	return entry
+}
+
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
+
+	if entry.Trace == "placeholder" {
+		stack := make([]byte, 2048)
+		size := runtime.Stack(stack, false)
+		entry.Trace = string(stack[:size])
+	}
 
 	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
 		entry.Logger.mu.Lock()
