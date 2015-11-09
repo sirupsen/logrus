@@ -107,3 +107,13 @@ type StdLogger interface {
 	Panicf(string, ...interface{})
 	Panicln(...interface{})
 }
+
+// ProvidesLogMessageAndData is what types implement that want to provide
+// specific messages and data to log entries.
+type ProvidesLogMessageAndData interface {
+	// GetLogMessage gets the message to use with a log entry.
+	GetLogMessage() string
+
+	// GetLogData gets the field data to use with a log entry.
+	GetLogData() map[string]interface{}
+}
