@@ -220,6 +220,7 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Mongodb](https://github.com/weekface/mgorus) | Hook for logging to mongodb |
 | [InfluxDB](https://github.com/Abramovic/logrus_influxdb) | Hook for logging to influxdb |
 | [Octokit](https://github.com/dorajistyle/logrus-octokit-hook) | Hook for logging to github via octokit |
+| [DeferPanic](https://github.com/deferpanic/dp-logrus) | Hook for logging to DeferPanic |
 
 #### Level logging
 
