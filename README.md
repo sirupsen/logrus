@@ -360,6 +360,6 @@ entries. It should not be a feature of the application-level logger.
 
 | Tool | Description |
 | ---- | ----------- |
-|[Logrus Mate](github.com/gogap/logrus_mate)|Logrus mate is a tool for Logrus to management loggers, you can initial logger's level, hook and formatter by config file, the logger will generated with different config at different environment.|
+|[Logrus Mate](https://github.com/gogap/logrus_mate)|Logrus mate is a tool for Logrus to manage loggers, you can initial logger's level, hook and formatter by config file, the logger will generated with different config at different environment.|
 
 [godoc]: https://godoc.org/github.com/Sirupsen/logrus
