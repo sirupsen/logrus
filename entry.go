@@ -21,7 +21,7 @@ type Entry struct {
 	// Contains all the fields set by the user.
 	Data Fields
 
-	// Time at which the log entry was created
+	// Time, in UTC, at which the log entry was created
 	Time time.Time
 
 	// Level the log entry was logged at: Debug, Info, Warn, Error, Fatal or Panic
@@ -81,7 +81,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
-	entry.Time = time.Now()
+	entry.Time = time.Now().UTC()
 	entry.Level = level
 	entry.Message = msg
 
