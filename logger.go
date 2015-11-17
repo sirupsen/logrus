@@ -64,6 +64,11 @@ func (logger *Logger) WithFields(fields Fields) *Entry {
 	return NewEntry(logger).WithFields(fields)
 }
 
+// WithTrace creates a new log entry with a captured trace from the current location
+func (logger *Logger) WithTrace() *Entry {
+	return NewEntry(logger).WithTrace()
+}
+
 func (logger *Logger) Debugf(format string, args ...interface{}) {
 	if logger.Level >= DebugLevel {
 		NewEntry(logger).Debugf(format, args...)

@@ -62,6 +62,7 @@ func TestPrint(t *testing.T) {
 	}, func(fields Fields) {
 		assert.Equal(t, fields["msg"], "test")
 		assert.Equal(t, fields["level"], "info")
+		assert.Nil(t, fields["trace"])
 	})
 }
 
@@ -71,6 +72,7 @@ func TestInfo(t *testing.T) {
 	}, func(fields Fields) {
 		assert.Equal(t, fields["msg"], "test")
 		assert.Equal(t, fields["level"], "info")
+		assert.Nil(t, fields["trace"])
 	})
 }
 
@@ -80,6 +82,17 @@ func TestWarn(t *testing.T) {
 	}, func(fields Fields) {
 		assert.Equal(t, fields["msg"], "test")
 		assert.Equal(t, fields["level"], "warning")
+		assert.Nil(t, fields["trace"])
+	})
+}
+
+func TestWithTrace(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.WithTrace().Warn("test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test")
+		assert.Equal(t, fields["level"], "warning")
+		assert.NotNil(t, fields["trace"])
 	})
 }
 

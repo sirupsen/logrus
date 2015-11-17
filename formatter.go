@@ -45,4 +45,9 @@ func prefixFieldClashes(data Fields) {
 	if ok {
 		data["fields.level"] = data["level"]
 	}
+
+	_, ok = data["trace"]
+	if ok {
+		data["fields.trace"] = data["trace"]
+	}
 }

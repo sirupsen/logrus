@@ -33,6 +33,11 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data["msg"] = entry.Message
 	data["level"] = entry.Level.String()
 
+	// Only add trace if it was built
+	if entry.Trace != "" {
+		data["trace"] = entry.Trace
+	}
+
 	serialized, err := json.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
