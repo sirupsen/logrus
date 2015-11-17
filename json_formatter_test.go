@@ -46,7 +46,7 @@ func TestErrorNotLostOnFieldNotNamedError(t *testing.T) {
 }
 
 func TestFieldClashWithTime(t *testing.T) {
-	formatter := &JSONFormatter{}
+	formatter := &JSONFormatter{TimestampInUTC: true}
 
 	b, err := formatter.Format(WithField("time", "right now!"))
 	if err != nil {

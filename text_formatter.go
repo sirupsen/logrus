@@ -50,6 +50,9 @@ type TextFormatter struct {
 	// TimestampFormat to use for display when a full timestamp is printed
 	TimestampFormat string
 
+	// Use UTC when a full timestamp is printed
+	TimestampInUTC bool
+
 	// The fields are sorted by default for a consistent output. For applications
 	// that log extremely frequently and don't use the JSON formatter this may not
 	// be desired.
@@ -81,7 +84,11 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		f.printColored(b, entry, keys, timestampFormat)
 	} else {
 		if !f.DisableTimestamp {
-			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
+			if f.TimestampInUTC {
+				f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
+			} else {
+				f.appendKeyValue(b, "time", entry.Time.Local().Format(timestampFormat))
+			}
 		}
 		f.appendKeyValue(b, "level", entry.Level.String())
 		if entry.Message != "" {
@@ -114,7 +121,11 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	if !f.FullTimestamp {
 		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, miniTS(), entry.Message)
 	} else {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
+		if f.TimestampInUTC {
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
+		} else {			
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Local().Format(timestampFormat), entry.Message)
+		}
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
