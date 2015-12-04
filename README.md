@@ -301,7 +301,7 @@ The built-in logging formatters are:
 * `logrus/formatters/logstash.LogstashFormatter`. Logs fields as [Logstash](http://logstash.net) Events.
 
     ```go
-      logrus.SetFormatter(&logstash.LogstashFormatter{Type: “application_name"})
+      logrus.SetFormatter(&logstash.LogstashFormatter{Type: "application_name"})
     ```
 
 Third party logging formatters:
