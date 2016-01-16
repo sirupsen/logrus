@@ -68,8 +68,6 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	b := &bytes.Buffer{}
 
-	prefixFieldClashes(entry.Data)
-
 	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
 	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
 

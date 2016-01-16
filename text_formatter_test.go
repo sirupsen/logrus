@@ -9,6 +9,7 @@ import (
 
 func TestQuoting(t *testing.T) {
 	tf := &TextFormatter{DisableColors: true}
+	StandardLogger().ShowCaller(false)
 
 	checkQuoting := func(q bool, value interface{}) {
 		b, _ := tf.Format(WithField("test", value))
