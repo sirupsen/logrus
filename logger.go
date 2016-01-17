@@ -28,6 +28,8 @@ type Logger struct {
 	Level Level
 	// Used to sync writing to the log.
 	mu sync.Mutex
+
+	showFileLine bool
 }
 
 // Creates a new logger. Configuration should be set by changing `Formatter`,
@@ -44,10 +46,11 @@ type Logger struct {
 // It's recommended to make this a global instance called `log`.
 func New() *Logger {
 	return &Logger{
-		Out:       os.Stderr,
-		Formatter: new(TextFormatter),
-		Hooks:     make(LevelHooks),
-		Level:     InfoLevel,
+		Out:          os.Stderr,
+		Formatter:    new(TextFormatter),
+		Hooks:        make(LevelHooks),
+		Level:        InfoLevel,
+		showFileLine: true,
 	}
 }
 
