@@ -45,7 +45,7 @@ func GetLevel() Level {
 func ShowCaller(b bool) {
 	std.mu.Lock()
 	defer std.mu.Unlock()
-	std.showFileLine = b
+	std.showCaller = b
 }
 
 // AddHook adds a hook to the standard logger hooks.
