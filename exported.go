@@ -42,7 +42,7 @@ func GetLevel() Level {
 }
 
 // SetFileLineEnabled sets the standard logger level.
-func ShowFileLine(b bool) {
+func ShowCaller(b bool) {
 	std.mu.Lock()
 	defer std.mu.Unlock()
 	std.showFileLine = b

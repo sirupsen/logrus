@@ -296,6 +296,6 @@ func (entry *Entry) caller() {
 			str = fmt.Sprint(filepath.Base(file), ":", line)
 		}
 
-		entry.Data["File@Line"] = str
+		entry.Data["caller"] = str
 	}
 }
