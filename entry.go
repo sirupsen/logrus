@@ -32,20 +32,23 @@ type Entry struct {
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
 	Message string
 
-	Depth int
+	depth int
+
+	tempDepth int
 }
 
 func NewEntry(logger *Logger, d int) *Entry {
 	return &Entry{
 		Logger: logger,
 		// Default is three fields, give a little extra room
-		Data:  make(Fields, 5),
-		Depth: d,
+		Data:      make(Fields, 5),
+		depth:     d,
+		tempDepth: d,
 	}
 }
 
 func (entry *Entry) deepen() {
-	entry.Depth = entry.Depth + 1
+	entry.tempDepth = entry.tempDepth + 1
 }
 
 // Returns a reader for the entry, which is a proxy to the formatter.
@@ -86,12 +89,14 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data, Depth: entry.Depth}
+	return &Entry{Logger: entry.Logger, Data: data, depth: entry.depth, tempDepth: entry.tempDepth}
 }
 
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
+	entry.deepen()
+	entry.caller()
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
@@ -127,10 +132,9 @@ func (entry Entry) log(level Level, msg string) {
 
 func (entry *Entry) Debug(args ...interface{}) {
 	if entry.Logger.Level >= DebugLevel {
-		entry.deepen()
-		entry.caller()
 		entry.log(DebugLevel, fmt.Sprint(args...))
 	}
+	entry.tempDepth = entry.depth
 }
 
 func (entry *Entry) Print(args ...interface{}) {
@@ -140,18 +144,16 @@ func (entry *Entry) Print(args ...interface{}) {
 
 func (entry *Entry) Info(args ...interface{}) {
 	if entry.Logger.Level >= InfoLevel {
-		entry.deepen()
-		entry.caller()
 		entry.log(InfoLevel, fmt.Sprint(args...))
 	}
+	entry.tempDepth = entry.depth
 }
 
 func (entry *Entry) Warn(args ...interface{}) {
 	if entry.Logger.Level >= WarnLevel {
-		entry.deepen()
-		entry.caller()
 		entry.log(WarnLevel, fmt.Sprint(args...))
 	}
+	entry.tempDepth = entry.depth
 }
 
 func (entry *Entry) Warning(args ...interface{}) {
@@ -165,23 +167,22 @@ func (entry *Entry) Error(args ...interface{}) {
 		entry.caller()
 		entry.log(ErrorLevel, fmt.Sprint(args...))
 	}
+	entry.tempDepth = entry.depth
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
 	if entry.Logger.Level >= FatalLevel {
-		entry.deepen()
-		entry.caller()
 		entry.log(FatalLevel, fmt.Sprint(args...))
 	}
+	entry.tempDepth = entry.depth
 	os.Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
 	if entry.Logger.Level >= PanicLevel {
-		entry.deepen()
-		entry.caller()
 		entry.log(PanicLevel, fmt.Sprint(args...))
 	}
+	entry.tempDepth = entry.depth
 	panic(fmt.Sprint(args...))
 }
 
@@ -307,7 +308,7 @@ func (entry *Entry) sprintlnn(args ...interface{}) string {
 func (entry *Entry) caller() {
 	if entry.Logger.showCaller {
 		var str string
-		_, file, line, ok := runtime.Caller(entry.Depth)
+		_, file, line, ok := runtime.Caller(entry.tempDepth)
 		if !ok {
 			str = "???: ?"
 		} else {

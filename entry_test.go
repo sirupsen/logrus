@@ -3,9 +3,12 @@ package logrus
 import (
 	"bytes"
 	"fmt"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"runtime"
 )
 
 func TestEntryWithError(t *testing.T) {
@@ -72,6 +75,15 @@ func TestEntryPanicf(t *testing.T) {
 
 	logger := New()
 	logger.Out = &bytes.Buffer{}
-	entry := NewEntry(logger, 1)
+	entry := NewEntry(logger, 3)
 	entry.WithField("err", errBoom).Panicf("kaboom %v", true)
+}
+
+func TestCaller(t *testing.T) {
+	logger := New()
+	entry := NewEntry(logger, 2)
+	_, file, line, _ := runtime.Caller(0)
+
+	entry.Info(filepath.Base(file), line)
+	entry.Warn("warn")
 }
