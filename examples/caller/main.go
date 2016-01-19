@@ -2,7 +2,7 @@
 package main
 
 import (
-	log "github.com/omid/logrus"
+	log "github.com/omidnikta/logrus"
 )
 
 func init() {
