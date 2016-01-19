@@ -25,7 +25,7 @@ func TestEntryWithError(t *testing.T) {
 
 	logger := New()
 	logger.Out = &bytes.Buffer{}
-	entry := NewEntry(logger, 1)
+	entry := NewEntry(logger)
 
 	assert.Equal(err, entry.WithError(err).Data["error"])
 
@@ -53,7 +53,7 @@ func TestEntryPanicln(t *testing.T) {
 
 	logger := New()
 	logger.Out = &bytes.Buffer{}
-	entry := NewEntry(logger, 1)
+	entry := NewEntry(logger)
 	entry.WithField("err", errBoom).Panicln("kaboom")
 }
 
@@ -75,15 +75,19 @@ func TestEntryPanicf(t *testing.T) {
 
 	logger := New()
 	logger.Out = &bytes.Buffer{}
-	entry := NewEntry(logger, 3)
+	entry := NewEntry(logger)
 	entry.WithField("err", errBoom).Panicf("kaboom %v", true)
 }
 
 func TestCaller(t *testing.T) {
-	logger := New()
-	entry := NewEntry(logger, 2)
+	addr := "Address"
+
+	std.Debug("Sample ", addr)
+	std.Debugf("Sample %s", addr)
+	std.Debugln("Sample", addr)
+
 	_, file, line, _ := runtime.Caller(0)
 
-	entry.Info(filepath.Base(file), line)
-	entry.Warn("warn")
+	std.Info(filepath.Base(file), line)
+	std.Warn("warn")
 }
