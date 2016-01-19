@@ -58,158 +58,158 @@ func New() *Logger {
 // Debug, Print, Info, Warn, Fatal or Panic. It only creates a log entry.
 // If you want multiple fields, use `WithFields`.
 func (logger *Logger) WithField(key string, value interface{}) *Entry {
-	return newEntry(logger, 1).WithField(key, value)
+	return newEntry(logger, 3).WithField(key, value)
 }
 
 // Adds a struct of fields to the log entry. All it does is call `WithField` for
 // each `Field`.
 func (logger *Logger) WithFields(fields Fields) *Entry {
-	return newEntry(logger, 2).WithFields(fields)
+	return newEntry(logger, 4).WithFields(fields)
 }
 
 // Add an error as single field to the log entry.  All it does is call
 // `WithError` for the given `error`.
 func (logger *Logger) WithError(err error) *Entry {
-	return newEntry(logger, 1).WithError(err)
+	return newEntry(logger, 3).WithError(err)
 }
 
 func (logger *Logger) Debugf(format string, args ...interface{}) {
 	if logger.Level >= DebugLevel {
-		newEntry(logger, 3).Debugf(format, args...)
+		newEntry(logger, 5).Debugf(format, args...)
 	}
 }
 
 func (logger *Logger) Infof(format string, args ...interface{}) {
 	if logger.Level >= InfoLevel {
-		newEntry(logger, 3).Infof(format, args...)
+		newEntry(logger, 5).Infof(format, args...)
 	}
 }
 
 func (logger *Logger) Printf(format string, args ...interface{}) {
-	newEntry(logger, 3).Printf(format, args...)
+	newEntry(logger, 5).Printf(format, args...)
 }
 
 func (logger *Logger) Warnf(format string, args ...interface{}) {
 	if logger.Level >= WarnLevel {
-		newEntry(logger, 3).Warnf(format, args...)
+		newEntry(logger, 5).Warnf(format, args...)
 	}
 }
 
 func (logger *Logger) Warningf(format string, args ...interface{}) {
 	if logger.Level >= WarnLevel {
-		newEntry(logger, 3).Warnf(format, args...)
+		newEntry(logger, 5).Warnf(format, args...)
 	}
 }
 
 func (logger *Logger) Errorf(format string, args ...interface{}) {
 	if logger.Level >= ErrorLevel {
-		newEntry(logger, 3).Errorf(format, args...)
+		newEntry(logger, 5).Errorf(format, args...)
 	}
 }
 
 func (logger *Logger) Fatalf(format string, args ...interface{}) {
 	if logger.Level >= FatalLevel {
-		newEntry(logger, 3).Fatalf(format, args...)
+		newEntry(logger, 5).Fatalf(format, args...)
 	}
 	os.Exit(1)
 }
 
 func (logger *Logger) Panicf(format string, args ...interface{}) {
 	if logger.Level >= PanicLevel {
-		newEntry(logger, 3).Panicf(format, args...)
+		newEntry(logger, 5).Panicf(format, args...)
 	}
 }
 
 func (logger *Logger) Debug(args ...interface{}) {
 	if logger.Level >= DebugLevel {
-		newEntry(logger, 3).Debug(args...)
+		newEntry(logger, 5).Debug(args...)
 	}
 }
 
 func (logger *Logger) Info(args ...interface{}) {
 	if logger.Level >= InfoLevel {
-		newEntry(logger, 3).Info(args...)
+		newEntry(logger, 5).Info(args...)
 	}
 }
 
 func (logger *Logger) Print(args ...interface{}) {
-	newEntry(logger, 3).Info(args...)
+	newEntry(logger, 5).Info(args...)
 }
 
 func (logger *Logger) Warn(args ...interface{}) {
 	if logger.Level >= WarnLevel {
-		newEntry(logger, 3).Warn(args...)
+		newEntry(logger, 5).Warn(args...)
 	}
 }
 
 func (logger *Logger) Warning(args ...interface{}) {
 	if logger.Level >= WarnLevel {
-		newEntry(logger, 3).Warn(args...)
+		newEntry(logger, 5).Warn(args...)
 	}
 }
 
 func (logger *Logger) Error(args ...interface{}) {
 	if logger.Level >= ErrorLevel {
-		newEntry(logger, 3).Error(args...)
+		newEntry(logger, 5).Error(args...)
 	}
 }
 
 func (logger *Logger) Fatal(args ...interface{}) {
 	if logger.Level >= FatalLevel {
-		newEntry(logger, 3).Fatal(args...)
+		newEntry(logger, 5).Fatal(args...)
 	}
 	os.Exit(1)
 }
 
 func (logger *Logger) Panic(args ...interface{}) {
 	if logger.Level >= PanicLevel {
-		newEntry(logger, 3).Panic(args...)
+		newEntry(logger, 5).Panic(args...)
 	}
 }
 
 func (logger *Logger) Debugln(args ...interface{}) {
 	if logger.Level >= DebugLevel {
-		newEntry(logger, 3).Debugln(args...)
+		newEntry(logger, 5).Debugln(args...)
 	}
 }
 
 func (logger *Logger) Infoln(args ...interface{}) {
 	if logger.Level >= InfoLevel {
-		newEntry(logger, 3).Infoln(args...)
+		newEntry(logger, 5).Infoln(args...)
 	}
 }
 
 func (logger *Logger) Println(args ...interface{}) {
-	newEntry(logger, 3).Println(args...)
+	newEntry(logger, 5).Println(args...)
 }
 
 func (logger *Logger) Warnln(args ...interface{}) {
 	if logger.Level >= WarnLevel {
-		newEntry(logger, 3).Warnln(args...)
+		newEntry(logger, 5).Warnln(args...)
 	}
 }
 
 func (logger *Logger) Warningln(args ...interface{}) {
 	if logger.Level >= WarnLevel {
-		newEntry(logger, 3).Warnln(args...)
+		newEntry(logger, 5).Warnln(args...)
 	}
 }
 
 func (logger *Logger) Errorln(args ...interface{}) {
 	if logger.Level >= ErrorLevel {
-		newEntry(logger, 3).Errorln(args...)
+		newEntry(logger, 5).Errorln(args...)
 	}
 }
 
 func (logger *Logger) Fatalln(args ...interface{}) {
 	if logger.Level >= FatalLevel {
-		newEntry(logger, 3).Fatalln(args...)
+		newEntry(logger, 5).Fatalln(args...)
 	}
 	os.Exit(1)
 }
 
 func (logger *Logger) Panicln(args ...interface{}) {
 	if logger.Level >= PanicLevel {
-		newEntry(logger, 3).Panicln(args...)
+		newEntry(logger, 5).Panicln(args...)
 	}
 }

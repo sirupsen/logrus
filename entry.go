@@ -40,7 +40,7 @@ func NewEntry(logger *Logger) *Entry {
 		Logger: logger,
 		// Default is three fields, give a little extra room
 		Data:  make(Fields, 5),
-		depth: 2,
+		depth: 3,
 	}
 }
 
@@ -90,13 +90,13 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data, depth: entry.depth}
+	return &Entry{Logger: entry.Logger, Data: data, depth: entry.depth + 1}
 }
 
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
-	entry.caller()
+	//	caller(&msg, entry.depth, entry.Logger.showCaller)
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
@@ -293,16 +293,12 @@ func (entry *Entry) sprintlnn(args ...interface{}) string {
 	return msg[:len(msg)-1]
 }
 
-func (entry *Entry) caller() {
-	if entry.Logger.showCaller {
-		var str string
-		_, file, line, ok := runtime.Caller(entry.depth + 1)
-		if !ok {
-			str = "???: ?"
-		} else {
-			str = fmt.Sprint(filepath.Base(file), ":", line)
-		}
-
-		entry.Data["caller"] = str
+func caller(depth int) (str string) {
+	_, file, line, ok := runtime.Caller(depth + 1)
+	if !ok {
+		str = "???: ?"
+	} else {
+		str = fmt.Sprint(filepath.Base(file), ":", line)
 	}
+	return
 }

@@ -2,6 +2,8 @@
 package main
 
 import (
+	"time"
+
 	log "github.com/omidnikta/logrus"
 )
 
@@ -75,7 +77,23 @@ func check(l *log.Logger) {
 	l.Printf("Hello %d", 10)
 
 	entry := log.NewEntry(l)
-	entry.Debug("first")
-	entry.Debug("first")
-	entry.Debug("first")
+	j := 1
+	for i := 0; i < j; i++ {
+		go func(en *log.Entry) {
+			en.WithField("first", 1).Debug("----- -------- 83")
+			en.WithFields(log.Fields{"first": 1, "second": 2}).Debug("----- -------- 84")
+		}(entry)
+	}
+	for i := 0; i < j; i++ {
+		go func(en *log.Entry) {
+			en.WithField("first", 1).Debug("----- -------- 89")
+			en.WithFields(log.Fields{"first": 1, "second": 2}).Debug("----- -------- 90")
+		}(entry)
+	}
+	time.Sleep(time.Second)
+	//	for i := 0; i < 100; i++ {
+	//		go entry.Debug("79")
+	//		go entry.Debug("80")
+	//		go entry.Debug("81")
+	//	}
 }
