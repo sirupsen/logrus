@@ -73,4 +73,9 @@ func check(l *log.Logger) {
 	l.Print("Hello")
 	l.Println("Hello")
 	l.Printf("Hello %d", 10)
+
+	entry := log.NewEntry(l)
+	entry.Debug("first")
+	entry.Debug("first")
+	entry.Debug("first")
 }
