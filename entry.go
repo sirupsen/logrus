@@ -44,9 +44,9 @@ func NewEntry(logger *Logger) *Entry {
 	}
 }
 
-func newEntry(logger *Logger, d int) *Entry {
+func newEntry(logger *Logger) *Entry {
 	en := NewEntry(logger)
-	en.depth = d
+	en.depth = 5
 	return en
 }
 
@@ -69,16 +69,12 @@ func (entry *Entry) String() (string, error) {
 
 // Add an error as single field (using the key defined in ErrorKey) to the Entry.
 func (entry *Entry) WithError(err error) *Entry {
-	en := entry.WithField(ErrorKey, err)
-	en.depth = entry.depth + 1
-	return en
+	return entry.WithField(ErrorKey, err)
 }
 
 // Add a single field to the Entry.
 func (entry *Entry) WithField(key string, value interface{}) *Entry {
-	en := entry.WithFields(Fields{key: value})
-	en.depth = entry.depth
-	return en
+	return entry.WithFields(Fields{key: value})
 }
 
 // Add a map of fields to the Entry.

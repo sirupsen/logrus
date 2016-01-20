@@ -18,7 +18,6 @@ func main() {
 	check(logg)
 	check(logger)
 
-	//	addr := "Address"
 	log.Debug(log.Caller())
 	log.Debugf(log.Caller())
 	log.Debugln(log.Caller())
@@ -75,8 +74,6 @@ func main() {
 }
 
 func check(l *log.Logger) {
-	//	addr := "Address"
-
 	l.Debug(log.Caller())
 	l.Debugf(log.Caller())
 	l.Debugln(log.Caller())
