@@ -64,7 +64,7 @@ func (logger *Logger) WithField(key string, value interface{}) *Entry {
 // Adds a struct of fields to the log entry. All it does is call `WithField` for
 // each `Field`.
 func (logger *Logger) WithFields(fields Fields) *Entry {
-	return newEntry(logger, 4).WithFields(fields)
+	return newEntry(logger, 3).WithFields(fields)
 }
 
 // Add an error as single field to the log entry.  All it does is call
