@@ -58,13 +58,13 @@ func New() *Logger {
 // Debug, Print, Info, Warn, Fatal or Panic. It only creates a log entry.
 // If you want multiple fields, use `WithFields`.
 func (logger *Logger) WithField(key string, value interface{}) *Entry {
-	return newEntry(logger, 3).WithField(key, value)
+	return newEntry(logger, 4).WithField(key, value)
 }
 
 // Adds a struct of fields to the log entry. All it does is call `WithField` for
 // each `Field`.
 func (logger *Logger) WithFields(fields Fields) *Entry {
-	return newEntry(logger, 3).WithFields(fields)
+	return newEntry(logger, 4).WithFields(fields)
 }
 
 // Add an error as single field to the log entry.  All it does is call

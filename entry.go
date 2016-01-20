@@ -40,7 +40,7 @@ func NewEntry(logger *Logger) *Entry {
 		Logger: logger,
 		// Default is three fields, give a little extra room
 		Data:  make(Fields, 5),
-		depth: 3,
+		depth: 4,
 	}
 }
 
@@ -77,7 +77,7 @@ func (entry *Entry) WithError(err error) *Entry {
 // Add a single field to the Entry.
 func (entry *Entry) WithField(key string, value interface{}) *Entry {
 	en := entry.WithFields(Fields{key: value})
-	en.depth = entry.depth + 1
+	en.depth = entry.depth
 	return en
 }
 
@@ -90,7 +90,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data, depth: entry.depth + 1}
+	return &Entry{Logger: entry.Logger, Data: data, depth: entry.depth}
 }
 
 // This function is not declared with a pointer value because otherwise
@@ -301,4 +301,8 @@ func caller(depth int) (str string) {
 		str = fmt.Sprint(filepath.Base(file), ":", line)
 	}
 	return
+}
+
+func Caller() string {
+	return caller(1)
 }

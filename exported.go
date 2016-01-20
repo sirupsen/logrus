@@ -51,7 +51,7 @@ func AddHook(hook Hook) {
 
 // WithError creates an entry from the standard logger and adds an error to it, using the value defined in ErrorKey as key.
 func WithError(err error) *Entry {
-	return newEntry(std, 3).WithField(ErrorKey, err)
+	return newEntry(std, 4).WithField(ErrorKey, err)
 }
 
 // WithField creates an entry from the standard logger and adds a field to
@@ -60,7 +60,7 @@ func WithError(err error) *Entry {
 // Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal
 // or Panic on the Entry it returns.
 func WithField(key string, value interface{}) *Entry {
-	return newEntry(std, 3).WithField(key, value)
+	return newEntry(std, 4).WithField(key, value)
 }
 
 // WithFields creates an entry from the standard logger and adds multiple
@@ -70,7 +70,7 @@ func WithField(key string, value interface{}) *Entry {
 // Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal
 // or Panic on the Entry it returns.
 func WithFields(fields Fields) *Entry {
-	return newEntry(std, 3).WithFields(fields)
+	return newEntry(std, 4).WithFields(fields)
 }
 
 // Debug logs a message at level Debug on the standard logger.
