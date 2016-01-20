@@ -213,3 +213,8 @@ func (logger *Logger) Panicln(args ...interface{}) {
 		newEntry(logger, 5).Panicln(args...)
 	}
 }
+
+// SetFileLineEnabled sets the standard logger level.
+func (logger *Logger) ShowCaller(b bool) {
+	logger.showCaller = b
+}

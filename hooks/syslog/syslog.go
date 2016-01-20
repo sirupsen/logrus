@@ -4,9 +4,10 @@ package logrus_syslog
 
 import (
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"log/syslog"
 	"os"
+
+	"github.com/omidnikta/logrus"
 )
 
 // SyslogHook to send logs via syslog.

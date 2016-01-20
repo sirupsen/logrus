@@ -8,7 +8,6 @@ import (
 )
 
 func init() {
-	log.ShowCaller(true)
 	log.SetLevel(log.DebugLevel)
 }
 func main() {

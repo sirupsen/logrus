@@ -42,13 +42,6 @@ func GetLevel() Level {
 	return std.Level
 }
 
-// SetFileLineEnabled sets the standard logger level.
-func ShowCaller(b bool) {
-	std.mu.Lock()
-	defer std.mu.Unlock()
-	std.showCaller = b
-}
-
 // AddHook adds a hook to the standard logger hooks.
 func AddHook(hook Hook) {
 	std.mu.Lock()
