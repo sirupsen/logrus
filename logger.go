@@ -21,11 +21,11 @@ type Logger struct {
 	// logs with colors, but to a file it wouldn't. You can easily implement your
 	// own that implements the `Formatter` interface, see the `README` or included
 	// formatters for examples.
-	Formatter Formatter
+	Formatter
 	// The logging level the logger should log at. This is typically (and defaults
 	// to) `logrus.Info`, which allows Info(), Warn(), Error() and Fatal() to be
 	// logged. `logrus.Debug` is useful in
-	Level Level
+	Level
 	// Used to sync writing to the log.
 	mu sync.Mutex
 

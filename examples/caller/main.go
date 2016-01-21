@@ -71,6 +71,14 @@ func main() {
 	log.Println(log.Caller())
 	log.Printf(log.Caller())
 
+	contextLogger := log.WithFields(log.Fields{
+		"common": "this is a common field",
+		"other":  "I also should be logged always",
+	})
+
+	contextLogger.Info("I'll be logged with common and other field")
+	contextLogger.Info("Me too")
+
 }
 
 func check(l *log.Logger) {

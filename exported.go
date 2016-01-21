@@ -82,7 +82,9 @@ func Debug(args ...interface{}) {
 
 // Print logs a message at level Info on the standard logger.
 func Print(args ...interface{}) {
-	newEntry(std).Info(args...)
+	if std.Level >= InfoLevel {
+		newEntry(std).Info(args...)
+	}
 }
 
 // Info logs a message at level Info on the standard logger.

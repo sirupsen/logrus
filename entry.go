@@ -27,7 +27,7 @@ type Entry struct {
 	Time time.Time
 
 	// Level the log entry was logged at: Debug, Info, Warn, Error, Fatal or Panic
-	Level Level
+	Level
 
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
 	Message string
