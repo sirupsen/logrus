@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"sync"
 )
 
 const (
@@ -54,6 +55,15 @@ type TextFormatter struct {
 	// that log extremely frequently and don't use the JSON formatter this may not
 	// be desired.
 	DisableSorting bool
+
+	//enable thread safe behaviour
+	Mutex *sync.Mutex
+}
+
+func NewTextFormatter() *TextFormatter {
+	return &TextFormatter{
+		Mutex: &sync.Mutex{},
+	}
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
@@ -73,10 +83,12 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
 	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
 
+	f.Mutex.Lock()
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
 		timestampFormat = DefaultTimestampFormat
 	}
+	f.Mutex.Unlock()
 	if isColored {
 		f.printColored(b, entry, keys, timestampFormat)
 	} else {

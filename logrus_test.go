@@ -34,6 +34,7 @@ func LogAndAssertText(t *testing.T, log func(*Logger), assertions func(fields ma
 	logger.Out = &buffer
 	logger.Formatter = &TextFormatter{
 		DisableColors: true,
+		Mutex: &sync.Mutex{},
 	}
 
 	log(logger)
