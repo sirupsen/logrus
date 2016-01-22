@@ -81,8 +81,6 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	b := &bytes.Buffer{}
 
-	//	prefixFieldClashes(entry.Data, entry.Logger.showCaller, entry.depth)
-
 	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
 	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
 
@@ -100,8 +98,8 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		if entry.Message != "" {
 			f.appendKeyValue(b, "msg", entry.Message)
 		}
-		for _, key := range keys {
-			f.appendKeyValue(b, key, entry.Data[key])
+		for k, v := range data {
+			f.appendKeyValue(b, k, v)
 		}
 	}
 

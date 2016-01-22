@@ -3,24 +3,37 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
 
 	log "github.com/omidnikta/logrus"
 )
 
-func init() {
-	log.SetLevel(log.DebugLevel)
-}
 func main() {
+	log.SetLevel(log.DebugLevel)
+	formatter := &log.TextFormatter{DisableColors: true}
+	//	formatter := &log.JSONFormatter{}
+	f, err := os.OpenFile("caller.txt", os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer f.Close()
+	log.SetOutput(f)
+
 	logg := log.StandardLogger()
 	logg.Level = log.DebugLevel
-	//	logg.Formatter = &log.JSONFormatter{}
+	logg.Formatter = formatter
+	logg.ShowCaller(true)
 	logger := log.New()
+	logger.ShowCaller(true)
 	logger.Level = log.DebugLevel
+	logger.Formatter = formatter
 	check(logg)
 	check(logger)
 
+	log.StandardLogger().ShowCaller(true)
+	log.SetFormatter(formatter)
 	log.Debug(Caller())
 	log.Debugf(Caller())
 	log.Debugln(Caller())
@@ -79,8 +92,8 @@ func main() {
 		"other":  "I also should be logged always",
 	})
 
-	contextLogger.Info("I'll be logged with common and other field")
-	contextLogger.Info("Me too")
+	contextLogger.Info(Caller())
+	contextLogger.Info(Caller())
 
 }
 
