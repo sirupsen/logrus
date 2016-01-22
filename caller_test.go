@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,25 +18,17 @@ type Output struct {
 
 func TestEntryTEXTFormatterCaller(t *testing.T) {
 	fileName := "caller.txt"
+	os.Remove(fileName)
 	f, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	assert.NoError(t, err)
 
 	logger := New()
-	entry := NewEntry(logger)
 	logger.showCaller = true
 	logger.Level = DebugLevel
 	logger.Formatter = &TextFormatter{DisableColors: true}
 	logger.Out = f
 
-	entry.Debug(caller(1))
-	entry.Debugf(caller(1))
-	entry.Debugln(caller(1))
-	e1 := entry.WithError(nil)
-	e1.Debug(caller(1))
-	e1 = entry.WithField("first", 1)
-	e1.Debug(caller(1))
-	e1 = entry.WithFields(Fields{"first": 1})
-	e1.Debug(caller(1))
+	check(logger)
 
 	f.Close()
 
@@ -61,25 +54,17 @@ func TestEntryTEXTFormatterCaller(t *testing.T) {
 
 func TestEntryJSONFormatterCaller(t *testing.T) {
 	fileName := "caller.json"
+	os.Remove(fileName)
 	f, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	assert.NoError(t, err)
 
 	logger := New()
-	entry := NewEntry(logger)
 	logger.showCaller = true
 	logger.Level = DebugLevel
 	logger.Formatter = &JSONFormatter{}
 	logger.Out = f
 
-	entry.Debug(caller(1))
-	entry.Debugf(caller(1))
-	entry.Debugln(caller(1))
-	e1 := entry.WithError(nil)
-	e1.Debug(caller(1))
-	e1 = entry.WithField("first", 1)
-	e1.Debug(caller(1))
-	e1 = entry.WithFields(Fields{"first": 1})
-	e1.Debug(caller(1))
+	check(logger)
 
 	f.Close()
 
@@ -93,4 +78,73 @@ func TestEntryJSONFormatterCaller(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, output.caller, output.msg)
 	}
+}
+
+func check(l *Logger) {
+	l.Debug(caller(1))
+	l.Debugf(caller(1))
+	l.Debugln(caller(1))
+	l.WithError(nil).Debug(caller(1))
+	l.WithError(nil).Debugf(caller(1))
+	l.WithError(nil).Debugln(caller(1))
+	l.WithField("caller", 1).Debug(caller(1))
+	l.WithField("first", 1).Debugf(caller(1))
+	l.WithField("first", 1).Debugln(caller(1))
+	l.WithFields(Fields{"caller": 1, "second": 2}).Debug(caller(1))
+	l.WithFields(Fields{"first": 1, "second": 2}).Debugf(caller(1))
+	l.WithFields(Fields{"first": 1, "second": 2}).Debugln(caller(1))
+	l.Info(caller(1))
+	l.Infof(caller(1))
+	l.Infoln(caller(1))
+	l.WithError(nil).Info(caller(1))
+	l.WithError(nil).Infof(caller(1))
+	l.WithError(nil).Infoln(caller(1))
+	l.WithField("caller", 1).Info(caller(1))
+	l.WithField("first", 1).Infof(caller(1))
+	l.WithField("first", 1).Infoln(caller(1))
+	l.WithFields(Fields{"caller": 1, "second": 2}).Info(caller(1))
+	l.WithFields(Fields{"first": 1, "second": 2}).Infof(caller(1))
+	l.WithFields(Fields{"first": 1, "second": 2}).Infoln(caller(1))
+	l.Warn(caller(1))
+	l.Warnf(caller(1))
+	l.Warnln(caller(1))
+	l.WithError(nil).Warn(caller(1))
+	l.WithError(nil).Warnf(caller(1))
+	l.WithError(nil).Warnln(caller(1))
+	l.WithField("caller", 1).Warn(caller(1))
+	l.WithField("first", 1).Warnf(caller(1))
+	l.WithField("first", 1).Warnln(caller(1))
+	l.WithFields(Fields{"caller": 1, "second": 2}).Warn(caller(1))
+	l.WithFields(Fields{"first": 1, "second": 2}).Warnf(caller(1))
+	l.WithFields(Fields{"first": 1, "second": 2}).Warnln(caller(1))
+	l.Error(caller(1))
+	l.Errorf(caller(1))
+	l.Errorln(caller(1))
+	l.WithError(nil).Error(caller(1))
+	l.WithError(nil).Errorf(caller(1))
+	l.WithError(nil).Errorln(caller(1))
+	l.WithField("caller", 1).Error(caller(1))
+	l.WithField("first", 1).Errorf(caller(1))
+	l.WithField("first", 1).Errorln(caller(1))
+	l.WithFields(Fields{"caller": 1, "second": 2}).Error(caller(1))
+	l.WithFields(Fields{"first": 1, "second": 2}).Errorf(caller(1))
+	l.WithFields(Fields{"first": 1, "second": 2}).Errorln(caller(1))
+
+	l.Print(caller(1))
+	l.Println(caller(1))
+	l.Printf(caller(1))
+
+	entry := NewEntry(l)
+	j := 100
+	var wg sync.WaitGroup
+	for i := 0; i < j; i++ {
+		wg.Add(1)
+		go func(en *Entry, wg *sync.WaitGroup) {
+			en.Debug(caller(1))
+			en.WithField("caller", 1).Debug(caller(1))
+			en.WithFields(Fields{"caller": 1, "second": 2}).Debug(caller(1))
+			wg.Done()
+		}(entry, &wg)
+	}
+	wg.Wait()
 }

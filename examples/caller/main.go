@@ -12,8 +12,8 @@ import (
 
 func main() {
 	log.SetLevel(log.DebugLevel)
-	formatter := &log.TextFormatter{DisableColors: true}
-	//	formatter := &log.JSONFormatter{}
+	//	formatter := &log.TextFormatter{DisableColors: true}
+	formatter := &log.JSONFormatter{}
 	f, err := os.OpenFile("caller.txt", os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
@@ -104,10 +104,10 @@ func check(l *log.Logger) {
 	l.WithError(nil).Debug(Caller())
 	l.WithError(nil).Debugf(Caller())
 	l.WithError(nil).Debugln(Caller())
-	l.WithField("first", 1).Debug(Caller())
+	l.WithField("caller", 1).Debug(Caller())
 	l.WithField("first", 1).Debugf(Caller())
 	l.WithField("first", 1).Debugln(Caller())
-	l.WithFields(log.Fields{"first": 1, "second": 2}).Debug(Caller())
+	l.WithFields(log.Fields{"caller": 1, "second": 2}).Debug(Caller())
 	l.WithFields(log.Fields{"first": 1, "second": 2}).Debugf(Caller())
 	l.WithFields(log.Fields{"first": 1, "second": 2}).Debugln(Caller())
 	l.Info(Caller())
@@ -116,10 +116,10 @@ func check(l *log.Logger) {
 	l.WithError(nil).Info(Caller())
 	l.WithError(nil).Infof(Caller())
 	l.WithError(nil).Infoln(Caller())
-	l.WithField("first", 1).Info(Caller())
+	l.WithField("caller", 1).Info(Caller())
 	l.WithField("first", 1).Infof(Caller())
 	l.WithField("first", 1).Infoln(Caller())
-	l.WithFields(log.Fields{"first": 1, "second": 2}).Info(Caller())
+	l.WithFields(log.Fields{"caller": 1, "second": 2}).Info(Caller())
 	l.WithFields(log.Fields{"first": 1, "second": 2}).Infof(Caller())
 	l.WithFields(log.Fields{"first": 1, "second": 2}).Infoln(Caller())
 	l.Warn(Caller())
@@ -128,10 +128,10 @@ func check(l *log.Logger) {
 	l.WithError(nil).Warn(Caller())
 	l.WithError(nil).Warnf(Caller())
 	l.WithError(nil).Warnln(Caller())
-	l.WithField("first", 1).Warn(Caller())
+	l.WithField("caller", 1).Warn(Caller())
 	l.WithField("first", 1).Warnf(Caller())
 	l.WithField("first", 1).Warnln(Caller())
-	l.WithFields(log.Fields{"first": 1, "second": 2}).Warn(Caller())
+	l.WithFields(log.Fields{"caller": 1, "second": 2}).Warn(Caller())
 	l.WithFields(log.Fields{"first": 1, "second": 2}).Warnf(Caller())
 	l.WithFields(log.Fields{"first": 1, "second": 2}).Warnln(Caller())
 	l.Error(Caller())
@@ -140,10 +140,10 @@ func check(l *log.Logger) {
 	l.WithError(nil).Error(Caller())
 	l.WithError(nil).Errorf(Caller())
 	l.WithError(nil).Errorln(Caller())
-	l.WithField("first", 1).Error(Caller())
+	l.WithField("caller", 1).Error(Caller())
 	l.WithField("first", 1).Errorf(Caller())
 	l.WithField("first", 1).Errorln(Caller())
-	l.WithFields(log.Fields{"first": 1, "second": 2}).Error(Caller())
+	l.WithFields(log.Fields{"caller": 1, "second": 2}).Error(Caller())
 	l.WithFields(log.Fields{"first": 1, "second": 2}).Errorf(Caller())
 	l.WithFields(log.Fields{"first": 1, "second": 2}).Errorln(Caller())
 
@@ -156,8 +156,8 @@ func check(l *log.Logger) {
 	for i := 0; i < j; i++ {
 		go func(en *log.Entry) {
 			en.Debug(Caller())
-			en.WithField("first", 1).Debug(Caller())
-			en.WithFields(log.Fields{"first": 1, "second": 2}).Debug(Caller())
+			en.WithField("caller", 1).Debug(Caller())
+			en.WithFields(log.Fields{"caller": 1, "second": 2}).Debug(Caller())
 		}(entry)
 	}
 }
