@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
-	"runtime"
 	"time"
 )
 
@@ -40,13 +38,13 @@ func NewEntry(logger *Logger) *Entry {
 		Logger: logger,
 		// Default is three fields, give a little extra room
 		Data:  make(Fields, 5),
-		depth: 4,
+		depth: 6,
 	}
 }
 
 func newEntry(logger *Logger) *Entry {
 	en := NewEntry(logger)
-	en.depth = 5
+	en.depth = 7
 	return en
 }
 
@@ -287,18 +285,4 @@ func (entry *Entry) Panicln(args ...interface{}) {
 func (entry *Entry) sprintlnn(args ...interface{}) string {
 	msg := fmt.Sprintln(args...)
 	return msg[:len(msg)-1]
-}
-
-func caller(depth int) (str string) {
-	_, file, line, ok := runtime.Caller(depth + 1)
-	if !ok {
-		str = "???: ?"
-	} else {
-		str = fmt.Sprint(filepath.Base(file), ":", line)
-	}
-	return
-}
-
-func Caller() string {
-	return caller(1)
 }

@@ -57,11 +57,21 @@ type TextFormatter struct {
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
-	if entry.Logger.showCaller {
-		entry.Data["caller"] = caller(entry.depth)
+	data := make(Fields)
+	for k, v := range entry.Data {
+		switch v := v.(type) {
+		case error:
+			// Otherwise errors are ignored by `encoding/json`
+			// https://github.com/Sirupsen/logrus/issues/137
+			data[k] = v.Error()
+		default:
+			data[k] = v
+		}
 	}
-	var keys []string = make([]string, 0, len(entry.Data))
-	for k := range entry.Data {
+	prefixFieldClashes(data, entry.Logger.showCaller, entry.depth)
+
+	var keys []string = make([]string, 0, len(data))
+	for k := range data {
 		keys = append(keys, k)
 	}
 
@@ -71,7 +81,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	b := &bytes.Buffer{}
 
-	prefixFieldClashes(entry.Data)
+	//	prefixFieldClashes(entry.Data, entry.Logger.showCaller, entry.depth)
 
 	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
 	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
@@ -81,7 +91,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		timestampFormat = DefaultTimestampFormat
 	}
 	if isColored {
-		f.printColored(b, entry, keys, timestampFormat)
+		f.printColored(b, entry.Message, entry.Level, data, entry.Time.Format(timestampFormat))
 	} else {
 		if !f.DisableTimestamp {
 			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
@@ -99,9 +109,9 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestampFormat string) {
+func (f *TextFormatter) printColored(b *bytes.Buffer, msg string, level Level, fields Fields, timestamp string) {
 	var levelColor int
-	switch entry.Level {
+	switch level {
 	case DebugLevel:
 		levelColor = gray
 	case WarnLevel:
@@ -112,15 +122,14 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 		levelColor = blue
 	}
 
-	levelText := strings.ToUpper(entry.Level.String())[0:4]
+	levelText := strings.ToUpper(level.String())[0:4]
 
 	if !f.FullTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, miniTS(), entry.Message)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, miniTS(), msg)
 	} else {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, timestamp, msg)
 	}
-	for _, k := range keys {
-		v := entry.Data[k]
+	for k, v := range fields {
 		fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%+v", levelColor, k, v)
 	}
 }

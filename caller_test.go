@@ -9,10 +9,40 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEntryCaller(t *testing.T) {
+func TestEntryTEXTFormatterCaller(t *testing.T) {
 	logger := New()
 	entry := NewEntry(logger)
 	logger.Level = DebugLevel
+	logger.showCaller = true
+
+	//	entry.Debug()
+	//	assert.Equal(t, entry.Data["caller"], mycaller())
+
+	//	entry.Debugf("")
+	//	assert.Equal(t, entry.Data["caller"], mycaller())
+
+	//	entry.Debugln()
+	//	assert.Equal(t, entry.Data["caller"], mycaller())
+
+	//	e1 := entry.WithError(nil)
+	//	e1.Debug()
+	//	assert.Equal(t, e1.Data["caller"], mycaller())
+
+	e1 = entry.WithField("caller", mycaller())
+	e1.Debug()
+	assert.Equal(t, e1.Data["caller"], mycaller())
+
+	e1 = entry.WithFields(Fields{"first": 1})
+	e1.Debug()
+	assert.Equal(t, e1.Data["caller"], mycaller())
+}
+
+func TestEntryJSONFormatterCaller(t *testing.T) {
+	logger := New()
+	entry := NewEntry(logger)
+	logger.Level = DebugLevel
+	logger.showCaller = true
+	logger.Formatter = &JSONFormatter{}
 
 	entry.Debug()
 	assert.Equal(t, entry.Data["caller"], mycaller())

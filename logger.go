@@ -214,7 +214,7 @@ func (logger *Logger) Panicln(args ...interface{}) {
 	}
 }
 
-// SetFileLineEnabled sets the standard logger level.
+// ShowCaller enable/disable showing caller info for logger.
 func (logger *Logger) ShowCaller(b bool) {
 	logger.showCaller = b
 }
