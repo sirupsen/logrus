@@ -299,3 +299,18 @@ func TestGetSetLevelRace(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+func TestLoggingRace(t *testing.T) {
+	logger := New()
+
+	var wg sync.WaitGroup
+	wg.Add(100)
+
+	for i := 0; i < 100; i++ {
+		go func() {
+			logger.Info("info")
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}
