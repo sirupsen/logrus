@@ -29,6 +29,12 @@ type Entry struct {
 
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
 	Message string
+
+	// User-defined Fingerprints for grouping message (used in Sentry)
+	Fingerprint []string
+
+	// User-defined tags (used in Sentry)
+	Tags map[string]string
 }
 
 func NewEntry(logger *Logger) *Entry {
@@ -75,7 +81,25 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data}
+	ret := *entry
+	ret.Data = data
+	return &ret
+}
+
+func (entry *Entry) WithFingerprint(fingerprint []string) *Entry {
+	ret := *entry
+	ret.Fingerprint = make([]string, len(fingerprint))
+	copy(ret.Fingerprint, fingerprint)
+	return &ret
+}
+
+func (entry *Entry) WithTags(tags map[string]string) *Entry {
+	ret := *entry
+	ret.Tags = make(map[string]string)
+	for k, v := range tags {
+		ret.Tags[k] = v
+	}
+	return &ret
 }
 
 // This function is not declared with a pointer value because otherwise
