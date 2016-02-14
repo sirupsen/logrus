@@ -123,7 +123,8 @@ func (entry *Entry) Debug(args ...interface{}) {
 }
 
 func (entry *Entry) Print(args ...interface{}) {
-	entry.Info(args...)
+	entry.Args = args
+	entry.info(args...)
 }
 
 func (entry *Entry) Info(args ...interface{}) {
@@ -263,10 +264,6 @@ func (entry *Entry) debug(args ...interface{}) {
 	if entry.Logger.Level >= DebugLevel {
 		entry.log(DebugLevel, fmt.Sprint(args...))
 	}
-}
-
-func (entry *Entry) print(args ...interface{}) {
-	entry.info(args...)
 }
 
 func (entry *Entry) info(args ...interface{}) {
