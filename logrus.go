@@ -3,6 +3,7 @@ package logrus
 import (
 	"fmt"
 	"log"
+	"strings"
 )
 
 // Fields type, used to pass to `WithFields`.
@@ -33,7 +34,7 @@ func (level Level) String() string {
 
 // ParseLevel takes a string level and returns the Logrus log level constant.
 func ParseLevel(lvl string) (Level, error) {
-	switch lvl {
+	switch strings.ToLower(lvl) {
 	case "panic":
 		return PanicLevel, nil
 	case "fatal":

@@ -255,7 +255,15 @@ func TestParseLevel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, PanicLevel, l)
 
+	l, err = ParseLevel("PANIC")
+	assert.Nil(t, err)
+	assert.Equal(t, PanicLevel, l)
+
 	l, err = ParseLevel("fatal")
+	assert.Nil(t, err)
+	assert.Equal(t, FatalLevel, l)
+
+	l, err = ParseLevel("FATAL")
 	assert.Nil(t, err)
 	assert.Equal(t, FatalLevel, l)
 
@@ -263,7 +271,15 @@ func TestParseLevel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, ErrorLevel, l)
 
+	l, err = ParseLevel("ERROR")
+	assert.Nil(t, err)
+	assert.Equal(t, ErrorLevel, l)
+
 	l, err = ParseLevel("warn")
+	assert.Nil(t, err)
+	assert.Equal(t, WarnLevel, l)
+
+	l, err = ParseLevel("WARN")
 	assert.Nil(t, err)
 	assert.Equal(t, WarnLevel, l)
 
@@ -271,11 +287,23 @@ func TestParseLevel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, WarnLevel, l)
 
+	l, err = ParseLevel("WARNING")
+	assert.Nil(t, err)
+	assert.Equal(t, WarnLevel, l)
+
 	l, err = ParseLevel("info")
 	assert.Nil(t, err)
 	assert.Equal(t, InfoLevel, l)
 
+	l, err = ParseLevel("INFO")
+	assert.Nil(t, err)
+	assert.Equal(t, InfoLevel, l)
+
 	l, err = ParseLevel("debug")
+	assert.Nil(t, err)
+	assert.Equal(t, DebugLevel, l)
+
+	l, err = ParseLevel("DEBUG")
 	assert.Nil(t, err)
 	assert.Equal(t, DebugLevel, l)
 
