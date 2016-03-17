@@ -225,6 +225,8 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Amqp-Hook](https://github.com/vladoatanasov/logrus_amqp) | Hook for logging to Amqp broker (Like RabbitMQ) |
 | [KafkaLogrus](https://github.com/goibibo/KafkaLogrus) | Hook for logging to kafka |
 | [Typetalk](https://github.com/dragon3/logrus-typetalk-hook) | Hook for logging to [Typetalk](https://www.typetalk.in/) |
+| [ElasticSearch](https://github.com/sohlich/elogrus) | Hook for logging to ElasticSearch|
+
 
 #### Level logging
 
