@@ -108,10 +108,8 @@ type StdLogger interface {
 	Panicln(...interface{})
 }
 
-// Logrus logger interface generalizes Entry and Logger types, so you can take any of these
-type LogrusLogger interface {
-	// we can return LogrusLogger here, but this will require many changes and will
-	// possible break backward compatiblity
+// The FieldLogger interface generalizes the Entry and Logger types
+type FieldLogger interface {
 	WithField(key string, value interface{}) *Entry
 	WithFields(fields Fields) *Entry
 	WithError(err error) *Entry

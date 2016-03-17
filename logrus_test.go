@@ -346,7 +346,7 @@ func TestLoggingRace(t *testing.T) {
 // Compile test
 func TestLogrusInterface(t *testing.T) {
 	var buffer bytes.Buffer
-	fn := func(l LogrusLogger) {
+	fn := func(l FieldLogger) {
 		b := l.WithField("key", "value")
 		b.Debug("Test")
 	}
