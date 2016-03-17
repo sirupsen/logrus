@@ -12,7 +12,7 @@ plain text):
 
 ![Colored](http://i.imgur.com/PY7qMwd.png)
 
-With `log.Formatter = new(logrus.JSONFormatter)`, for easy parsing by logstash
+With `log.SetFormatter(&log.JSONFormatter{})`, for easy parsing by logstash
 or Splunk:
 
 ```json
@@ -32,7 +32,7 @@ ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 "time":"2014-03-10 19:57:38.562543128 -0400 EDT"}
 ```
 
-With the default `log.Formatter = new(&log.TextFormatter{})` when a TTY is not
+With the default `log.SetFormatter(&log.TextFormatter{})` when a TTY is not
 attached, the output is compatible with the
 [logfmt](http://godoc.org/github.com/kr/logfmt) format:
 
