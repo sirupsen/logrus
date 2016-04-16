@@ -7,7 +7,7 @@ import (
 )
 
 func (logger *Logger) Writer() *io.PipeWriter {
-	return logger.WriterLevel(255)
+	return logger.WriterLevel(InfoLevel)
 }
 
 func (logger *Logger) WriterLevel(level Level) *io.PipeWriter {
