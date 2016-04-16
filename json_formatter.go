@@ -8,6 +8,9 @@ import (
 type JSONFormatter struct {
 	// TimestampFormat sets the format used for marshaling timestamps.
 	TimestampFormat string
+
+	// Record time using UTC instead of local time
+	TimestampInUTC bool
 }
 
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
@@ -28,8 +31,12 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	if timestampFormat == "" {
 		timestampFormat = DefaultTimestampFormat
 	}
-
-	data["time"] = entry.Time.Format(timestampFormat)
+    
+	if f.TimestampInUTC {
+		data["time"] = entry.Time.Format(timestampFormat)
+	} else {
+		data["time"] = entry.Time.Local().Format(timestampFormat)
+	}
 	data["msg"] = entry.Message
 	data["level"] = entry.Level.String()
 
