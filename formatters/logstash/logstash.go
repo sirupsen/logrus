@@ -24,11 +24,13 @@ func (f *LogstashFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	fields["@version"] = 1
 
-	if f.TimestampFormat == "" {
-		f.TimestampFormat = logrus.DefaultTimestampFormat
+	timeStampFormat := f.TimestampFormat
+
+	if timeStampFormat == "" {
+		timeStampFormat = logrus.DefaultTimestampFormat
 	}
 
-	fields["@timestamp"] = entry.Time.Format(f.TimestampFormat)
+	fields["@timestamp"] = entry.Time.Format(timeStampFormat)
 
 	// set message field
 	v, ok := entry.Data["message"]
