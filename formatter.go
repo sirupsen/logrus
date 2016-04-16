@@ -1,6 +1,11 @@
 package logrus
 
-import "time"
+import (
+	"fmt"
+	"path/filepath"
+	"runtime"
+	"time"
+)
 
 const DefaultTimestampFormat = time.RFC3339
 
@@ -30,19 +35,33 @@ type Formatter interface {
 //
 // It's not exported because it's still using Data in an opinionated way. It's to
 // avoid code duplication between the two default formatters.
-func prefixFieldClashes(data Fields) {
-	_, ok := data["time"]
-	if ok {
+func prefixFieldClashes(data Fields, showCaller bool, depth int) {
+	if _, ok := data["time"]; ok {
 		data["fields.time"] = data["time"]
 	}
 
-	_, ok = data["msg"]
-	if ok {
+	if _, ok := data["msg"]; ok {
 		data["fields.msg"] = data["msg"]
 	}
 
-	_, ok = data["level"]
-	if ok {
+	if _, ok := data["level"]; ok {
 		data["fields.level"] = data["level"]
 	}
+
+	if showCaller {
+		if _, ok := data["caller"]; ok {
+			data["fields.caller"] = data["caller"]
+		}
+		data["caller"] = caller(depth)
+	}
+}
+
+func caller(depth int) (str string) {
+	_, file, line, ok := runtime.Caller(depth)
+	if !ok {
+		str = "???: ?"
+	} else {
+		str = fmt.Sprint(filepath.Base(file), ":", line)
+	}
+	return
 }
