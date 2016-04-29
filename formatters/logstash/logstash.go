@@ -11,6 +11,7 @@ import (
 // Logstash site: http://logstash.net/
 type LogstashFormatter struct {
 	Type string // if not empty use for logstash type field.
+	Host string // if not empty use for logstash @host field.
 
 	// TimestampFormat sets the format used for timestamps.
 	TimestampFormat string
@@ -20,6 +21,10 @@ func (f *LogstashFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	fields := make(logrus.Fields)
 	for k, v := range entry.Data {
 		fields[k] = v
+	}
+
+	if f.Host != "" {
+		fields["@host"] = f.Host
 	}
 
 	fields["@version"] = 1
