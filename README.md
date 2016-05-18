@@ -300,11 +300,7 @@ Splunk or Logstash.
 
 The built-in logging formatters are:
 
-* `logrus.TextFormatter`. Logs the event in colors if stdout is a tty, otherwise
-  without colors.
-  * *Note:* to force colored output when there is no TTY, set the `ForceColors`
-    field to `true`.  To force no colored output even if there is a TTY  set the
-    `DisableColors` field to `true`
+* `logrus.TextFormatter`. To colored output set `UseColors` field to `true`.
 * `logrus.JSONFormatter`. Logs fields as JSON.
 * `logrus/formatters/logstash.LogstashFormatter`. Logs fields as [Logstash](http://logstash.net) Events.
 
