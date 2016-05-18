@@ -3,7 +3,6 @@ package logrus
 import (
 	"bytes"
 	"fmt"
-	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -20,12 +19,10 @@ const (
 
 var (
 	baseTimestamp time.Time
-	isTerminal    bool
 )
 
 func init() {
 	baseTimestamp = time.Now()
-	isTerminal = IsTerminal()
 }
 
 func miniTS() int {
@@ -34,11 +31,17 @@ func miniTS() int {
 
 type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
+	// Deprecated use UseColors
 	ForceColors bool
 
 	// Force disabling colors.
+	// Deprecated use UseColors
 	DisableColors bool
-
+	
+	// Enable colored output
+	// If true output message inslude color artefacts 
+	UseColors bool
+	
 	// Disable timestamp logging. useful when output is redirected to logging
 	// system that already adds timestamps.
 	DisableTimestamp bool
@@ -70,13 +73,13 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	prefixFieldClashes(entry.Data)
 
-	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
-	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
-
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
 		timestampFormat = DefaultTimestampFormat
 	}
+	
+	isColored := (f.UseColors || f.ForceColors) && !f.DisableColors
+	
 	if isColored {
 		f.printColored(b, entry, keys, timestampFormat)
 	} else {
