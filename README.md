@@ -58,7 +58,7 @@ import (
 )
 
 func main() {
-  log.WithFields(logrus.Fields{
+  log.WithFields(log.Fields{
     "animal": "walrus",
   }).Info("A walrus appears")
 }
