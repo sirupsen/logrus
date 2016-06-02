@@ -165,6 +165,26 @@ In general, with Logrus using any of the `printf`-family functions should be
 seen as a hint you should add a field, however, you can still use the
 `printf`-family functions with Logrus.
 
+Usually, you'll use simple types, like string, as the values of the the fields.
+If you need to calculate the value of the field at run time, but want to
+centralize the definition of the logger with a set of fields, a function can
+be specified as the value of the field:
+
+```go
+customLogger = log.WithFields(log.Fields{
+  "static":  100,
+  "dynamic": log.Fn(myFunc),
+})
+...
+customLogger.Fatal("failed to send event")
+```
+
+This will generate a field named `dynamic` with the string value that `myFunc`
+returns *at the time the log entry is generated*.  The function must take no
+arguments and return a string, and must be cast to `logrus.Fn`.  It can be
+defined inline (`logus.Fn(func() string { ... })`), be an interface method,
+or a plain function referenced by name.
+
 #### Hooks
 
 You can add hooks for logging levels. For example to send errors to an exception

@@ -12,6 +12,9 @@ type Fields map[string]interface{}
 // Level type
 type Level uint8
 
+// Wrapper type to identify when to call functions for field values
+type Fn func() string
+
 // Convert the Level to a string. E.g. PanicLevel becomes "panic".
 func (level Level) String() string {
 	switch level {
