@@ -26,8 +26,29 @@ type Logger struct {
 	// to) `logrus.Info`, which allows Info(), Warn(), Error() and Fatal() to be
 	// logged. `logrus.Debug` is useful in
 	Level Level
-	// Used to sync writing to the log.
-	mu sync.Mutex
+	// Used to sync writing to the log. Locking is enabled by Default
+	mu MutexWrap
+}
+
+type MutexWrap struct {
+	lock     sync.Mutex
+	disabled bool
+}
+
+func (mw *MutexWrap) Lock() {
+	if !mw.disabled {
+		mw.lock.Lock()
+	}
+}
+
+func (mw *MutexWrap) Unlock() {
+	if !mw.disabled {
+		mw.lock.Unlock()
+	}
+}
+
+func (mw *MutexWrap) Disable() {
+	mw.disabled = true
 }
 
 // Creates a new logger. Configuration should be set by changing `Formatter`,
@@ -209,4 +230,11 @@ func (logger *Logger) Panicln(args ...interface{}) {
 	if logger.Level >= PanicLevel {
 		NewEntry(logger).Panicln(args...)
 	}
+}
+
+//When file is opened with appending mode, it's safe to
+//write concurrently to a file (within 4k message on Linux).
+//In these cases user can choose to disable the lock.
+func (logger *Logger) SetNoLock() {
+	logger.mu.Disable()
 }
