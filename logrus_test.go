@@ -359,3 +359,25 @@ func TestLogrusInterface(t *testing.T) {
 	e := logger.WithField("another", "value")
 	fn(e)
 }
+
+func TestEntryRace(t *testing.T) {
+	entry := WithFields(Fields{"key": "value"})
+	wg := sync.WaitGroup{}
+	for i := 0; i < 1000; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			switch i % 4 {
+			case 0:
+				SetLevel(InfoLevel)
+			case 1:
+				SetFormatter(&TextFormatter{})
+			case 2:
+				entry.Infof("hello")
+			case 3:
+				Infof("hello")
+			}
+		}(i)
+	}
+	wg.Wait()
+}
