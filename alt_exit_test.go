@@ -1,41 +1,41 @@
 package logrus
 
 import (
-"os/exec"
-"testing"
-"io/ioutil"
-"time"
+	"io/ioutil"
+	"os/exec"
+	"testing"
+	"time"
 )
 
 func TestRegister(t *testing.T) {
-current := len(handlers)
-RegisterExitHandler(func() {})
-if len(handlers) != current+1 {
-t.Fatalf("can't add handler")
-}
+	current := len(handlers)
+	RegisterExitHandler(func() {})
+	if len(handlers) != current+1 {
+		t.Fatalf("can't add handler")
+	}
 }
 
 func TestHandler(t *testing.T) {
-gofile := "/tmp/testprog.go"
-if err := ioutil.WriteFile(gofile, testprog, 0666); err != nil {
-t.Fatalf("can't create go file")
-}
+	gofile := "/tmp/testprog.go"
+	if err := ioutil.WriteFile(gofile, testprog, 0666); err != nil {
+		t.Fatalf("can't create go file")
+	}
 
-outfile := "/tmp/testprog.out"
-arg := time.Now().UTC().String()
-err := exec.Command("go", "run", gofile, outfile, arg).Run()
-if err == nil {
-t.Fatalf("completed normally, should have failed")
-}
+	outfile := "/tmp/testprog.out"
+	arg := time.Now().UTC().String()
+	err := exec.Command("go", "run", gofile, outfile, arg).Run()
+	if err == nil {
+		t.Fatalf("completed normally, should have failed")
+	}
 
-data, err := ioutil.ReadFile(outfile)
-if err != nil {
-t.Fatalf("can't read output file %s", outfile)
-}
+	data, err := ioutil.ReadFile(outfile)
+	if err != nil {
+		t.Fatalf("can't read output file %s", outfile)
+	}
 
-if string(data) != arg {
-t.Fatalf("bad data")
-}
+	if string(data) != arg {
+		t.Fatalf("bad data")
+	}
 }
 
 var testprog = []byte(`
@@ -72,4 +72,3 @@ func main() {
 	logrus.Fatal("Bye bye")
 }
 `)
-
