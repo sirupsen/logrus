@@ -44,7 +44,7 @@ var testprog = []byte(`
 package main
 
 import (
-	"github.com/powerchordinc/logrus"
+	"github.com/Sirupsen/logrus"
 	"flag"
 	"fmt"
 	"io/ioutil"
