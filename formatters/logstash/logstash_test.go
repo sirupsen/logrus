@@ -3,9 +3,12 @@ package logstash
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"net/url"
+	"testing"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestLogstashFormatter(t *testing.T) {
@@ -20,6 +23,7 @@ func TestLogstashFormatter(t *testing.T) {
 		"one":     1,
 		"pi":      3.14,
 		"bool":    true,
+		"error":   url.Error{Op: "Get", URL: "http://example.com", Err: fmt.Errorf("The error")},
 	}
 
 	entry := logrus.WithFields(fields)
@@ -39,6 +43,7 @@ func TestLogstashFormatter(t *testing.T) {
 	assert.Equal("abc", data["type"])
 	assert.Equal("msg", data["message"])
 	assert.Equal("info", data["level"])
+	assert.Equal("Get http://example.com The error", data["error"])
 
 	// substituted fields
 	assert.Equal("def", data["fields.message"])

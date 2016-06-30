@@ -19,7 +19,14 @@ type LogstashFormatter struct {
 func (f *LogstashFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	fields := make(logrus.Fields)
 	for k, v := range entry.Data {
-		fields[k] = v
+		switch v := v.(type) {
+		case error:
+			// Otherwise errors are ignored by `encoding/json`
+			// https://github.com/Sirupsen/logrus/issues/377
+			fields[k] = v.Error()
+		default:
+			fields[k] = v
+		}
 	}
 
 	fields["@version"] = 1
