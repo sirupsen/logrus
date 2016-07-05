@@ -51,6 +51,16 @@ func Exit(code int) {
 	os.Exit(code)
 }
 
+// handleExit runs all the Logrus atexit handlers and then terminates the program using the logger's Exit function (or os.Exit() if no exit function is set).
+func (logger *Logger) handleExit(code int) {
+	runHandlers()
+	if logger.Exit != nil {
+		logger.Exit(code)
+	} else {
+		os.Exit(code)
+	}
+}
+
 // RegisterExitHandler adds a Logrus Exit handler, call logrus.Exit to invoke
 // all handlers. The handlers will also be invoked when any Fatal log entry is
 // made.

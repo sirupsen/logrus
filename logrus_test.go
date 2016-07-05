@@ -359,3 +359,11 @@ func TestLogrusInterface(t *testing.T) {
 	e := logger.WithField("another", "value")
 	fn(e)
 }
+
+type exiter struct {
+	exitCode int
+}
+
+func (e *exiter) Exit(exitCode int) {
+	e.exitCode = exitCode
+}
