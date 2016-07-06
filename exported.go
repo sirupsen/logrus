@@ -191,3 +191,9 @@ func Panicln(args ...interface{}) {
 func Fatalln(args ...interface{}) {
 	std.Fatalln(args...)
 }
+
+// Write write bytes to Logger.Out with lock.
+func Write(p []byte) (n int, err error) {
+	n, err = std.Write(p)
+	return
+}
