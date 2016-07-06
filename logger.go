@@ -210,3 +210,10 @@ func (logger *Logger) Panicln(args ...interface{}) {
 		NewEntry(logger).Panicln(args...)
 	}
 }
+
+func (logger *Logger) Write(p []byte) (n int, err error) {
+	logger.mu.Lock()
+	n, err = logger.Out.Write(p)
+	logger.mu.Unlock()
+	return
+}
