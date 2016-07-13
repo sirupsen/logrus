@@ -32,6 +32,48 @@ func TestEntryWithError(t *testing.T) {
 
 }
 
+func TestEntryFatal(t *testing.T) {
+	assert := assert.New(t)
+
+	exiter := new(exiter)
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	logger.Exit = exiter
+	entry := NewEntry(logger)
+
+	entry.Fatal("kaboom")
+
+	assert.Equal(1, exiter.exitCode)
+}
+
+func TestEntryFatalf(t *testing.T) {
+	assert := assert.New(t)
+
+	exiter := new(exiter)
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	logger.Exit = exiter
+	entry := NewEntry(logger)
+
+	entry.Fatalf("kaboom")
+
+	assert.Equal(1, exiter.exitCode)
+}
+
+func TestEntryFatalln(t *testing.T) {
+	assert := assert.New(t)
+
+	exiter := new(exiter)
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	logger.Exit = exiter
+	entry := NewEntry(logger)
+
+	entry.Fatalln("kaboom")
+
+	assert.Equal(1, exiter.exitCode)
+}
+
 func TestEntryPanicln(t *testing.T) {
 	errBoom := fmt.Errorf("boom time")
 
@@ -74,4 +116,12 @@ func TestEntryPanicf(t *testing.T) {
 	logger.Out = &bytes.Buffer{}
 	entry := NewEntry(logger)
 	entry.WithField("err", errBoom).Panicf("kaboom %v", true)
+}
+
+type exiter struct {
+	exitCode int
+}
+
+func (e *exiter) Exit(exitCode int) {
+	e.exitCode = exitCode
 }
