@@ -384,3 +384,19 @@ assert.Equal("Hello error", hook.LastEntry().Message)
 hook.Reset()
 assert.Nil(hook.LastEntry())
 ```
+
+#### Fatal handlers
+
+Logrus can register one or more functions that will be called when any `fatal`
+level message is logged. The registered handlers will be executed before
+logrus performs a `os.Exit(1)`. This behavior may be helpful if callers need
+to gracefully shutdown. Unlike a `panic("Something went wrong...")` call which can be intercepted with a deferred `recover` a call to `os.Exit(1)` can not be intercepted.
+
+```
+...
+handler := func() {
+  // gracefully shutdown something...
+}
+logrus.RegisterExitHandler(handler)
+...
+```
