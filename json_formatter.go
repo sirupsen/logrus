@@ -22,7 +22,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 			data[k] = v
 		}
 	}
-	prefixFieldClashes(data)
+	prefixFieldClashes(data, entry.Logger.showCaller, entry.depth)
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {

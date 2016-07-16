@@ -217,6 +217,7 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 	logger := New()
 	logger.Out = &buffer
 	logger.Formatter = new(JSONFormatter)
+	logger.showCaller = false
 
 	llog := logger.WithField("context", "eating raw fish")
 

@@ -29,14 +29,23 @@ type Entry struct {
 
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
 	Message string
+
+	depth int
 }
 
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
 		// Default is three fields, give a little extra room
-		Data: make(Fields, 5),
+		Data:  make(Fields, 5),
+		depth: 6,
 	}
+}
+
+func newEntry(logger *Logger) *Entry {
+	en := NewEntry(logger)
+	en.depth = 7
+	return en
 }
 
 // Returns a reader for the entry, which is a proxy to the formatter.
@@ -75,7 +84,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data}
+	return &Entry{Logger: entry.Logger, Data: data, depth: entry.depth}
 }
 
 // This function is not declared with a pointer value because otherwise
@@ -137,7 +146,9 @@ func (entry *Entry) Warn(args ...interface{}) {
 }
 
 func (entry *Entry) Warning(args ...interface{}) {
-	entry.Warn(args...)
+	if entry.Logger.Level >= WarnLevel {
+		entry.log(WarnLevel, fmt.Sprint(args...))
+	}
 }
 
 func (entry *Entry) Error(args ...interface{}) {
@@ -170,7 +181,7 @@ func (entry *Entry) Debugf(format string, args ...interface{}) {
 
 func (entry *Entry) Infof(format string, args ...interface{}) {
 	if entry.Logger.Level >= InfoLevel {
-		entry.Info(fmt.Sprintf(format, args...))
+		entry.log(InfoLevel, fmt.Sprintf(format, args...))
 	}
 }
 
@@ -179,13 +190,13 @@ func (entry *Entry) Printf(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Warnf(format string, args ...interface{}) {
-	if entry.Logger.Level >= WarnLevel {
-		entry.Warn(fmt.Sprintf(format, args...))
-	}
+	entry.Warn(fmt.Sprintf(format, args...))
 }
 
 func (entry *Entry) Warningf(format string, args ...interface{}) {
-	entry.Warnf(format, args...)
+	if entry.Logger.Level >= WarnLevel {
+		entry.log(WarnLevel, fmt.Sprintf(format, args...))
+	}
 }
 
 func (entry *Entry) Errorf(format string, args ...interface{}) {
@@ -205,6 +216,7 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 	if entry.Logger.Level >= PanicLevel {
 		entry.Panic(fmt.Sprintf(format, args...))
 	}
+	panic(fmt.Sprintf(format, args...))
 }
 
 // Entry Println family functions
