@@ -118,3 +118,24 @@ func TestJSONEntryEndsWithNewline(t *testing.T) {
 		t.Fatal("Expected JSON log entry to end with a newline")
 	}
 }
+
+func TestCustomMessageField(t *testing.T) {
+	formatter := &JSONFormatter{MessageField: "message"}
+
+	data := NewEntry(std)
+	data.Message = "something"
+	b, err := formatter.Format(data)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	entry := make(map[string]interface{})
+	err = json.Unmarshal(b, &entry)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	if entry["message"] != "something" {
+		t.Fatalf("not find log data in custom message field, got %v", entry)
+	}
+}

@@ -6,6 +6,8 @@ import (
 )
 
 type JSONFormatter struct {
+	// MessageField sets the name of message field.
+	MessageField string
 	// TimestampFormat sets the format used for marshaling timestamps.
 	TimestampFormat string
 }
@@ -28,9 +30,13 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	if timestampFormat == "" {
 		timestampFormat = DefaultTimestampFormat
 	}
+	messageField := f.MessageField
+	if messageField == "" {
+		messageField = DefaultMessageField
+	}
 
 	data["time"] = entry.Time.Format(timestampFormat)
-	data["msg"] = entry.Message
+	data[messageField] = entry.Message
 	data["level"] = entry.Level.String()
 
 	serialized, err := json.Marshal(data)
