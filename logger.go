@@ -212,13 +212,17 @@ func (logger *Logger) Panicln(args ...interface{}) {
 }
 
 func (logger *Logger) level() Level {
+	var level Level
 	logger.mu.RLock()
-	defer logger.mu.RUnlock()
-	return logger.Level
+	level = logger.Level
+	logger.mu.RUnlock()
+	return level
 }
 
 func (logger *Logger) formatter() Formatter {
+	var formatter Formatter
 	logger.mu.RLock()
-	defer logger.mu.RUnlock()
-	return logger.Formatter
+	formatter = logger.Formatter
+	logger.mu.RUnlock()
+	return formatter
 }
