@@ -209,10 +209,21 @@ func TestDefaultFieldsAreNotPrefixed(t *testing.T) {
 	})
 }
 
+func containsKey(heystack []string, needle string) bool {
+	for _, item := range heystack {
+		if item == needle {
+			return true
+		}
+	}
+	return false
+}
+
 func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	var buffer bytes.Buffer
 	var fields Fields
+
+	expectedFiledKeys := []string{"msg", "time", "level", "context", "caller"}
 
 	logger := New()
 	logger.Out = &buffer
@@ -224,9 +235,18 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	err := json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded first message")
-	assert.Equal(t, len(fields), 4, "should only have msg/time/level/context fields")
 	assert.Equal(t, fields["msg"], "looks delicious")
 	assert.Equal(t, fields["context"], "eating raw fish")
+
+	for key := range fields {
+		if !containsKey(expectedFiledKeys, key) {
+			t.Errorf("got unexpected field key: '%s', expected %+v", key, expectedFiledKeys)
+		}
+	}
+
+	if len(expectedFiledKeys) != len(fields) {
+		t.Errorf("should only have %+v fields", expectedFiledKeys)
+	}
 
 	buffer.Reset()
 
@@ -234,11 +254,19 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	err = json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded second message")
-	assert.Equal(t, len(fields), 4, "should only have msg/time/level/context fields")
 	assert.Equal(t, fields["msg"], "omg it is!")
 	assert.Equal(t, fields["context"], "eating raw fish")
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
 
+	for key := range fields {
+		if !containsKey(expectedFiledKeys, key) {
+			t.Errorf("got unexpected field key: '%s', expected %+v", key, expectedFiledKeys)
+		}
+	}
+
+	if len(expectedFiledKeys) != len(fields) {
+		t.Errorf("should only have %+v fields", expectedFiledKeys)
+	}
 }
 
 func TestConvertLevelToString(t *testing.T) {
