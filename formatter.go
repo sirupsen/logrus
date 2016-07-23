@@ -1,8 +1,16 @@
 package logrus
 
-import "time"
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+)
 
 const DefaultTimestampFormat = time.RFC3339
+
+// To be used for triming base path of remote caller
+var gosrcpath = filepath.Join(os.Getenv("GOPATH"), "src")
 
 // The Formatter interface is used to implement a custom Formatter. It takes an
 // `Entry`. It exposes all the fields, including the default ones:
@@ -30,7 +38,7 @@ type Formatter interface {
 //
 // It's not exported because it's still using Data in an opinionated way. It's to
 // avoid code duplication between the two default formatters.
-func prefixFieldClashes(data Fields) {
+func prefixFieldClashes(data Fields, hasRemoteCaller bool) {
 	if t, ok := data["time"]; ok {
 		data["fields.time"] = t
 	}
@@ -42,4 +50,15 @@ func prefixFieldClashes(data Fields) {
 	if l, ok := data["level"]; ok {
 		data["fields.level"] = l
 	}
+
+	if hasRemoteCaller {
+		if c, ok := data["caller"]; ok {
+			data["fields.caller"] = c
+		}
+	}
+}
+
+// chop of GOPATH + src from the full path of the file, keeping the package path
+func formatRemoteCaller(caller string) string {
+	return strings.TrimPrefix(caller, gosrcpath)
 }
