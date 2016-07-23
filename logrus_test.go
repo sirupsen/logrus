@@ -387,3 +387,44 @@ func TestLogrusInterface(t *testing.T) {
 	e := logger.WithField("another", "value")
 	fn(e)
 }
+
+func TestRemoteCaller(t *testing.T) {
+	var buffer bytes.Buffer
+	var fields Fields
+
+	logger := New()
+	logger.Out = &buffer
+	logger.Formatter = new(JSONFormatter)
+
+	llog := logger.WithField("context", "eating raw fish")
+
+	llog.Info("looks delicious")
+
+	err := json.Unmarshal(buffer.Bytes(), &fields)
+
+	if err != nil {
+		t.Errorf("should have decoded message, got: %s", err)
+	}
+
+	if _, exists := fields["caller"]; !exists {
+		t.Error("expected remote caller, but found none")
+	}
+
+	buffer.Reset()
+
+	var otherfields Fields
+	logger.ShowCaller = false
+	log := logger.WithField("context", "no caller")
+
+	log.Info("no calls today")
+
+	err = json.Unmarshal(buffer.Bytes(), &otherfields)
+
+	if err != nil {
+		t.Errorf("should have decoded message, got: %s", err)
+	}
+
+	if _, exists := otherfields["caller"]; exists {
+		t.Error("expected not remote caller, but found one")
+	}
+}
