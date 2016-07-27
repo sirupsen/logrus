@@ -1,3 +1,9 @@
+// +build ignore
+// Do NOT include the above line in your code. This is a build contrainst used
+// to prevent import loops in the code whilst go get'ting it.
+// Read more about build contrains in golang here:
+// https://golang.org/pkg/go/build/#hdr-Build_Constraints
+
 package main
 
 import (
