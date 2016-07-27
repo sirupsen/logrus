@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -29,6 +30,12 @@ type Entry struct {
 
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
 	Message string
+
+	// The number of stack frmes to skip for finding remote caller, set to -1 to disable
+	RemoteCallerSkipDepth int
+
+	// Full path to remote caller with line number if available and enabled
+	RemoteCaller string
 }
 
 func NewEntry(logger *Logger) *Entry {
@@ -36,6 +43,7 @@ func NewEntry(logger *Logger) *Entry {
 		Logger: logger,
 		// Default is three fields, give a little extra room
 		Data: make(Fields, 5),
+		RemoteCallerSkipDepth: 5,
 	}
 }
 
@@ -75,7 +83,17 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data}
+	return &Entry{Logger: entry.Logger, Data: data, RemoteCallerSkipDepth: 3}
+}
+
+func caller(depth int) string {
+	_, file, line, ok := runtime.Caller(depth)
+
+	if !ok {
+		return "???:?"
+	}
+
+	return fmt.Sprint(file, ":", line)
 }
 
 // This function is not declared with a pointer value because otherwise
@@ -84,6 +102,10 @@ func (entry Entry) log(level Level, msg string) {
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
+
+	if entry.Logger.ShowCaller && entry.RemoteCallerSkipDepth > 0 {
+		entry.RemoteCaller = caller(entry.RemoteCallerSkipDepth)
+	}
 
 	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
 		entry.Logger.mu.Lock()

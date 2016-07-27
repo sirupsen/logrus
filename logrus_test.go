@@ -209,10 +209,21 @@ func TestDefaultFieldsAreNotPrefixed(t *testing.T) {
 	})
 }
 
+func containsKey(heystack []string, needle string) bool {
+	for _, item := range heystack {
+		if item == needle {
+			return true
+		}
+	}
+	return false
+}
+
 func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	var buffer bytes.Buffer
 	var fields Fields
+
+	expectedFiledKeys := []string{"msg", "time", "level", "context", "caller"}
 
 	logger := New()
 	logger.Out = &buffer
@@ -224,9 +235,18 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	err := json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded first message")
-	assert.Equal(t, len(fields), 4, "should only have msg/time/level/context fields")
 	assert.Equal(t, fields["msg"], "looks delicious")
 	assert.Equal(t, fields["context"], "eating raw fish")
+
+	for key := range fields {
+		if !containsKey(expectedFiledKeys, key) {
+			t.Errorf("got unexpected field key: '%s', expected %+v", key, expectedFiledKeys)
+		}
+	}
+
+	if len(expectedFiledKeys) != len(fields) {
+		t.Errorf("should only have %+v fields", expectedFiledKeys)
+	}
 
 	buffer.Reset()
 
@@ -234,11 +254,19 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	err = json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded second message")
-	assert.Equal(t, len(fields), 4, "should only have msg/time/level/context fields")
 	assert.Equal(t, fields["msg"], "omg it is!")
 	assert.Equal(t, fields["context"], "eating raw fish")
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
 
+	for key := range fields {
+		if !containsKey(expectedFiledKeys, key) {
+			t.Errorf("got unexpected field key: '%s', expected %+v", key, expectedFiledKeys)
+		}
+	}
+
+	if len(expectedFiledKeys) != len(fields) {
+		t.Errorf("should only have %+v fields", expectedFiledKeys)
+	}
 }
 
 func TestConvertLevelToString(t *testing.T) {
@@ -358,4 +386,45 @@ func TestLogrusInterface(t *testing.T) {
 	// test Entry
 	e := logger.WithField("another", "value")
 	fn(e)
+}
+
+func TestRemoteCaller(t *testing.T) {
+	var buffer bytes.Buffer
+	var fields Fields
+
+	logger := New()
+	logger.Out = &buffer
+	logger.Formatter = new(JSONFormatter)
+
+	llog := logger.WithField("context", "eating raw fish")
+
+	llog.Info("looks delicious")
+
+	err := json.Unmarshal(buffer.Bytes(), &fields)
+
+	if err != nil {
+		t.Errorf("should have decoded message, got: %s", err)
+	}
+
+	if _, exists := fields["caller"]; !exists {
+		t.Error("expected remote caller, but found none")
+	}
+
+	buffer.Reset()
+
+	var otherfields Fields
+	logger.ShowCaller = false
+	log := logger.WithField("context", "no caller")
+
+	log.Info("no calls today")
+
+	err = json.Unmarshal(buffer.Bytes(), &otherfields)
+
+	if err != nil {
+		t.Errorf("should have decoded message, got: %s", err)
+	}
+
+	if _, exists := otherfields["caller"]; exists {
+		t.Error("expected not remote caller, but found one")
+	}
 }
