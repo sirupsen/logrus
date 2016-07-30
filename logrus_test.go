@@ -83,6 +83,15 @@ func TestWarn(t *testing.T) {
 	})
 }
 
+func TestOutput(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.Output(2, "test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test")
+		assert.Equal(t, fields["level"], "info")
+	})
+}
+
 func TestInfolnShouldAddSpacesBetweenStrings(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Infoln("test", "test")
