@@ -210,3 +210,8 @@ func (logger *Logger) Panicln(args ...interface{}) {
 		NewEntry(logger).Panicln(args...)
 	}
 }
+
+func (logger *Logger) Output(calldepth int, s string) error {
+	NewEntry(logger).Println(s)
+	return nil
+}

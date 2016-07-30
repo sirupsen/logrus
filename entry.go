@@ -254,6 +254,11 @@ func (entry *Entry) Panicln(args ...interface{}) {
 	}
 }
 
+func (entry *Entry) Output(calldepth int, s string) error {
+	entry.Infoln(s)
+	return nil
+}
+
 // Sprintlnn => Sprint no newline. This is to get the behavior of how
 // fmt.Sprintln where spaces are always added between operands, regardless of
 // their type. Instead of vendoring the Sprintln implementation to spare a
