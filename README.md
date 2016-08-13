@@ -402,3 +402,20 @@ handler := func() {
 logrus.RegisterExitHandler(handler)
 ...
 ```
+
+#### Thread safty
+
+By default Logger is protected by mutex for concurrent writes, this mutex is invoked when calling hooks and writing logs.
+If you are sure such locking is not needed, you can call logger.SetNoLock() to disable the locking.
+
+Situation when locking is not needed includes:
+
+* You have no hooks registered, or hooks calling is already thread-safe.
+
+* Writing to logger.Out is already thread-safe, for example:
+
+  1) logger.Out is protected by locks.
+
+  2) logger.Out is a os.File handler opened with `O_APPEND` flag, and every write is smaller than 4k. (This allow multi-thread/multi-process writing)
+
+     (Refer to http://www.notthewizard.com/2014/06/17/are-files-appends-really-atomic/)
