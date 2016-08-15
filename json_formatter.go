@@ -8,6 +8,9 @@ import (
 type JSONFormatter struct {
 	// TimestampFormat sets the format used for marshaling timestamps.
 	TimestampFormat string
+	MessageKey      string
+	LevelKey        string
+	TimeKey         string
 }
 
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
@@ -29,9 +32,24 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		timestampFormat = DefaultTimestampFormat
 	}
 
-	data["time"] = entry.Time.Format(timestampFormat)
-	data["msg"] = entry.Message
-	data["level"] = entry.Level.String()
+	timeKey := f.TimeKey
+	if timeKey == "" {
+		timeKey = "time"
+	}
+
+	messageKey := f.MessageKey
+	if messageKey == "" {
+		messageKey = "msg"
+	}
+
+	levelKey := f.LevelKey
+	if levelKey == "" {
+		levelKey = "level"
+	}
+
+	data[timeKey] = entry.Time.Format(timestampFormat)
+	data[messageKey] = entry.Message
+	data[levelKey] = entry.Level.String()
 
 	serialized, err := json.Marshal(data)
 	if err != nil {
