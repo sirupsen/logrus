@@ -42,6 +42,8 @@ type Entry struct {
 
 	// When formatter is called in entry.log(), an Buffer may be set to entry
 	Buffer *bytes.Buffer
+
+	mu *sync.RWMutex
 }
 
 func NewEntry(logger *Logger) *Entry {
@@ -49,6 +51,7 @@ func NewEntry(logger *Logger) *Entry {
 		Logger: logger,
 		// Default is three fields, give a little extra room
 		Data: make(Fields, 5),
+		mu:   &sync.RWMutex{},
 	}
 }
 
@@ -75,6 +78,8 @@ func (entry *Entry) WithField(key string, value interface{}) *Entry {
 
 // Add a map of fields to the Entry.
 func (entry *Entry) WithFields(fields Fields) *Entry {
+	entry.mu.RLock()
+	defer entry.mu.RUnlock()
 	data := make(Fields, len(entry.Data)+len(fields))
 	for k, v := range entry.Data {
 		data[k] = v
@@ -82,7 +87,17 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data}
+	return &Entry{
+		Logger: entry.Logger,
+		Data:   data,
+		mu:     &sync.RWMutex{},
+	}
+}
+
+func (entry *Entry) SetField(key string, value interface{}) {
+	entry.mu.Lock()
+	defer entry.mu.Unlock()
+	entry.Data[key] = value
 }
 
 // This function is not declared with a pointer value because otherwise

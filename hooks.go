@@ -29,6 +29,5 @@ func (hooks LevelHooks) Fire(level Level, entry *Entry) error {
 			return err
 		}
 	}
-
 	return nil
 }

@@ -1,6 +1,8 @@
 package logrus
 
 import (
+	"io/ioutil"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -56,6 +58,17 @@ func (hook *ModifyHook) Levels() []Level {
 		FatalLevel,
 		PanicLevel,
 	}
+}
+
+type SynchronizedModifyHook struct{}
+
+func (hook *SynchronizedModifyHook) Levels() []Level {
+	return AllLevels
+}
+
+func (hook *SynchronizedModifyHook) Fire(entry *Entry) error {
+	entry.SetField("wow", "whale")
+	return nil
 }
 
 func TestHookCanModifyEntry(t *testing.T) {
@@ -119,4 +132,35 @@ func TestErrorHookShouldFireOnError(t *testing.T) {
 	}, func(fields Fields) {
 		assert.Equal(t, hook.Fired, true)
 	})
+}
+
+func TestEntryDataRaceWithHook(t *testing.T) {
+	hook := new(SynchronizedModifyHook)
+
+	logger := New()
+	logger.Hooks.Add(hook)
+	logger.Out = ioutil.Discard
+
+	defer func() {
+		assert.Nil(t, recover())
+	}()
+
+	entry := logger.WithFields(Fields{"a": "b"})
+
+	var wg sync.WaitGroup
+	for i := 0; i < 1000; i++ {
+		wg.Add(1)
+		go func(i int) {
+			switch i % 2 {
+			case 0:
+				entry.Info("Hello")
+			case 1:
+				entry.WithFields(Fields{
+					"something": "else",
+				}).Info("World")
+			}
+			wg.Done()
+		}(i)
+	}
+	wg.Wait()
 }

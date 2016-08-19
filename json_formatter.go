@@ -11,6 +11,7 @@ type JSONFormatter struct {
 }
 
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
+	entry.mu.RLock()
 	data := make(Fields, len(entry.Data)+3)
 	for k, v := range entry.Data {
 		switch v := v.(type) {
@@ -22,7 +23,11 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 			data[k] = v
 		}
 	}
+	entry.mu.RUnlock()
+
+	entry.mu.Lock()
 	prefixFieldClashes(data)
+	entry.mu.Unlock()
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
