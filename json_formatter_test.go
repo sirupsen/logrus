@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestErrorNotLost(t *testing.T) {
@@ -195,5 +196,34 @@ func TestJSONEnableTimestamp(t *testing.T) {
 	s := string(b)
 	if !strings.Contains(s, FieldKeyTime) {
 		t.Error("Timestamp not present", s)
+	}
+}
+
+func TestOverrideLocation(t *testing.T) {
+	moment := time.Unix(1472181897, 0).UTC()
+
+	zone, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		t.Fatal("Unable to load Eastern Time: ", err)
+	}
+	local := moment.In(zone)
+	body := WithField("dont", "care")
+	body.Time = local
+
+	// Declare we want time to always be in UTC
+	formatter := &JSONFormatter{Location: time.UTC}
+	b, err := formatter.Format(body)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	entry := make(map[string]interface{})
+	err = json.Unmarshal(b, &entry)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	if entry["time"] != moment.Format(DefaultTimestampFormat) {
+		t.Fatal("Location override did not work: ", entry["time"])
 	}
 }
