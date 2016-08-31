@@ -131,6 +131,25 @@ func TestInfoShouldNotAddSpacesBetweenStrings(t *testing.T) {
 	})
 }
 
+func TestAdditionalFieldsAreAddedToNewEntries(t *testing.T) {
+	var buffer bytes.Buffer
+	var fields Fields
+
+	addFields := Fields{"test": "testing", "moretest": "moretesting"}
+	logger := New()
+	logger.Out = &buffer
+	logger.Formatter = new(JSONFormatter)
+	logger.AdditionalFields = addFields
+
+	logger.Info("myTest")
+
+	err := json.Unmarshal(buffer.Bytes(), &fields)
+	assert.Nil(t, err)
+
+	assert.Equal(t, fields["test"], "testing")
+	assert.Equal(t, fields["moretest"], "moretesting")
+}
+
 func TestWithFieldsShouldAllowAssignments(t *testing.T) {
 	var buffer bytes.Buffer
 	var fields Fields

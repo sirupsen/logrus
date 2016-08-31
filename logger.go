@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"sync"
@@ -26,6 +27,8 @@ type Logger struct {
 	// to) `logrus.Info`, which allows Info(), Warn(), Error() and Fatal() to be
 	// logged. `logrus.Debug` is useful in
 	Level Level
+	// Additional fields that will be attached to every new entry
+	AdditionalFields Fields
 	// Used to sync writing to the log. Locking is enabled by Default
 	mu MutexWrap
 	// Reusable empty entry
@@ -76,10 +79,14 @@ func New() *Logger {
 
 func (logger *Logger) newEntry() *Entry {
 	entry, ok := logger.entryPool.Get().(*Entry)
-	if ok {
-		return entry
+	if !ok {
+		entry = NewEntry(logger)
 	}
-	return NewEntry(logger)
+	if len(logger.AdditionalFields) > 0 {
+		fmt.Println("we have additional fields")
+		return entry.WithFields(logger.AdditionalFields)
+	}
+	return entry
 }
 
 func (logger *Logger) releaseEntry(entry *Entry) {
