@@ -3,6 +3,8 @@ package logrus
 import (
 	"io"
 	"os"
+	"runtime"
+	"strconv"
 	"sync"
 )
 
@@ -68,6 +70,24 @@ func (logger *Logger) WithFields(fields Fields) *Entry {
 // `WithError` for the given `error`.
 func (logger *Logger) WithError(err error) *Entry {
 	return NewEntry(logger).WithError(err)
+}
+
+// Output pulls information on the function caller before creating a log Entry
+func (logger *Logger) Output(calldepth int, s string) error {
+	var (
+		file string
+		line int
+		ok   bool
+	)
+	_, file, line, ok = runtime.Caller(calldepth)
+	if !ok {
+		file = "???"
+		line = 0
+	}
+	entry := NewEntry(logger).WithFields(map[string]interface{}{"file": file, "line": strconv.Itoa(line)})
+	entry.log(logger.Level, s)
+
+	return nil
 }
 
 func (logger *Logger) Debugf(format string, args ...interface{}) {
