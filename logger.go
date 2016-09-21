@@ -1,8 +1,12 @@
 package logrus
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"regexp"
+	"runtime"
+	"strconv"
 	"sync"
 )
 
@@ -68,6 +72,76 @@ func (logger *Logger) WithFields(fields Fields) *Entry {
 // `WithError` for the given `error`.
 func (logger *Logger) WithError(err error) *Entry {
 	return NewEntry(logger).WithError(err)
+}
+
+type LevelParser interface {
+	Parse(*string) (Level, error)
+}
+
+type RegexpParser struct {
+	r *regexp.Regexp
+}
+
+func (pr *RegexpParser) prefixRegex() {
+	//pr.r = regexp.MustCompile(`^\\[(?P<Level?\\w+)\\]`)
+	pr.r = regexp.MustCompile(`^\[\w+\]`)
+}
+
+func (pr *RegexpParser) Parse(s *string) (Level, error) {
+	//b := string(pr.r.Find([]byte(*s)))
+	//_ = pr.r.FindStringSubmatch(*s)
+	b := pr.r.Find([]byte(*s))
+	return ParseLevel(string(b)[1 : len(b)-1])
+}
+
+type PrefixStrCmp struct{}
+
+func (p *PrefixStrCmp) Parse(s *string) (Level, error) {
+	str := *s
+	prefix := str[:7]
+
+	switch prefix {
+	case "[INFO] ":
+		return InfoLevel, nil
+	case "[WARN] ":
+		return WarnLevel, nil
+	case "[ERROR]":
+		return ErrorLevel, nil
+	case "[FATAL]":
+		return FatalLevel, nil
+	case "[DEBUG]":
+		return DebugLevel, nil
+	case "[PANIC]":
+		return PanicLevel, nil
+	default:
+		return DebugLevel, nil
+	}
+	return WarnLevel, fmt.Errorf("prefixstrcmp switch failed?")
+}
+
+// Output pulls information on the function caller before creating a log Entry
+func (logger *Logger) Output(calldepth int, s string) error {
+	var (
+		file string
+		line int
+		ok   bool
+	)
+	ps := PrefixStrCmp{}
+	_, file, line, ok = runtime.Caller(calldepth)
+	if !ok {
+		file = "???"
+		line = 0
+	}
+	entry := NewEntry(logger).WithFields(map[string]interface{}{"file": file, "line": strconv.Itoa(line)})
+	lvl, err := ps.Parse(&s)
+	if err != nil {
+		NewEntry(logger).log(ErrorLevel, fmt.Sprintf("error parsing log line level: '%s'", s[:10]))
+		entry.log(ErrorLevel, s)
+		return err
+	}
+	entry.log(lvl, s)
+
+	return nil
 }
 
 func (logger *Logger) Debugf(format string, args ...interface{}) {
