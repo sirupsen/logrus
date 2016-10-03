@@ -12,6 +12,9 @@ type JSONFormatter struct {
 
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data := make(Fields, len(entry.Data)+3)
+
+	prefixFieldClashes(entry.Data)
+
 	for k, v := range entry.Data {
 		switch v := v.(type) {
 		case error:
@@ -22,7 +25,6 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 			data[k] = v
 		}
 	}
-	prefixFieldClashes(data)
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
