@@ -192,7 +192,7 @@ func (logger *Logger) Info(args ...interface{}) {
 
 func (logger *Logger) Print(args ...interface{}) {
 	entry := logger.newEntry()
-	entry.Info(args...)
+	entry.Print(args...)
 	logger.releaseEntry(entry)
 }
 
