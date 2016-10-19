@@ -19,7 +19,7 @@ func BenchmarkDummyLogger(b *testing.B) {
 		b.Fatalf("%v", err)
 	}
 	defer nullf.Close()
-	doLoggerBenchmark(b, nullf, &TextFormatter{DisableColors: true}, smallFields)
+	doLoggerBenchmark(b, nullf, &TextFormatter{}, smallFields)
 }
 
 func BenchmarkDummyLoggerNoLock(b *testing.B) {
@@ -28,7 +28,7 @@ func BenchmarkDummyLoggerNoLock(b *testing.B) {
 		b.Fatalf("%v", err)
 	}
 	defer nullf.Close()
-	doLoggerBenchmarkNoLock(b, nullf, &TextFormatter{DisableColors: true}, smallFields)
+	doLoggerBenchmarkNoLock(b, nullf, &TextFormatter{}, smallFields)
 }
 
 func doLoggerBenchmark(b *testing.B, out *os.File, formatter Formatter, fields Fields) {

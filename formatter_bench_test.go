@@ -52,23 +52,23 @@ var errorFields = Fields{
 }
 
 func BenchmarkErrorTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{DisableColors: true}, errorFields)
+	doBenchmark(b, &TextFormatter{}, errorFields)
 }
 
 func BenchmarkSmallTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{DisableColors: true}, smallFields)
+	doBenchmark(b, &TextFormatter{}, smallFields)
 }
 
 func BenchmarkLargeTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{DisableColors: true}, largeFields)
+	doBenchmark(b, &TextFormatter{}, largeFields)
 }
 
 func BenchmarkSmallColoredTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{ForceColors: true}, smallFields)
+	doBenchmark(b, &TextFormatter{}, smallFields)
 }
 
 func BenchmarkLargeColoredTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{ForceColors: true}, largeFields)
+	doBenchmark(b, &TextFormatter{}, largeFields)
 }
 
 func BenchmarkSmallJSONFormatter(b *testing.B) {

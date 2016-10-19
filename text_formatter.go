@@ -33,27 +33,43 @@ func miniTS() int {
 }
 
 type TextFormatter struct {
-	// Set to true to bypass checking for a TTY before outputting colors.
-	ForceColors bool
 
-	// Force disabling colors.
-	DisableColors bool
+	// Enable colors
+	Colors bool
 
-	// Disable timestamp logging. useful when output is redirected to logging
-	// system that already adds timestamps.
-	DisableTimestamp bool
+	// Enable timestamp logging. It's useful to disable timestamps when output
+	// is redirected to logging system that already adds timestamps.  When
+	// disabled, a delta is used for each log line from the start of the
+	// process.  Enabling will apply a timestamp derived from TimestampFormat.
+	Timestamp bool
 
-	// Enable logging the full timestamp when a TTY is attached instead of just
-	// the time passed since beginning of execution.
-	FullTimestamp bool
-
-	// TimestampFormat to use for display when a full timestamp is printed
+	// TimestampFormat is the format used to print the timestamp.  By default
+	// an RFC3339 timestamp is used.
 	TimestampFormat string
 
 	// The fields are sorted by default for a consistent output. For applications
 	// that log extremely frequently and don't use the JSON formatter this may not
 	// be desired.
 	DisableSorting bool
+
+	// Escape noncharacter ascii strings.
+	EscapeNonCharacters bool
+}
+
+// NewTextFormatter returns a text formatter with defaults appropriate for the
+// TTY or file being written to.
+func NewTextFormatter() *TextFormatter {
+
+	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
+
+	formatter := &TextFormatter{
+		Colors:          isColorTerminal,
+		Timestamp:       false,
+		TimestampFormat: DefaultTimestampFormat,
+		DisableSorting:  false,
+	}
+
+	return formatter
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
@@ -66,6 +82,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	if !f.DisableSorting {
 		sort.Strings(keys)
 	}
+
 	if entry.Buffer != nil {
 		b = entry.Buffer
 	} else {
@@ -74,23 +91,21 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	prefixFieldClashes(entry.Data)
 
-	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
-	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
+	// get the time string
+	ts := f.timeStamp(entry)
 
-	timestampFormat := f.TimestampFormat
-	if timestampFormat == "" {
-		timestampFormat = DefaultTimestampFormat
-	}
-	if isColored {
-		f.printColored(b, entry, keys, timestampFormat)
+	if f.Colors {
+		f.printColored(b, entry, keys, ts)
 	} else {
-		if !f.DisableTimestamp {
-			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
+		if f.Timestamp {
+			f.appendKeyValue(b, "time", ts)
 		}
+
 		f.appendKeyValue(b, "level", entry.Level.String())
 		if entry.Message != "" {
 			f.appendKeyValue(b, "msg", entry.Message)
 		}
+
 		for _, key := range keys {
 			f.appendKeyValue(b, key, entry.Data[key])
 		}
@@ -100,7 +115,21 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestampFormat string) {
+func (f *TextFormatter) timeStamp(entry *Entry) string {
+	if !f.Timestamp {
+		return fmt.Sprintf("%04d", miniTS())
+	}
+
+	timestampFormat := f.TimestampFormat
+
+	if timestampFormat == "" {
+		timestampFormat = DefaultTimestampFormat
+	}
+
+	return entry.Time.Format(timestampFormat)
+}
+
+func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestamp string) {
 	var levelColor int
 	switch entry.Level {
 	case DebugLevel:
@@ -115,18 +144,19 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 
 	levelText := strings.ToUpper(entry.Level.String())[0:4]
 
-	if !f.FullTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, miniTS(), entry.Message)
-	} else {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
-	}
+	fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, timestamp, entry.Message)
+
 	for _, k := range keys {
 		v := entry.Data[k]
 		fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%+v", levelColor, k, v)
 	}
 }
 
-func needsQuoting(text string) bool {
+func (f *TextFormatter) needsQuoting(text string) bool {
+	if !f.EscapeNonCharacters {
+		return false
+	}
+
 	for _, ch := range text {
 		if !((ch >= 'a' && ch <= 'z') ||
 			(ch >= 'A' && ch <= 'Z') ||
@@ -145,14 +175,14 @@ func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interf
 
 	switch value := value.(type) {
 	case string:
-		if !needsQuoting(value) {
+		if !f.needsQuoting(value) {
 			b.WriteString(value)
 		} else {
 			fmt.Fprintf(b, "%q", value)
 		}
 	case error:
 		errmsg := value.Error()
-		if !needsQuoting(errmsg) {
+		if !f.needsQuoting(errmsg) {
 			b.WriteString(errmsg)
 		} else {
 			fmt.Fprintf(b, "%q", value)

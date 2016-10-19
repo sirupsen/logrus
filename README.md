@@ -32,8 +32,7 @@ ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 "time":"2014-03-10 19:57:38.562543128 -0400 EDT"}
 ```
 
-With the default `log.SetFormatter(&log.TextFormatter{})` when a TTY is not
-attached, the output is compatible with the
+With `log.SetFormatter(&log.TextFormatter{Colors: false})`, the output is compatible with the
 [logfmt](http://godoc.org/github.com/kr/logfmt) format:
 
 ```text
@@ -304,9 +303,6 @@ The built-in logging formatters are:
 
 * `logrus.TextFormatter`. Logs the event in colors if stdout is a tty, otherwise
   without colors.
-  * *Note:* to force colored output when there is no TTY, set the `ForceColors`
-    field to `true`.  To force no colored output even if there is a TTY  set the
-    `DisableColors` field to `true`
 * `logrus.JSONFormatter`. Logs fields as JSON.
 
 Third party logging formatters:
