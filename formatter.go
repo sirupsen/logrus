@@ -2,7 +2,10 @@ package logrus
 
 import "time"
 
-const DefaultTimestampFormat = time.RFC3339
+const (
+	DefaultTimestampFormat = time.RFC3339
+	DefaultMessageField    = "msg"
+)
 
 // The Formatter interface is used to implement a custom Formatter. It takes an
 // `Entry`. It exposes all the fields, including the default ones:
