@@ -127,6 +127,7 @@ application, you can also create an instance of the `logrus` Logger:
 package main
 
 import (
+  "os"
   "github.com/Sirupsen/logrus"
 )
 
