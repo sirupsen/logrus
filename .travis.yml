@@ -4,7 +4,9 @@ go:
   - 1.4
   - 1.5
   - 1.6
+  - 1.7
   - tip
 install:
-  - go get -t ./...
-script: GOMAXPROCS=4 GORACE="halt_on_error=1" go test -race -v ./...
+  - go get -t $(go list ./... | grep -v /examples/)
+script:
+  - GOMAXPROCS=4 GORACE="halt_on_error=1" go test -race -v $(go list ./... | grep -v /examples/)
