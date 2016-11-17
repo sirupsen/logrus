@@ -4,21 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 )
-
 type fieldKey string
+type FieldMap map[fieldKey]string
 
 const (
-	DefaultKeyMsg   = "msg"
-	DefaultKeyLevel = "level"
-	DefaultKeyTime  = "time"
+	FieldKeyMsg   = "msg"
+	FieldKeyLevel = "level"
+	FieldKeyTime  = "time"
 )
+
+func (f FieldMap) resolve(key fieldKey) string {
+	if k, ok := f[key]; ok {
+		return k
+	}
+
+	return string(key)
+}
 
 type JSONFormatter struct {
 	// TimestampFormat sets the format used for marshaling timestamps.
 	TimestampFormat string
-	MessageKey      string
-	LevelKey        string
-	TimeKey         string
+	FieldMap        FieldMap
 }
 
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
@@ -40,20 +46,13 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		timestampFormat = DefaultTimestampFormat
 	}
 
-	data[f.resolveKey(f.TimeKey, DefaultKeyTime)] = entry.Time.Format(timestampFormat)
-	data[f.resolveKey(f.MessageKey, DefaultKeyMsg)] = entry.Message
-	data[f.resolveKey(f.LevelKey, DefaultKeyLevel)] = entry.Level.String()
+	data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
+	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
+	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
 
 	serialized, err := json.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
 	}
 	return append(serialized, '\n'), nil
-}
-
-func (f *JSONFormatter) resolveKey(key, defaultKey string) string {
-	if len(key) > 0 {
-		return key
-	}
-	return defaultKey
 }
