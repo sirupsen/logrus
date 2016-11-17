@@ -120,7 +120,11 @@ func TestJSONEntryEndsWithNewline(t *testing.T) {
 }
 
 func TestJSONMessageKey(t *testing.T) {
-	formatter := &JSONFormatter{MessageKey: "message"}
+	formatter := &JSONFormatter{
+		FieldMap: FieldMap{
+			FieldKeyMsg: "message",
+		},
+	}
 
 	b, err := formatter.Format(&Entry{Message: "oh hai"})
 	if err != nil {
@@ -133,7 +137,11 @@ func TestJSONMessageKey(t *testing.T) {
 }
 
 func TestJSONLevelKey(t *testing.T) {
-	formatter := &JSONFormatter{LevelKey: "somelevel"}
+	formatter := &JSONFormatter{
+		FieldMap: FieldMap{
+			FieldKeyLevel: "somelevel",
+		},
+	}
 
 	b, err := formatter.Format(WithField("level", "something"))
 	if err != nil {
@@ -146,7 +154,11 @@ func TestJSONLevelKey(t *testing.T) {
 }
 
 func TestJSONTimeKey(t *testing.T) {
-	formatter := &JSONFormatter{TimeKey: "timeywimey"}
+	formatter := &JSONFormatter{
+		FieldMap: FieldMap{
+			FieldKeyTime: "timeywimey",
+		},
+	}
 
 	b, err := formatter.Format(WithField("level", "something"))
 	if err != nil {
