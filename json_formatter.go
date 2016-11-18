@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 )
+
 type fieldKey string
 type FieldMap map[fieldKey]string
 
@@ -24,7 +25,17 @@ func (f FieldMap) resolve(key fieldKey) string {
 type JSONFormatter struct {
 	// TimestampFormat sets the format used for marshaling timestamps.
 	TimestampFormat string
-	FieldMap        FieldMap
+
+	// FieldMap allows users to customize the names of keys for various fields.
+	// As an example:
+	// formatter := &JSONFormatter{
+	//   	FieldMap: FieldMap{
+	// 		 FieldKeyTime: "@timestamp",
+	// 		 FieldKeyLevel: "@level",
+	// 		 FieldKeyLevel: "@message",
+	//    },
+	// }
+	FieldMap FieldMap
 }
 
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
