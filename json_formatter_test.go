@@ -180,7 +180,7 @@ func TestJSONDisableTimestamp(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 	s := string(b)
-	if strings.Contains(s, "time") {
+	if strings.Contains(s, FieldKeyTime) {
 		t.Error("Did not prevent timestamp", s)
 	}
 }
@@ -193,7 +193,7 @@ func TestJSONEnableTimestamp(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 	s := string(b)
-	if !strings.Contains(s, "time") {
+	if !strings.Contains(s, FieldKeyTime) {
 		t.Error("Timestamp not present", s)
 	}
 }
