@@ -9,9 +9,10 @@ type fieldKey string
 type FieldMap map[fieldKey]string
 
 const (
-	FieldKeyMsg   = "msg"
-	FieldKeyLevel = "level"
-	FieldKeyTime  = "time"
+	FieldKeyMsg    = "msg"
+	FieldKeyLevel  = "level"
+	FieldKeyTime   = "time"
+	FieldKeyMethod = "method"
 )
 
 func (f FieldMap) resolve(key fieldKey) string {
@@ -30,16 +31,17 @@ type JSONFormatter struct {
 	// As an example:
 	// formatter := &JSONFormatter{
 	//   	FieldMap: FieldMap{
-	// 		 FieldKeyTime: "@timestamp",
-	// 		 FieldKeyLevel: "@level",
-	// 		 FieldKeyLevel: "@message",
+	// 		 FieldKeyTime:   "@timestamp",
+	// 		 FieldKeyLevel:  "@level",
+	// 		 FieldKeyMsg:    "@message",
+	// 		 FieldKeyMethod: "@caller",
 	//    },
 	// }
 	FieldMap FieldMap
 }
 
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
-	data := make(Fields, len(entry.Data)+3)
+	data := make(Fields, len(entry.Data)+4)
 	for k, v := range entry.Data {
 		switch v := v.(type) {
 		case error:
@@ -60,7 +62,9 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
-
+	if ReportMethod() {
+		data[f.FieldMap.resolve(FieldKeyMethod)] = entry.Method
+	}
 	serialized, err := json.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)

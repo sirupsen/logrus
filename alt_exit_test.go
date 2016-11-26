@@ -3,6 +3,8 @@ package logrus
 import (
 	"io/ioutil"
 	"os/exec"
+	"runtime"
+	"strings"
 	"testing"
 	"time"
 )
@@ -17,6 +19,9 @@ func TestRegister(t *testing.T) {
 
 func TestHandler(t *testing.T) {
 	gofile := "/tmp/testprog.go"
+	testprog := testprogleader
+	testprog = append(testprog, getPackage()...)
+	testprog = append(testprog, testprogtrailer...)
 	if err := ioutil.WriteFile(gofile, testprog, 0666); err != nil {
 		t.Fatalf("can't create go file")
 	}
@@ -38,13 +43,24 @@ func TestHandler(t *testing.T) {
 	}
 }
 
-var testprog = []byte(`
+// getPackage returns the name of the current package, which makes running this
+// test in a fork simpler
+func getPackage() []byte {
+	pc, _, _, _ := runtime.Caller(0)
+	fullFuncName := runtime.FuncForPC(pc).Name()
+	idx := strings.LastIndex(fullFuncName, ".")
+	return []byte(fullFuncName[:idx]) // trim off function details
+}
+
+var testprogleader = []byte(`
 // Test program for atexit, gets output file and data as arguments and writes
 // data to output file in atexit handler.
 package main
 
 import (
-	"github.com/Sirupsen/logrus"
+	"`)
+var testprogtrailer = []byte(
+	`"
 	"flag"
 	"fmt"
 	"io/ioutil"

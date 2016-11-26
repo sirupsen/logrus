@@ -27,6 +27,22 @@ func SetFormatter(formatter Formatter) {
 	std.Formatter = formatter
 }
 
+// SetReportMethod sets whether to include calling method and line as
+// fields
+func SetReportMethod(include bool) {
+	std.mu.Lock()
+	defer std.mu.Unlock()
+	std.ReportMethod = include
+}
+
+// ReportMethod sets whether to include calling method and line as
+// fields
+func ReportMethod() bool {
+	std.mu.Lock()
+	defer std.mu.Unlock()
+	return std.ReportMethod
+}
+
 // SetLevel sets the standard logger level.
 func SetLevel(level Level) {
 	std.mu.Lock()

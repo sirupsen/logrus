@@ -56,6 +56,30 @@ func LogAndAssertText(t *testing.T, log func(*Logger), assertions func(fields ma
 	assertions(fields)
 }
 
+// TestReportMethod verifies that when ReportMethod is set, the 'method' field
+// is added, and when it is unset it is not set or modified
+func TestReportMethod(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		SetReportMethod(false)
+		log.Print("testNoCaller")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "testNoCaller")
+		assert.Equal(t, fields["level"], "info")
+		assert.Equal(t, fields["method"], nil)
+	})
+
+	LogAndAssertJSON(t, func(log *Logger) {
+		SetReportMethod(true)
+		log.Print("testWithCaller")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "testWithCaller")
+		assert.Equal(t, fields["level"], "info")
+		assert.Equal(t, fields["method"], "testing.tRunner")
+	})
+
+	SetReportMethod(false) // return to default value
+}
+
 func TestPrint(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Print("test")
@@ -239,6 +263,55 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 	assert.Equal(t, fields["context"], "eating raw fish")
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
 
+}
+
+func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
+	var buffer bytes.Buffer
+	var fields Fields
+
+	SetReportMethod(true)
+	logger := New()
+	logger.Out = &buffer
+	logger.Formatter = new(JSONFormatter)
+
+	llog := logger.WithField("context", "eating raw fish")
+
+	llog.Info("looks delicious")
+
+	err := json.Unmarshal(buffer.Bytes(), &fields)
+	assert.NoError(t, err, "should have decoded first message")
+	assert.Equal(t, len(fields), 5, "should have msg/time/level/method/context fields")
+	assert.Equal(t, fields["msg"], "looks delicious")
+	assert.Equal(t, fields["context"], "eating raw fish")
+	assert.Equal(t, fields["method"], "testing.tRunner")
+
+	buffer.Reset()
+
+	logger.WithFields(Fields{
+		"foo": "a",
+	}).WithFields(Fields{
+		"bar": "b",
+	}).WithFields(Fields{
+		"baz": "c",
+	}).WithFields(Fields{
+		"method": "man",
+	}).WithFields(Fields{
+		"clan": "Wu Tang",
+	}).Print("omg it is!")
+
+	err = json.Unmarshal(buffer.Bytes(), &fields)
+	assert.NoError(t, err, "should have decoded second message")
+	assert.Equal(t, 10, len(fields), "should have all builtin fields plus foo,bar,baz")
+	assert.Equal(t, "omg it is!", fields["msg"])
+	assert.Equal(t, "a", fields["foo"])
+	assert.Equal(t, "b", fields["bar"])
+	assert.Equal(t, "c", fields["baz"])
+	assert.Equal(t, "man", fields["fields.method"])
+	assert.Equal(t, "Wu Tang", fields["clan"])
+	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
+	assert.Equal(t, "testing.tRunner", fields["method"])
+
+	SetReportMethod(false) // return to default value
 }
 
 func TestConvertLevelToString(t *testing.T) {

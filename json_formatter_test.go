@@ -169,3 +169,51 @@ func TestJSONTimeKey(t *testing.T) {
 		t.Fatal("Expected JSON to format time key")
 	}
 }
+
+func TestFieldDoesNotClashWithMethod(t *testing.T) {
+	SetReportMethod(false)
+	formatter := &JSONFormatter{}
+
+	b, err := formatter.Format(WithField("method", "howdy pardner"))
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	entry := make(map[string]interface{})
+	err = json.Unmarshal(b, &entry)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	if entry["method"] != "howdy pardner" {
+		t.Fatal("method field replaced when ReportMethod=false")
+	}
+}
+
+func TestFieldClashWithMethod(t *testing.T) {
+	SetReportMethod(true)
+	formatter := &JSONFormatter{}
+
+	b, err := formatter.Format(WithField("method", "howdy pardner"))
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	entry := make(map[string]interface{})
+	err = json.Unmarshal(b, &entry)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	if entry["fields.method"] != "howdy pardner" {
+		t.Fatalf("fields.method not set to original method field when ReportMethod=true (got '%s')",
+			entry["fields.method"])
+	}
+
+	if entry["method"] != "" { // since we didn't actually log, it's set to the empty string
+		t.Fatalf("method not set as expected when ReportMethod=true (got '%s')",
+			entry["method"])
+	}
+
+	SetReportMethod(false) // return to default value
+}
