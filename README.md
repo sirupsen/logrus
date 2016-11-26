@@ -45,6 +45,13 @@ time="2015-03-26T01:27:38-04:00" level=panic msg="It's over 9000!" animal=orca s
 time="2015-03-26T01:27:38-04:00" level=fatal msg="The ice breaks!" err=&{0x2082280c0 map[animal:orca size:9009] 2015-03-26 01:27:38.441574009 -0400 EDT panic It's over 9000!} number=100 omg=true
 exit status 1
 ```
+To ensure this behaviour even if a TTY is attached, set your formatter as follows:
+```
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: true,
+		FullTimestamp: true,
+	})
+```
 
 #### Example
 

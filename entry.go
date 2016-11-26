@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"regexp"
+	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
@@ -37,6 +40,9 @@ type Entry struct {
 	// Level the log entry was logged at: Debug, Info, Warn, Error, Fatal or Panic
 	Level Level
 
+	// Calling method, with package name
+	Method string
+
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
 	Message string
 
@@ -47,8 +53,8 @@ type Entry struct {
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
-		// Default is three fields, give a little extra room
-		Data: make(Fields, 5),
+		// Default is three fields, plus one optional.  Give a little extra room.
+		Data: make(Fields, 6),
 	}
 }
 
@@ -85,6 +91,39 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return &Entry{Logger: entry.Logger, Data: data}
 }
 
+// getCaller retrieves the name of the first non-logrus calling function
+func getCaller() (method string) {
+	// Restrict the lookback to 25 frames - if it's further than that, report UNKNOWN
+	pcs := make([]uintptr, 25)
+
+	// the first non-logrus caller is at least three frames away
+	depth := runtime.Callers(3, pcs)
+	for i := 0; i < depth; i++ {
+		fullFuncName := runtime.FuncForPC(pcs[i]).Name()
+		idx := strings.LastIndex(fullFuncName, "/") + 1
+		if idx > 0 {
+			fullFuncName = fullFuncName[idx:]
+		}
+
+		matched, err := regexp.MatchString("logrus.*", fullFuncName)
+		if err != nil {
+			return "CALLER_LOOKUP_FAILED"
+		}
+
+		// If the caller isn't part of logrus, we're done
+		if !matched {
+			if fullFuncName == "main.main" {
+				return "main"
+			} else {
+				return fullFuncName
+			}
+		}
+	}
+
+	// if we got here, we failed to find the caller's context
+	return "UNKNOWN_CALLER"
+}
+
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
@@ -92,7 +131,9 @@ func (entry Entry) log(level Level, msg string) {
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
-
+	if ReportMethod() {
+		entry.Method = getCaller()
+	}
 	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
 		entry.Logger.mu.Lock()
 		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
