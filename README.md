@@ -43,9 +43,9 @@ time="2015-03-26T01:27:38-04:00" level=warning msg="The group's number increased
 time="2015-03-26T01:27:38-04:00" level=debug msg="Temperature changes" temperature=-4
 time="2015-03-26T01:27:38-04:00" level=panic msg="It's over 9000!" animal=orca size=9009
 time="2015-03-26T01:27:38-04:00" level=fatal msg="The ice breaks!" err=&{0x2082280c0 map[animal:orca size:9009] 2015-03-26 01:27:38.441574009 -0400 EDT panic It's over 9000!} number=100 omg=true
-exit status 1
 ```
 To ensure this behaviour even if a TTY is attached, set your formatter as follows:
+
 ```
 	log.SetFormatter(&log.TextFormatter{
 		DisableColors: true,
@@ -53,6 +53,22 @@ To ensure this behaviour even if a TTY is attached, set your formatter as follow
 	})
 ```
 
+If you wish to add the calling method as a field, instruct the logger via:
+```
+log.SetReportMethod(true)
+```
+This adds the caller as 'method' like so:
+
+```json
+{"animal":"penguin","level":"fatal","method":"arcticcreatures.migrate","msg":"a penguin swims by",
+"time":"2014-03-10 19:57:38.562543129 -0400 EDT"}
+
+```
+
+```text
+time="2015-03-26T01:27:38-04:00" level=fatal method=arcticcreatures.migrate msg="a penguin swims by" animal=penguin
+
+```
 #### Example
 
 The simplest way to use Logrus is simply the package-level exported logger:

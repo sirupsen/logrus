@@ -1,3 +1,7 @@
+# 0.11.0
+
+* feature: Add optional logging of caller method
+
 # 0.10.0
 
 * feature: Add a test hook (#180)
