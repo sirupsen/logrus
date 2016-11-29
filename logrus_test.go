@@ -56,11 +56,11 @@ func LogAndAssertText(t *testing.T, log func(*Logger), assertions func(fields ma
 	assertions(fields)
 }
 
-// TestReportMethod verifies that when ReportMethod is set, the 'method' field
+// TestReportCaller verifies that when ReportCaller is set, the 'method' field
 // is added, and when it is unset it is not set or modified
-func TestReportMethod(t *testing.T) {
+func TestReportCaller(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
-		SetReportMethod(false)
+		SetReportCaller(false)
 		log.Print("testNoCaller")
 	}, func(fields Fields) {
 		assert.Equal(t, fields["msg"], "testNoCaller")
@@ -69,7 +69,7 @@ func TestReportMethod(t *testing.T) {
 	})
 
 	LogAndAssertJSON(t, func(log *Logger) {
-		SetReportMethod(true)
+		SetReportCaller(true)
 		log.Print("testWithCaller")
 	}, func(fields Fields) {
 		assert.Equal(t, fields["msg"], "testWithCaller")
@@ -77,7 +77,7 @@ func TestReportMethod(t *testing.T) {
 		assert.Equal(t, fields["method"], "testing.tRunner")
 	})
 
-	SetReportMethod(false) // return to default value
+	SetReportCaller(false) // return to default value
 }
 
 func TestPrint(t *testing.T) {
@@ -269,7 +269,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	var buffer bytes.Buffer
 	var fields Fields
 
-	SetReportMethod(true)
+	SetReportCaller(true)
 	logger := New()
 	logger.Out = &buffer
 	logger.Formatter = new(JSONFormatter)
@@ -311,7 +311,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
 	assert.Equal(t, "testing.tRunner", fields["method"])
 
-	SetReportMethod(false) // return to default value
+	SetReportCaller(false) // return to default value
 }
 
 func TestConvertLevelToString(t *testing.T) {

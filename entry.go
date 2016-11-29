@@ -46,7 +46,7 @@ type Entry struct {
 	Level Level
 
 	// Calling method, with package name
-	Method string
+	Caller string
 
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
 	Message string
@@ -135,8 +135,8 @@ func (entry Entry) log(level Level, msg string) {
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
-	if ReportMethod() {
-		entry.Method = getCaller()
+	if ReportCaller() {
+		entry.Caller = getCaller()
 	}
 	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
 		entry.Logger.mu.Lock()
