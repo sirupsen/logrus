@@ -13,12 +13,17 @@ import (
 
 var bufferPool *sync.Pool
 
+// regex for validation is external, to reduce compilation overhead
+var matchesLogrus *regexp.Regexp
+
 func init() {
 	bufferPool = &sync.Pool{
 		New: func() interface{} {
 			return new(bytes.Buffer)
 		},
 	}
+
+	matchesLogrus, _ = regexp.Compile("logrus.*")
 }
 
 // Defines the key when adding errors using WithError.
@@ -51,11 +56,13 @@ type Entry struct {
 }
 
 func NewEntry(logger *Logger) *Entry {
-	return &Entry{
+	entry := &Entry{
 		Logger: logger,
 		// Default is three fields, plus one optional.  Give a little extra room.
 		Data: make(Fields, 6),
 	}
+
+	return entry
 }
 
 // Returns the string representation from the reader and ultimately the
@@ -95,11 +102,6 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 func getCaller() (method string) {
 	// Restrict the lookback to 25 frames - if it's further than that, report UNKNOWN
 	pcs := make([]uintptr, 25)
-
-	matchesLogrus, err := regexp.Compile("logrus.*")
-	if err != nil {
-		return "CALLER_LOOKUP_FAILED"
-	}
 
 	// the first non-logrus caller is at least three frames away
 	depth := runtime.Callers(3, pcs)
