@@ -170,8 +170,8 @@ func TestJSONTimeKey(t *testing.T) {
 	}
 }
 
-func TestFieldDoesNotClashWithMethod(t *testing.T) {
-	SetReportMethod(false)
+func TestFieldDoesNotClashWithCaller(t *testing.T) {
+	SetReportCaller(false)
 	formatter := &JSONFormatter{}
 
 	b, err := formatter.Format(WithField("method", "howdy pardner"))
@@ -186,12 +186,12 @@ func TestFieldDoesNotClashWithMethod(t *testing.T) {
 	}
 
 	if entry["method"] != "howdy pardner" {
-		t.Fatal("method field replaced when ReportMethod=false")
+		t.Fatal("method field replaced when ReportCaller=false")
 	}
 }
 
-func TestFieldClashWithMethod(t *testing.T) {
-	SetReportMethod(true)
+func TestFieldClashWithCaller(t *testing.T) {
+	SetReportCaller(true)
 	formatter := &JSONFormatter{}
 
 	b, err := formatter.Format(WithField("method", "howdy pardner"))
@@ -206,14 +206,14 @@ func TestFieldClashWithMethod(t *testing.T) {
 	}
 
 	if entry["fields.method"] != "howdy pardner" {
-		t.Fatalf("fields.method not set to original method field when ReportMethod=true (got '%s')",
+		t.Fatalf("fields.method not set to original method field when ReportCaller=true (got '%s')",
 			entry["fields.method"])
 	}
 
 	if entry["method"] != "" { // since we didn't actually log, it's set to the empty string
-		t.Fatalf("method not set as expected when ReportMethod=true (got '%s')",
+		t.Fatalf("method not set as expected when ReportCaller=true (got '%s')",
 			entry["method"])
 	}
 
-	SetReportMethod(false) // return to default value
+	SetReportCaller(false) // return to default value
 }

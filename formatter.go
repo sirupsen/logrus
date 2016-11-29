@@ -44,8 +44,8 @@ func prefixFieldClashes(data Fields) {
 		data["fields.level"] = l
 	}
 
-	// If ReportMethod is not set, 'method' will not conflict.
-	if ReportMethod() {
+	// If Reportmethod is not set, 'method' will not conflict.
+	if ReportCaller() {
 		if l, ok := data["method"]; ok {
 			data["fields.method"] = l
 		}

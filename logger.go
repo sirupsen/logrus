@@ -24,7 +24,7 @@ type Logger struct {
 	Formatter Formatter
 
 	//Flag for whether to log caller info (off by default)
-	ReportMethod bool
+	ReportCaller bool
 
 	// The logging level the logger should log at. This is typically (and defaults
 	// to) `logrus.Info`, which allows Info(), Warn(), Error() and Fatal() to be
@@ -75,7 +75,7 @@ func New() *Logger {
 		Formatter:    new(TextFormatter),
 		Hooks:        make(LevelHooks),
 		Level:        InfoLevel,
-		ReportMethod: false,
+		ReportCaller: false,
 	}
 }
 

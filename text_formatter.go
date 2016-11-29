@@ -88,8 +88,8 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
 		}
 		f.appendKeyValue(b, "level", entry.Level.String())
-		if ReportMethod() {
-			f.appendKeyValue(b, "method", entry.Method)
+		if ReportCaller() {
+			f.appendKeyValue(b, "method", entry.Caller)
 		}
 		if entry.Message != "" {
 			f.appendKeyValue(b, "msg", entry.Message)
@@ -119,8 +119,8 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	levelText := strings.ToUpper(entry.Level.String())[0:4]
 
 	caller := ""
-	if ReportMethod() {
-		caller = fmt.Sprintf(" %s()", entry.Method)
+	if ReportCaller() {
+		caller = fmt.Sprintf(" %s()", entry.Caller)
 	}
 
 	if !f.FullTimestamp {
