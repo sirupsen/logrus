@@ -193,9 +193,9 @@ func TestFieldDoesNotClashWithCaller(t *testing.T) {
 func TestFieldClashWithCaller(t *testing.T) {
 	SetReportCaller(true)
 	formatter := &JSONFormatter{}
-	std.ReportCaller = true
-
-	b, err := formatter.Format(WithField("method", "howdy pardner"))
+	e := WithField("method", "howdy pardner")
+	e.Caller = "somefunc"
+	b, err := formatter.Format(e)
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -211,7 +211,7 @@ func TestFieldClashWithCaller(t *testing.T) {
 			entry["fields.method"])
 	}
 
-	if entry["method"] != "" { // since we didn't actually log, it's set to the empty string
+	if entry["method"] != "somefunc" {
 		t.Fatalf("method not set as expected when ReportCaller=true (got '%s')",
 			entry["method"])
 	}
