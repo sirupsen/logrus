@@ -72,7 +72,12 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		b = &bytes.Buffer{}
 	}
 
-	prefixFieldClashes(entry.Data)
+	reportCaller := false
+	if entry.Logger != nil {
+		reportCaller = entry.Logger.ReportCaller
+	}
+
+	prefixFieldClashes(entry.Data, reportCaller)
 
 	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
 	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
@@ -88,7 +93,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
 		}
 		f.appendKeyValue(b, "level", entry.Level.String())
-		if ReportCaller() {
+		if reportCaller {
 			f.appendKeyValue(b, "method", entry.Caller)
 		}
 		if entry.Message != "" {
@@ -119,7 +124,13 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	levelText := strings.ToUpper(entry.Level.String())[0:4]
 
 	caller := ""
-	if ReportCaller() {
+
+	reportCaller := false
+	if entry.Logger != nil {
+		reportCaller = entry.Logger.ReportCaller
+	}
+
+	if reportCaller {
 		caller = fmt.Sprintf(" %s()", entry.Caller)
 	}
 

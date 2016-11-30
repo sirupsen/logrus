@@ -123,7 +123,7 @@ func getCaller() (method string) {
 	}
 
 	// if we got here, we failed to find the caller's context
-	return "UNKNOWN_CALLER"
+	return ""
 }
 
 // This function is not declared with a pointer value because otherwise
@@ -133,7 +133,7 @@ func (entry Entry) log(level Level, msg string) {
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
-	if ReportCaller() {
+	if entry.Logger.ReportCaller {
 		entry.Caller = getCaller()
 	}
 	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {

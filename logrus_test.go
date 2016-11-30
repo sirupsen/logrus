@@ -60,32 +60,30 @@ func LogAndAssertText(t *testing.T, log func(*Logger), assertions func(fields ma
 // is added, and when it is unset it is not set or modified
 func TestReportCaller(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
-		SetReportCaller(false)
+		log.ReportCaller = false
 		log.Print("testNoCaller")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "testNoCaller")
-		assert.Equal(t, fields["level"], "info")
-		assert.Equal(t, fields["method"], nil)
+		assert.Equal(t, "testNoCaller", fields["msg"])
+		assert.Equal(t, "info", fields["level"])
+		assert.Equal(t, nil, fields["method"])
 	})
 
 	LogAndAssertJSON(t, func(log *Logger) {
-		SetReportCaller(true)
+		log.ReportCaller = true
 		log.Print("testWithCaller")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "testWithCaller")
-		assert.Equal(t, fields["level"], "info")
-		assert.Equal(t, fields["method"], "testing.tRunner")
+		assert.Equal(t, "testWithCaller", fields["msg"])
+		assert.Equal(t, "info", fields["level"])
+		assert.Equal(t, "testing.tRunner", fields["method"])
 	})
-
-	SetReportCaller(false) // return to default value
 }
 
 func TestPrint(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Print("test")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test")
-		assert.Equal(t, fields["level"], "info")
+		assert.Equal(t, "test", fields["msg"])
+		assert.Equal(t, "info", fields["level"])
 	})
 }
 
@@ -93,8 +91,8 @@ func TestInfo(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Info("test")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test")
-		assert.Equal(t, fields["level"], "info")
+		assert.Equal(t, "test", fields["msg"])
+		assert.Equal(t, "info", fields["level"])
 	})
 }
 
@@ -102,8 +100,8 @@ func TestWarn(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Warn("test")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test")
-		assert.Equal(t, fields["level"], "warning")
+		assert.Equal(t, "test", fields["msg"])
+		assert.Equal(t, "warning", fields["level"])
 	})
 }
 
@@ -111,7 +109,7 @@ func TestInfolnShouldAddSpacesBetweenStrings(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Infoln("test", "test")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test test")
+		assert.Equal(t, "test test", fields["msg"])
 	})
 }
 
@@ -119,7 +117,7 @@ func TestInfolnShouldAddSpacesBetweenStringAndNonstring(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Infoln("test", 10)
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test 10")
+		assert.Equal(t, "test 10", fields["msg"])
 	})
 }
 
@@ -127,7 +125,7 @@ func TestInfolnShouldAddSpacesBetweenTwoNonStrings(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Infoln(10, 10)
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "10 10")
+		assert.Equal(t, "10 10", fields["msg"])
 	})
 }
 
@@ -135,7 +133,7 @@ func TestInfoShouldAddSpacesBetweenTwoNonStrings(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Infoln(10, 10)
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "10 10")
+		assert.Equal(t, "10 10", fields["msg"])
 	})
 }
 
@@ -143,7 +141,7 @@ func TestInfoShouldNotAddSpacesBetweenStringAndNonstring(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Info("test", 10)
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test10")
+		assert.Equal(t, "test10", fields["msg"])
 	})
 }
 
@@ -151,7 +149,7 @@ func TestInfoShouldNotAddSpacesBetweenStrings(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Info("test", "test")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "testtest")
+		assert.Equal(t, "testtest", fields["msg"])
 	})
 }
 
@@ -189,7 +187,7 @@ func TestUserSuppliedFieldDoesNotOverwriteDefaults(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.WithField("msg", "hello").Info("test")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test")
+		assert.Equal(t, "test", fields["msg"])
 	})
 }
 
@@ -197,8 +195,8 @@ func TestUserSuppliedMsgFieldHasPrefix(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.WithField("msg", "hello").Info("test")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["msg"], "test")
-		assert.Equal(t, fields["fields.msg"], "hello")
+		assert.Equal(t, "test", fields["msg"])
+		assert.Equal(t, "hello", fields["fields.msg"])
 	})
 }
 
@@ -206,7 +204,7 @@ func TestUserSuppliedTimeFieldHasPrefix(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.WithField("time", "hello").Info("test")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["fields.time"], "hello")
+		assert.Equal(t, "hello", fields["fields.time"])
 	})
 }
 
@@ -214,8 +212,8 @@ func TestUserSuppliedLevelFieldHasPrefix(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.WithField("level", 1).Info("test")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["level"], "info")
-		assert.Equal(t, fields["fields.level"], 1.0) // JSON has floats only
+		assert.Equal(t, "info", fields["level"])
+		assert.Equal(t, 1.0, fields["fields.level"]) // JSON has floats only
 	})
 }
 
@@ -259,8 +257,8 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 	err = json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded second message")
 	assert.Equal(t, len(fields), 4, "should only have msg/time/level/context fields")
-	assert.Equal(t, fields["msg"], "omg it is!")
-	assert.Equal(t, fields["context"], "eating raw fish")
+	assert.Equal(t, "omg it is!", fields["msg"])
+	assert.Equal(t, "eating raw fish", fields["context"])
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
 
 }
@@ -269,10 +267,10 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	var buffer bytes.Buffer
 	var fields Fields
 
-	SetReportCaller(true)
 	logger := New()
 	logger.Out = &buffer
 	logger.Formatter = new(JSONFormatter)
+	logger.ReportCaller = true
 
 	llog := logger.WithField("context", "eating raw fish")
 
@@ -281,9 +279,9 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	err := json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded first message")
 	assert.Equal(t, len(fields), 5, "should have msg/time/level/method/context fields")
-	assert.Equal(t, fields["msg"], "looks delicious")
-	assert.Equal(t, fields["context"], "eating raw fish")
-	assert.Equal(t, fields["method"], "testing.tRunner")
+	assert.Equal(t, "looks delicious", fields["msg"])
+	assert.Equal(t, "eating raw fish", fields["context"])
+	assert.Equal(t, "testing.tRunner", fields["method"])
 
 	buffer.Reset()
 
@@ -311,7 +309,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
 	assert.Equal(t, "testing.tRunner", fields["method"])
 
-	SetReportCaller(false) // return to default value
+	logger.ReportCaller = false // return to default value
 }
 
 func TestConvertLevelToString(t *testing.T) {

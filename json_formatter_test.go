@@ -193,6 +193,7 @@ func TestFieldDoesNotClashWithCaller(t *testing.T) {
 func TestFieldClashWithCaller(t *testing.T) {
 	SetReportCaller(true)
 	formatter := &JSONFormatter{}
+	std.ReportCaller = true
 
 	b, err := formatter.Format(WithField("method", "howdy pardner"))
 	if err != nil {
