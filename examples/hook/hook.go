@@ -1,8 +1,14 @@
+// +build ignore
+// Do NOT include the above line in your code. This is a build constraint used
+// to prevent import loops in the code whilst go get'ting it.
+// Read more about build constraints in golang here:
+// https://golang.org/pkg/go/build/#hdr-Build_Constraints
+
 package main
 
 import (
-	"github.com/Sirupsen/logrus"
-	"gopkg.in/gemnasium/logrus-airbrake-hook.v2"
+	"github.com/sirupsen/logrus"
+	airbrake "gopkg.in/gemnasium/logrus-airbrake-hook.v2"
 )
 
 var log = logrus.New()
