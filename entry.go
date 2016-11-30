@@ -56,13 +56,11 @@ type Entry struct {
 }
 
 func NewEntry(logger *Logger) *Entry {
-	entry := &Entry{
+	return &Entry{
 		Logger: logger,
 		// Default is three fields, plus one optional.  Give a little extra room.
 		Data: make(Fields, 6),
 	}
-
-	return entry
 }
 
 // Returns the string representation from the reader and ultimately the
