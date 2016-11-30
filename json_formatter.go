@@ -52,7 +52,13 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 			data[k] = v
 		}
 	}
-	prefixFieldClashes(data)
+
+	reportCaller := false
+	if entry.Logger != nil {
+		reportCaller = entry.Logger.ReportCaller
+	}
+
+	prefixFieldClashes(data, reportCaller)
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
@@ -62,7 +68,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
-	if ReportCaller() {
+	if reportCaller {
 		data[f.FieldMap.resolve(FieldKeyCaller)] = entry.Caller
 	}
 	serialized, err := json.Marshal(data)

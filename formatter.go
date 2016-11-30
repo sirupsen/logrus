@@ -31,7 +31,7 @@ type Formatter interface {
 //
 // It's not exported because it's still using Data in an opinionated way. It's to
 // avoid code duplication between the two default formatters.
-func prefixFieldClashes(data Fields) {
+func prefixFieldClashes(data Fields, reportCaller bool) {
 	if t, ok := data["time"]; ok {
 		data["fields.time"] = t
 	}
@@ -44,8 +44,8 @@ func prefixFieldClashes(data Fields) {
 		data["fields.level"] = l
 	}
 
-	// If Reportmethod is not set, 'method' will not conflict.
-	if ReportCaller() {
+	// If reportCaller is not set, 'method' will not conflict.
+	if reportCaller {
 		if l, ok := data["method"]; ok {
 			data["fields.method"] = l
 		}
