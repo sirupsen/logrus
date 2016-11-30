@@ -301,7 +301,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 
 	err = json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded second message")
-	assert.Equal(t, 10, len(fields), "should have all builtin fields plus foo,bar,baz")
+	assert.Equal(t, 10, len(fields), "should have all builtin fields plus foo,bar,baz,...")
 	assert.Equal(t, "omg it is!", fields["msg"])
 	assert.Equal(t, "a", fields["foo"])
 	assert.Equal(t, "b", fields["bar"])
