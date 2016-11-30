@@ -126,6 +126,12 @@ func getCaller() (method string) {
 	return ""
 }
 
+func (entry Entry) HasCaller() (has bool) {
+	return entry.Logger != nil &&
+		entry.Logger.ReportCaller &&
+		entry.Caller != ""
+}
+
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
