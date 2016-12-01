@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -310,6 +311,53 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	assert.Equal(t, "testing.tRunner", fields["method"])
 
 	logger.ReportCaller = false // return to default value
+}
+
+func logLoop(iterations int, reportCaller bool) {
+	var buffer bytes.Buffer
+
+	logger := New()
+	logger.Out = &buffer
+	logger.Formatter = new(JSONFormatter)
+	logger.ReportCaller = reportCaller
+
+	for i := 0; i < iterations; i++ {
+		logger.Infof("round %d of %d", i, iterations)
+	}
+}
+
+// Assertions for upper bounds to reporting overhead
+func TestCallerReportingOverhead(t *testing.T) {
+	iterations := 10000
+	before := time.Now()
+	logLoop(iterations, false)
+	during := time.Now()
+	logLoop(iterations, true)
+	after := time.Now()
+
+	elapsedNotReporting := during.Sub(before).Nanoseconds()
+	elapsedReporting := after.Sub(during).Nanoseconds()
+
+	maxDelta := 1 * time.Second
+	assert.WithinDuration(t, during, before, maxDelta,
+		"%d log calls without caller name lookup takes less than %d second(s) (was %d nanoseconds)",
+		iterations, maxDelta.Seconds(), elapsedNotReporting)
+	assert.WithinDuration(t, after, during, maxDelta,
+		"%d log calls without caller name lookup takes less than %d second(s) (was %d nanoseconds)",
+		iterations, maxDelta.Seconds(), elapsedReporting)
+}
+
+// benchmarks for both with and without caller-function reporting
+func BenchmarkWithoutCallerTracing(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		logLoop(1000, false)
+	}
+}
+
+func BenchmarkWithCallerTracing(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		logLoop(1000, true)
+	}
 }
 
 func TestConvertLevelToString(t *testing.T) {

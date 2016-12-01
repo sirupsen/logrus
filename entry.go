@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -13,8 +12,14 @@ import (
 
 var bufferPool *sync.Pool
 
-// regex for validation is external, to reduce compilation overhead
-var matchesLogrus *regexp.Regexp
+// qualified package name, cached at first use
+var logrusPackage string
+
+// Positions in the call stack when tracing to report the calling method
+var minimumCallerDepth int
+
+const maximumCallerDepth int = 25
+const knownLogrusFrames int = 4
 
 func init() {
 	bufferPool = &sync.Pool{
@@ -23,7 +28,8 @@ func init() {
 		},
 	}
 
-	matchesLogrus, _ = regexp.Compile("logrus.*")
+	// start at the bottom of the stack before the package-name cache is primed
+	minimumCallerDepth = 1
 }
 
 // Defines the key when adding errors using WithError.
@@ -96,24 +102,42 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return &Entry{Logger: entry.Logger, Data: data}
 }
 
+// getPackageName reduces a fully qualified function name to the package name
+// There really ought to be to be a better way...
+func getPackageName(f string) string {
+	for {
+		lastPeriod := strings.LastIndex(f, ".")
+		lastSlash := strings.LastIndex(f, "/")
+		if lastPeriod > lastSlash {
+			f = f[:lastPeriod]
+		} else {
+			break
+		}
+	}
+
+	return f
+}
+
 // getCaller retrieves the name of the first non-logrus calling function
 func getCaller() (method string) {
-	// Restrict the lookback to 25 frames - if it's further than that, report UNKNOWN
-	pcs := make([]uintptr, 25)
+	// Restrict the lookback frames to avoid runaway lookups
+	pcs := make([]uintptr, maximumCallerDepth)
+	depth := runtime.Callers(minimumCallerDepth, pcs)
 
-	// the first non-logrus caller is at least three frames away
-	depth := runtime.Callers(3, pcs)
+	// cache this package's fully-qualified name
+	if logrusPackage == "" {
+		logrusPackage = getPackageName(runtime.FuncForPC(pcs[0]).Name())
+
+		// now that we have the cache, we can skip a minimum count of known-logrus functions
+		minimumCallerDepth = knownLogrusFrames
+	}
+
 	for i := 0; i < depth; i++ {
 		fullFuncName := runtime.FuncForPC(pcs[i]).Name()
-		idx := strings.LastIndex(fullFuncName, "/") + 1
-		if idx > 0 {
-			fullFuncName = fullFuncName[idx:]
-		}
+		pkg := getPackageName(fullFuncName)
 
-		matched := matchesLogrus.MatchString(fullFuncName)
-
-		// If the caller isn't part of logrus, we're done
-		if !matched {
+		// If the caller isn't part of this package, we're done
+		if pkg != logrusPackage {
 			if fullFuncName == "main.main" {
 				return "main"
 			} else {
