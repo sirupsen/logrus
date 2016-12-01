@@ -1,5 +1,11 @@
 # Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>&nbsp;[![Build Status](https://travis-ci.org/Sirupsen/logrus.svg?branch=master)](https://travis-ci.org/Sirupsen/logrus)&nbsp;[![GoDoc](https://godoc.org/github.com/Sirupsen/logrus?status.svg)](https://godoc.org/github.com/Sirupsen/logrus)
 
+**Seeing weird case-sensitive problems?** See [this
+issue](https://github.com/sirupsen/logrus/issues/451#issuecomment-264332021).
+This change has been reverted. I apologize for causing this. I greatly
+underestimated the impact this would have. Logrus strives for stability and
+backwards compatibility and failed to provide that.
+
 Logrus is a structured logger for Go (golang), completely API compatible with
 the standard library logger. [Godoc][godoc]. **Please note the Logrus API is not
 yet stable (pre 1.0). Logrus itself is completely stable and has been used in
