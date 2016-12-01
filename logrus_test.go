@@ -328,7 +328,7 @@ func logLoop(iterations int, reportCaller bool) {
 
 // Assertions for upper bounds to reporting overhead
 func TestCallerReportingOverhead(t *testing.T) {
-	iterations := 10000
+	iterations := 5000
 	before := time.Now()
 	logLoop(iterations, false)
 	during := time.Now()
