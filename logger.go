@@ -68,7 +68,7 @@ func (mw *MutexWrap) Disable() {
 func New() *Logger {
 	return &Logger{
 		Out:       os.Stderr,
-		Formatter: new(TextFormatter),
+		Formatter: NewTextFormatter(),
 		Hooks:     make(LevelHooks),
 		Level:     InfoLevel,
 	}

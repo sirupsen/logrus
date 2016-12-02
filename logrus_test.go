@@ -32,9 +32,7 @@ func LogAndAssertText(t *testing.T, log func(*Logger), assertions func(fields ma
 
 	logger := New()
 	logger.Out = &buffer
-	logger.Formatter = &TextFormatter{
-		DisableColors: true,
-	}
+	logger.Formatter = NewTextFormatter()
 
 	log(logger)
 

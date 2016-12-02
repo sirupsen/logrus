@@ -8,7 +8,7 @@ import (
 )
 
 func TestQuoting(t *testing.T) {
-	tf := &TextFormatter{DisableColors: true}
+	tf := &TextFormatter{EscapeNonCharacters: true}
 
 	checkQuoting := func(q bool, value interface{}) {
 		b, _ := tf.Format(WithField("test", value))
@@ -35,7 +35,10 @@ func TestQuoting(t *testing.T) {
 
 func TestTimestampFormat(t *testing.T) {
 	checkTimeStr := func(format string) {
-		customFormatter := &TextFormatter{DisableColors: true, TimestampFormat: format}
+		customFormatter := &TextFormatter{
+			Timestamp:       true,
+			TimestampFormat: format,
+		}
 		customStr, _ := customFormatter.Format(WithField("test", "test"))
 		timeStart := bytes.Index(customStr, ([]byte)("time="))
 		timeEnd := bytes.Index(customStr, ([]byte)("level="))
