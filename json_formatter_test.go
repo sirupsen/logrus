@@ -218,3 +218,31 @@ func TestFieldClashWithCaller(t *testing.T) {
 
 	SetReportCaller(false) // return to default value
 }
+
+func TestJSONDisableTimestamp(t *testing.T) {
+	formatter := &JSONFormatter{
+		DisableTimestamp: true,
+	}
+
+	b, err := formatter.Format(WithField("level", "something"))
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+	s := string(b)
+	if strings.Contains(s, FieldKeyTime) {
+		t.Error("Did not prevent timestamp", s)
+	}
+}
+
+func TestJSONEnableTimestamp(t *testing.T) {
+	formatter := &JSONFormatter{}
+
+	b, err := formatter.Format(WithField("level", "something"))
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+	s := string(b)
+	if !strings.Contains(s, FieldKeyTime) {
+		t.Error("Timestamp not present", s)
+	}
+}
