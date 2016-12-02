@@ -27,6 +27,9 @@ type JSONFormatter struct {
 	// TimestampFormat sets the format used for marshaling timestamps.
 	TimestampFormat string
 
+	// DisableTimestamp allows disabling automatic timestamps in output
+	DisableTimestamp bool
+
 	// FieldMap allows users to customize the names of keys for various fields.
 	// As an example:
 	// formatter := &JSONFormatter{
@@ -46,7 +49,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		switch v := v.(type) {
 		case error:
 			// Otherwise errors are ignored by `encoding/json`
-			// https://github.com/sirupsen/logrus/issues/137
+			// https://github.com/Sirupsen/logrus/issues/137
 			data[k] = v.Error()
 		default:
 			data[k] = v
@@ -60,7 +63,9 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		timestampFormat = DefaultTimestampFormat
 	}
 
-	data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
+	if !f.DisableTimestamp {
+		data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
+	}
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
 	if entry.HasCaller() {
