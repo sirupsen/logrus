@@ -52,7 +52,7 @@ time="2015-03-26T01:27:38-04:00" level=fatal msg="The ice breaks!" err=&{0x20822
 ```
 To ensure this behaviour even if a TTY is attached, set your formatter as follows:
 
-```
+```go
 	log.SetFormatter(&log.TextFormatter{
 		DisableColors: true,
 		FullTimestamp: true,
@@ -60,7 +60,7 @@ To ensure this behaviour even if a TTY is attached, set your formatter as follow
 ```
 
 If you wish to add the calling method as a field, instruct the logger via:
-```
+```go
 log.SetReportCaller(true)
 ```
 This adds the caller as 'method' like so:
@@ -75,7 +75,7 @@ time="2015-03-26T01:27:38-04:00" level=fatal method=arcticcreatures.migrate msg=
 ```
 Note that this does add measurable overhead - the cost will depend on the of Go, but is
 between 20 and 40% in recent tests with 1.6 and 1.7.  You can validate this in your
-environment via benchmarks: `go test -bench=.*CallerTracing`
+environment via benchmarks: ```go test -bench=.*CallerTracing```
 
 
 #### Example
