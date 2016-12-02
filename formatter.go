@@ -33,13 +33,16 @@ type Formatter interface {
 func prefixFieldClashes(data Fields) {
 	if t, ok := data["time"]; ok {
 		data["fields.time"] = t
+		delete(data, "time")
 	}
 
 	if m, ok := data["msg"]; ok {
 		data["fields.msg"] = m
+		delete(data, "msg")
 	}
 
 	if l, ok := data["level"]; ok {
 		data["fields.level"] = l
+		delete(data, "level")
 	}
 }

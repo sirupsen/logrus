@@ -3,6 +3,7 @@ package logrus
 import (
 	"bytes"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 )
@@ -55,6 +56,26 @@ func TestTimestampFormat(t *testing.T) {
 	checkTimeStr("2006-01-02T15:04:05.000000000Z07:00")
 	checkTimeStr("Mon Jan _2 15:04:05 2006")
 	checkTimeStr("")
+}
+
+func TestFieldClashes(t *testing.T) {
+	checkFieldClash := func(field string) {
+		customFormatter := &TextFormatter{DisableColors: true}
+		customBytes, _ := customFormatter.Format(WithField(field, "asht"))
+		customStr := string(customBytes)
+		fieldsValue := make(map[string]string)
+		for _, split := range strings.Split(strings.TrimSpace(customStr), " ") {
+			keyValue := strings.Split(split, "=")
+			fieldsValue[keyValue[0]] = keyValue[1]
+		}
+		if _, found := fieldsValue["fields."+field]; !found {
+			t.Errorf("field %s is not renamed", field)
+		}
+	}
+
+	checkFieldClash("msg")
+	checkFieldClash("level")
+	checkFieldClash("time")
 }
 
 // TODO add tests for sorting etc., this requires a parser for the text
