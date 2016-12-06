@@ -138,11 +138,7 @@ func getCaller() (method string) {
 
 		// If the caller isn't part of this package, we're done
 		if pkg != logrusPackage {
-			if fullFuncName == "main.main" {
-				return "main"
-			} else {
-				return fullFuncName
-			}
+			return fullFuncName
 		}
 	}
 

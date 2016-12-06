@@ -174,7 +174,7 @@ func TestFieldDoesNotClashWithCaller(t *testing.T) {
 	SetReportCaller(false)
 	formatter := &JSONFormatter{}
 
-	b, err := formatter.Format(WithField("method", "howdy pardner"))
+	b, err := formatter.Format(WithField("func", "howdy pardner"))
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -185,15 +185,15 @@ func TestFieldDoesNotClashWithCaller(t *testing.T) {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
 	}
 
-	if entry["method"] != "howdy pardner" {
-		t.Fatal("method field replaced when ReportCaller=false")
+	if entry["func"] != "howdy pardner" {
+		t.Fatal("func field replaced when ReportCaller=false")
 	}
 }
 
 func TestFieldClashWithCaller(t *testing.T) {
 	SetReportCaller(true)
 	formatter := &JSONFormatter{}
-	e := WithField("method", "howdy pardner")
+	e := WithField("func", "howdy pardner")
 	e.Caller = "somefunc"
 	b, err := formatter.Format(e)
 	if err != nil {
@@ -206,14 +206,14 @@ func TestFieldClashWithCaller(t *testing.T) {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
 	}
 
-	if entry["fields.method"] != "howdy pardner" {
-		t.Fatalf("fields.method not set to original method field when ReportCaller=true (got '%s')",
-			entry["fields.method"])
+	if entry["fields.func"] != "howdy pardner" {
+		t.Fatalf("fields.func not set to original func field when ReportCaller=true (got '%s')",
+			entry["fields.func"])
 	}
 
-	if entry["method"] != "somefunc" {
-		t.Fatalf("method not set as expected when ReportCaller=true (got '%s')",
-			entry["method"])
+	if entry["func"] != "somefunc" {
+		t.Fatalf("func not set as expected when ReportCaller=true (got '%s')",
+			entry["func"])
 	}
 
 	SetReportCaller(false) // return to default value

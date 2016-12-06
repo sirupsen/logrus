@@ -57,7 +57,7 @@ func LogAndAssertText(t *testing.T, log func(*Logger), assertions func(fields ma
 	assertions(fields)
 }
 
-// TestReportCaller verifies that when ReportCaller is set, the 'method' field
+// TestReportCaller verifies that when ReportCaller is set, the 'func' field
 // is added, and when it is unset it is not set or modified
 func TestReportCaller(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
@@ -66,7 +66,7 @@ func TestReportCaller(t *testing.T) {
 	}, func(fields Fields) {
 		assert.Equal(t, "testNoCaller", fields["msg"])
 		assert.Equal(t, "info", fields["level"])
-		assert.Equal(t, nil, fields["method"])
+		assert.Equal(t, nil, fields["func"])
 	})
 
 	LogAndAssertJSON(t, func(log *Logger) {
@@ -75,7 +75,7 @@ func TestReportCaller(t *testing.T) {
 	}, func(fields Fields) {
 		assert.Equal(t, "testWithCaller", fields["msg"])
 		assert.Equal(t, "info", fields["level"])
-		assert.Equal(t, "testing.tRunner", fields["method"])
+		assert.Equal(t, "testing.tRunner", fields["func"])
 	})
 }
 
@@ -279,36 +279,36 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 
 	err := json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded first message")
-	assert.Equal(t, len(fields), 5, "should have msg/time/level/method/context fields")
+	assert.Equal(t, len(fields), 5, "should have msg/time/level/func/context fields")
 	assert.Equal(t, "looks delicious", fields["msg"])
 	assert.Equal(t, "eating raw fish", fields["context"])
-	assert.Equal(t, "testing.tRunner", fields["method"])
+	assert.Equal(t, "testing.tRunner", fields["func"])
 
 	buffer.Reset()
 
 	logger.WithFields(Fields{
-		"foo": "a",
+		"Clyde": "Stubblefield",
 	}).WithFields(Fields{
-		"bar": "b",
+		"Jab'o": "Starks",
 	}).WithFields(Fields{
-		"baz": "c",
+		"uri": "https://www.youtube.com/watch?v=V5DTznu-9v0",
 	}).WithFields(Fields{
-		"method": "man",
+		"func": "y drummer",
 	}).WithFields(Fields{
-		"clan": "Wu Tang",
-	}).Print("omg it is!")
+		"James": "Brown",
+	}).Print("The hardest workin' man in show business")
 
 	err = json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded second message")
 	assert.Equal(t, 10, len(fields), "should have all builtin fields plus foo,bar,baz,...")
-	assert.Equal(t, "omg it is!", fields["msg"])
-	assert.Equal(t, "a", fields["foo"])
-	assert.Equal(t, "b", fields["bar"])
-	assert.Equal(t, "c", fields["baz"])
-	assert.Equal(t, "man", fields["fields.method"])
-	assert.Equal(t, "Wu Tang", fields["clan"])
+	assert.Equal(t, "Stubblefield", fields["Clyde"])
+	assert.Equal(t, "Starks", fields["Jab'o"])
+	assert.Equal(t, "https://www.youtube.com/watch?v=V5DTznu-9v0", fields["uri"])
+	assert.Equal(t, "y drummer", fields["fields.func"])
+	assert.Equal(t, "Brown", fields["James"])
+	assert.Equal(t, "The hardest workin' man in show business", fields["msg"])
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
-	assert.Equal(t, "testing.tRunner", fields["method"])
+	assert.Equal(t, "testing.tRunner", fields["func"])
 
 	logger.ReportCaller = false // return to default value
 }

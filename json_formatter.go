@@ -9,10 +9,10 @@ type fieldKey string
 type FieldMap map[fieldKey]string
 
 const (
-	FieldKeyMsg    = "msg"
-	FieldKeyLevel  = "level"
-	FieldKeyTime   = "time"
-	FieldKeyCaller = "method"
+	FieldKeyMsg   = "msg"
+	FieldKeyLevel = "level"
+	FieldKeyTime  = "time"
+	FieldKeyFunc  = "func"
 )
 
 func (f FieldMap) resolve(key fieldKey) string {
@@ -34,10 +34,10 @@ type JSONFormatter struct {
 	// As an example:
 	// formatter := &JSONFormatter{
 	//   	FieldMap: FieldMap{
-	// 		 FieldKeyTime:   "@timestamp",
-	// 		 FieldKeyLevel:  "@level",
-	// 		 FieldKeyMsg:    "@message",
-	// 		 FieldKeyCaller: "@caller",
+	// 		 FieldKeyTime:  "@timestamp",
+	// 		 FieldKeyLevel: "@level",
+	// 		 FieldKeyMsg:   "@message",
+	// 		 FieldKeyFunc:  "@caller",
 	//    },
 	// }
 	FieldMap FieldMap
@@ -69,7 +69,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
 	if entry.HasCaller() {
-		data[f.FieldMap.resolve(FieldKeyCaller)] = entry.Caller
+		data[f.FieldMap.resolve(FieldKeyFunc)] = entry.Caller
 	}
 	serialized, err := json.Marshal(data)
 	if err != nil {
