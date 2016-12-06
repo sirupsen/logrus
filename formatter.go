@@ -1,6 +1,8 @@
 package logrus
 
-import "time"
+import (
+	"time"
+)
 
 // DefaultTimestampFormat is YYYY-mm-DDTHH:MM:SS-TZ
 const DefaultTimestampFormat = time.RFC3339
@@ -19,7 +21,7 @@ type Formatter interface {
 	Format(*Entry) ([]byte, error)
 }
 
-// This is to not silently overwrite `time`, `msg`, `method` and `level` fields when
+// This is to not silently overwrite `time`, `msg`, `func` and `level` fields when
 // dumping it. If this code wasn't there doing:
 //
 //  logrus.WithField("level", 1).Info("hello")
@@ -44,10 +46,10 @@ func prefixFieldClashes(data Fields, reportCaller bool) {
 		data["fields.level"] = l
 	}
 
-	// If reportCaller is not set, 'method' will not conflict.
+	// If reportCaller is not set, 'func' will not conflict.
 	if reportCaller {
-		if l, ok := data["method"]; ok {
-			data["fields.method"] = l
+		if l, ok := data["func"]; ok {
+			data["fields.func"] = l
 		}
 	}
 }

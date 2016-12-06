@@ -89,7 +89,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		}
 		f.appendKeyValue(b, "level", entry.Level.String())
 		if entry.HasCaller() {
-			f.appendKeyValue(b, "method", entry.Caller)
+			f.appendKeyValue(b, "func", entry.Caller)
 		}
 		if entry.Message != "" {
 			f.appendKeyValue(b, "msg", entry.Message)
