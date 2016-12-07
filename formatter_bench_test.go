@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 	"time"
+	"sync"
 )
 
 // smallFields is a small size data set for benchmarking
@@ -52,23 +53,23 @@ var errorFields = Fields{
 }
 
 func BenchmarkErrorTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{DisableColors: true}, errorFields)
+	doBenchmark(b, &TextFormatter{DisableColors: true, Mutex:&sync.Mutex{}}, errorFields)
 }
 
 func BenchmarkSmallTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{DisableColors: true}, smallFields)
+	doBenchmark(b, &TextFormatter{DisableColors: true, Mutex:&sync.Mutex{}}, smallFields)
 }
 
 func BenchmarkLargeTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{DisableColors: true}, largeFields)
+	doBenchmark(b, &TextFormatter{DisableColors: true, Mutex:&sync.Mutex{}}, largeFields)
 }
 
 func BenchmarkSmallColoredTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{ForceColors: true}, smallFields)
+	doBenchmark(b, &TextFormatter{ForceColors: true,  Mutex:&sync.Mutex{}}, smallFields)
 }
 
 func BenchmarkLargeColoredTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{ForceColors: true}, largeFields)
+	doBenchmark(b, &TextFormatter{ForceColors: true,  Mutex:&sync.Mutex{}}, largeFields)
 }
 
 func BenchmarkSmallJSONFormatter(b *testing.B) {
