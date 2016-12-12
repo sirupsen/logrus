@@ -40,6 +40,8 @@ type JSONFormatter struct {
 	//    },
 	// }
 	FieldMap FieldMap
+
+	// Location overrides the default timestamp location (roughly: timezone)
 	Location *time.Location
 }
 

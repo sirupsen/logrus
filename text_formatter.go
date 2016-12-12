@@ -54,6 +54,9 @@ type TextFormatter struct {
 	// that log extremely frequently and don't use the JSON formatter this may not
 	// be desired.
 	DisableSorting bool
+
+	// Location overrides the default timestamp location (roughly: timezone)
+	Location *time.Location
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
@@ -85,7 +88,11 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		f.printColored(b, entry, keys, timestampFormat)
 	} else {
 		if !f.DisableTimestamp {
-			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
+			moment := entry.Time
+			if f.Location != nil {
+				moment = moment.In(f.Location)
+			}
+			f.appendKeyValue(b, "time", moment.Format(timestampFormat))
 		}
 		f.appendKeyValue(b, "level", entry.Level.String())
 		if entry.Message != "" {
@@ -118,7 +125,11 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	if !f.FullTimestamp {
 		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, miniTS(), entry.Message)
 	} else {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
+		moment := entry.Time
+		if f.Location != nil {
+			moment = moment.In(f.Location)
+		}
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, moment.Format(timestampFormat), entry.Message)
 	}
 	for _, k := range keys {
 		v := entry.Data[k]

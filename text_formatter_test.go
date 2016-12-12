@@ -3,6 +3,7 @@ package logrus
 import (
 	"bytes"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 )
@@ -55,6 +56,28 @@ func TestTimestampFormat(t *testing.T) {
 	checkTimeStr("2006-01-02T15:04:05.000000000Z07:00")
 	checkTimeStr("Mon Jan _2 15:04:05 2006")
 	checkTimeStr("")
+}
+
+func TestTimestampLocationOverride(t *testing.T) {
+	moment := time.Unix(1472181897, 0).UTC()
+
+	zone, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		t.Fatal("Unable to load Eastern Time: ", err)
+	}
+	local := moment.In(zone)
+	body := WithField("dont", "care")
+	body.Time = local
+
+	customFormatter := &TextFormatter{Location: time.UTC}
+	b, err := customFormatter.Format(body)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	if !strings.Contains(string(b), "2016-08-26T03:24:57Z") {
+		t.Errorf("Expected a zulu timestamp: %s", b)
+	}
 }
 
 // TODO add tests for sorting etc., this requires a parser for the text
