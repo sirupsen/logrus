@@ -3,6 +3,7 @@ package logrus
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type fieldKey string
@@ -39,6 +40,9 @@ type JSONFormatter struct {
 	//    },
 	// }
 	FieldMap FieldMap
+
+	// Location overrides the default timestamp location (roughly: timezone)
+	Location *time.Location
 }
 
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
@@ -61,7 +65,11 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	}
 
 	if !f.DisableTimestamp {
-		data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
+		moment := entry.Time
+		if f.Location != nil {
+			moment = moment.In(f.Location)
+		}
+		data[f.FieldMap.resolve(FieldKeyTime)] = moment.Format(timestampFormat)
 	}
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
