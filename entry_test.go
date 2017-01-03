@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -74,4 +75,32 @@ func TestEntryPanicf(t *testing.T) {
 	logger.Out = &bytes.Buffer{}
 	entry := NewEntry(logger)
 	entry.WithField("err", errBoom).Panicf("kaboom %v", true)
+}
+
+func TestEntryWithFields(t *testing.T) {
+	logger := New()
+	entry := &Entry{
+		Time:    time.Date(2001, 2, 3, 4, 5, 6, 7, time.UTC),
+		Message: "The message",
+		Level:   DebugLevel,
+		Data:    Fields{"foo": "bar"},
+		Logger:  logger,
+	}
+	newEntry := entry.WithFields(Fields{"baz": 42, "one": "more"})
+	assert.Equal(t, entry.Time, newEntry.Time)
+	assert.Equal(t, entry.Message, newEntry.Message)
+	assert.Equal(t, entry.Level, newEntry.Level)
+	assert.Equal(t, entry.Logger, newEntry.Logger)
+
+	value, ok := newEntry.Data["foo"]
+	assert.True(t, ok)
+	assert.Equal(t, "bar", value)
+
+	value, ok = newEntry.Data["baz"]
+	assert.True(t, ok)
+	assert.Equal(t, 42, value)
+
+	value, ok = newEntry.Data["one"]
+	assert.True(t, ok)
+	assert.Equal(t, "more", value)
 }
