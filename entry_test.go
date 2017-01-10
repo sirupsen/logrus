@@ -85,12 +85,14 @@ func TestEntryWithFields(t *testing.T) {
 		Level:   DebugLevel,
 		Data:    Fields{"foo": "bar"},
 		Logger:  logger,
+		Buffer:  bytes.NewBuffer([]byte{}),
 	}
 	newEntry := entry.WithFields(Fields{"baz": 42, "one": "more"})
 	assert.Equal(t, entry.Time, newEntry.Time)
 	assert.Equal(t, entry.Message, newEntry.Message)
 	assert.Equal(t, entry.Level, newEntry.Level)
 	assert.Equal(t, entry.Logger, newEntry.Logger)
+	assert.NotEqual(t, entry.Buffer, newEntry.Buffer)
 
 	value, ok := newEntry.Data["foo"]
 	assert.True(t, ok)
