@@ -1,3 +1,5 @@
+* fixed all references from uppercase `Sirupsen` to lowercase (#451)
+
 # 0.10.0
 
 * feature: Add a test hook (#180)

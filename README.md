@@ -1,4 +1,4 @@
-# Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>&nbsp;[![Build Status](https://travis-ci.org/Sirupsen/logrus.svg?branch=master)](https://travis-ci.org/Sirupsen/logrus)&nbsp;[![GoDoc](https://godoc.org/github.com/Sirupsen/logrus?status.svg)](https://godoc.org/github.com/Sirupsen/logrus)
+# Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>&nbsp;[![Build Status](https://travis-ci.org/sirupsen/logrus.svg?branch=master)](https://travis-ci.org/sirupsen/logrus)&nbsp;[![GoDoc](https://godoc.org/github.com/sirupsen/logrus?status.svg)](https://godoc.org/github.com/sirupsen/logrus)
 
 **Seeing weird case-sensitive problems?** See [this
 issue](https://github.com/sirupsen/logrus/issues/451#issuecomment-264332021).
@@ -60,7 +60,7 @@ The simplest way to use Logrus is simply the package-level exported logger:
 package main
 
 import (
-  log "github.com/Sirupsen/logrus"
+  log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -71,7 +71,7 @@ func main() {
 ```
 
 Note that it's completely api-compatible with the stdlib logger, so you can
-replace your `log` imports everywhere with `log "github.com/Sirupsen/logrus"`
+replace your `log` imports everywhere with `log "github.com/sirupsen/logrus"`
 and you'll now have the flexibility of Logrus. You can customize it all you
 want:
 
@@ -80,7 +80,7 @@ package main
 
 import (
   "os"
-  log "github.com/Sirupsen/logrus"
+  log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -129,7 +129,7 @@ application, you can also create an instance of the `logrus` Logger:
 package main
 
 import (
-  "github.com/Sirupsen/logrus"
+  "github.com/sirupsen/logrus"
 )
 
 // Create a new instance of the logger. You can have any number of instances.
@@ -182,9 +182,9 @@ Logrus comes with [built-in hooks](hooks/). Add those, or your custom hook, in
 
 ```go
 import (
-  log "github.com/Sirupsen/logrus"
+  log "github.com/sirupsen/logrus"
   "gopkg.in/gemnasium/logrus-airbrake-hook.v2" // the package is named "aibrake"
-  logrus_syslog "github.com/Sirupsen/logrus/hooks/syslog"
+  logrus_syslog "github.com/sirupsen/logrus/hooks/syslog"
   "log/syslog"
 )
 
@@ -209,7 +209,7 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Airbrake](https://github.com/gemnasium/logrus-airbrake-hook) | Send errors to the Airbrake API V3. Uses the official [`gobrake`](https://github.com/airbrake/gobrake) behind the scenes. |
 | [Airbrake "legacy"](https://github.com/gemnasium/logrus-airbrake-legacy-hook) | Send errors to an exception tracking service compatible with the Airbrake API V2. Uses [`airbrake-go`](https://github.com/tobi/airbrake-go) behind the scenes. |
 | [Papertrail](https://github.com/polds/logrus-papertrail-hook) | Send errors to the [Papertrail](https://papertrailapp.com) hosted logging service via UDP. |
-| [Syslog](https://github.com/Sirupsen/logrus/blob/master/hooks/syslog/syslog.go) | Send errors to remote syslog server. Uses standard library `log/syslog` behind the scenes. |
+| [Syslog](https://github.com/sirupsen/logrus/blob/master/hooks/syslog/syslog.go) | Send errors to remote syslog server. Uses standard library `log/syslog` behind the scenes. |
 | [Bugsnag](https://github.com/Shopify/logrus-bugsnag/blob/master/bugsnag.go) | Send errors to the Bugsnag exception tracking service. |
 | [Sentry](https://github.com/evalphobia/logrus_sentry) | Send errors to the Sentry error logging and aggregation service. |
 | [Hiprus](https://github.com/nubo/hiprus) | Send errors to a channel in hipchat. |
@@ -290,7 +290,7 @@ could do:
 
 ```go
 import (
-  log "github.com/Sirupsen/logrus"
+  log "github.com/sirupsen/logrus"
 )
 
 init() {
