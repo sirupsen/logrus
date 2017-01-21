@@ -82,7 +82,14 @@ const (
 	InfoLevel
 	// DebugLevel level. Usually only enabled when debugging. Very verbose logging.
 	DebugLevel
+	// Not used. It's used to derive the const maxLevel in case
+	// someone needs to enumerate the levels.
+	lastLevel
 )
+
+// This can be used as the highest level possible, if you want to
+// iterate through all log levels, iterate through [0, MaxLevel].
+const MaxLevel Level = lastLevel - 1
 
 // Won't compile if StdLogger can't be realized by a log.Logger
 var (
