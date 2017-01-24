@@ -96,5 +96,14 @@ func TestDisableLevelTruncation(t *testing.T) {
 	checkDisableTruncation(false, InfoLevel)
 }
 
+func TestDisableTimestampWithColoredOutput(t *testing.T) {
+	tf := &TextFormatter{DisableTimestamp: true, ForceColors: true}
+
+	b, _ := tf.Format(WithField("test", "test"))
+	if strings.Contains(string(b), "[0000]") {
+		t.Error("timestamp not expected when DisableTimestamp is true")
+	}
+}
+
 // TODO add tests for sorting etc., this requires a parser for the text
 // formatter output.
