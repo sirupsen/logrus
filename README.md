@@ -318,6 +318,8 @@ The built-in logging formatters are:
   * *Note:* to force colored output when there is no TTY, set the `ForceColors`
     field to `true`.  To force no colored output even if there is a TTY  set the
     `DisableColors` field to `true`
+  * When colors are enabled, levels are truncated to 4 characters by default. To disable
+    truncation set the `DisableLevelTruncation` field to `true`.
 * `logrus.JSONFormatter`. Logs fields as JSON.
 
 Third party logging formatters:
