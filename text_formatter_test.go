@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 	"time"
+	"strings"
 )
 
 func TestQuoting(t *testing.T) {
@@ -55,6 +56,15 @@ func TestTimestampFormat(t *testing.T) {
 	checkTimeStr("2006-01-02T15:04:05.000000000Z07:00")
 	checkTimeStr("Mon Jan _2 15:04:05 2006")
 	checkTimeStr("")
+}
+
+func TestDisableTimestampWithColoredOutput(t *testing.T) {
+	tf := &TextFormatter{DisableTimestamp: true, ForceColors: true}
+
+	b, _ := tf.Format(WithField("test", "test"))
+	if strings.Contains(string(b), "[0000]") {
+		t.Error("timestamp not expected when DisableTimestamp is true")
+	}
 }
 
 // TODO add tests for sorting etc., this requires a parser for the text
