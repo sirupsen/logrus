@@ -73,7 +73,7 @@ This adds the caller as 'method' like so:
 ```text
 time="2015-03-26T01:27:38-04:00" level=fatal method=arcticcreatures.migrate msg="a penguin swims by" animal=penguin
 ```
-Note that this does add measurable overhead - the cost will depend on the of Go, but is
+Note that this does add measurable overhead - the cost will depend on the version of Go, but is
 between 20 and 40% in recent tests with 1.6 and 1.7.  You can validate this in your
 environment via benchmarks: 
 ```
