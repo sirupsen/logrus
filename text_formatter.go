@@ -3,7 +3,6 @@ package logrus
 import (
 	"bytes"
 	"fmt"
-	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -20,12 +19,10 @@ const (
 
 var (
 	baseTimestamp time.Time
-	isTerminal    bool
 )
 
 func init() {
 	baseTimestamp = time.Now()
-	isTerminal = IsTerminal()
 }
 
 type TextFormatter struct {
@@ -50,6 +47,10 @@ type TextFormatter struct {
 	// that log extremely frequently and don't use the JSON formatter this may not
 	// be desired.
 	DisableSorting bool
+
+	// Whether the logger's out is to a terminal
+	isTerminal         bool
+	terminalDetermined bool
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
@@ -70,8 +71,12 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	prefixFieldClashes(entry.Data)
 
-	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
-	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
+	if !f.terminalDetermined {
+		f.isTerminal = IsTerminal(entry.Logger.Out)
+		f.terminalDetermined = true
+	}
+
+	isColored := (f.ForceColors || f.isTerminal) && !f.DisableColors
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
