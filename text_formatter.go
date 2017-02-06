@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -49,8 +50,8 @@ type TextFormatter struct {
 	DisableSorting bool
 
 	// Whether the logger's out is to a terminal
-	isTerminal         bool
-	terminalDetermined bool
+	isTerminal   bool
+	terminalOnce sync.Once
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
@@ -71,10 +72,11 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	prefixFieldClashes(entry.Data)
 
-	if !f.terminalDetermined {
-		f.isTerminal = IsTerminal(entry.Logger.Out)
-		f.terminalDetermined = true
-	}
+	f.terminalOnce.Do(func() {
+		if entry.Logger != nil {
+			f.isTerminal = IsTerminal(entry.Logger.Out)
+		}
+	})
 
 	isColored := (f.ForceColors || f.isTerminal) && !f.DisableColors
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Sirupsen/logrus"
+	"os"
 )
 
 var log = logrus.New()
