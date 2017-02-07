@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -114,6 +115,27 @@ func TestErrorHookShouldFireOnError(t *testing.T) {
 	hook := new(ErrorHook)
 
 	LogAndAssertJSON(t, func(log *Logger) {
+		log.Hooks.Add(hook)
+		log.Error("test")
+	}, func(fields Fields) {
+		assert.Equal(t, hook.Fired, true)
+	})
+}
+
+type FailingHook struct {
+	TestHook
+}
+
+func (hook *FailingHook) Fire(entry *Entry) error {
+	return errors.New("sad walrus")
+}
+
+func TestHookShouldFireAfterFailureHook(t *testing.T) {
+	failureHook := new(FailingHook)
+	hook := new(TestHook)
+
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.Hooks.Add(failureHook)
 		log.Hooks.Add(hook)
 		log.Error("test")
 	}, func(fields Fields) {

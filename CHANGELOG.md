@@ -1,3 +1,7 @@
+# 0.11.2
+
+* bug: don't skip hooks on failure (#474)
+
 # 0.11.1
 
 * bug: fix tty detection with custom out (#471)

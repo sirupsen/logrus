@@ -1,5 +1,9 @@
 package logrus
 
+import (
+	"fmt"
+)
+
 // A hook to be fired when logging on the logging levels returned from
 // `Levels()` on your implementation of the interface. Note that this is not
 // fired in a goroutine or a channel with workers, you should handle such
@@ -24,11 +28,13 @@ func (hooks LevelHooks) Add(hook Hook) {
 // Fire all the hooks for the passed level. Used by `entry.log` to fire
 // appropriate hooks for a log entry.
 func (hooks LevelHooks) Fire(level Level, entry *Entry) error {
+	var aggErr error
+
 	for _, hook := range hooks[level] {
 		if err := hook.Fire(entry); err != nil {
-			return err
+			aggErr = fmt.Errorf("%s | %s", aggErr, err)
 		}
 	}
 
-	return nil
+	return aggErr
 }
