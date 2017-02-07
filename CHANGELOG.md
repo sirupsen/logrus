@@ -1,3 +1,7 @@
+# 0.11.2
+
+* bug: fix windows terminal detection (#476)
+
 # 0.11.1
 
 * bug: fix tty detection with custom out (#471)
