@@ -384,6 +384,18 @@ srv := http.Server{
 Each line written to that writer will be printed the usual way, using formatters
 and hooks. The level for those entries is `info`.
 
+This means that we can override the standard library logger easily:
+
+```
+logger := logrus.New()
+logger.Formatter = &logrus.JSONFormatter{}
+
+// Use logrus for standard log output
+// Note that `log` here references stdlib's log
+// Not logrus imported under the name `log`.
+log.SetOutput(logger.Writer())
+``
+
 #### Rotation
 
 Log rotation is not provided with Logrus. Log rotation should be done by an
