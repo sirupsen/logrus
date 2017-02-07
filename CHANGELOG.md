@@ -1,3 +1,13 @@
+# 0.11.1
+
+* bug: fix tty detection with custom out (#471)
+
+# 0.11.0
+
+* performance: Use bufferpool to allocate (#370)
+* terminal: terminal detection for app-engine (#343)
+* feature: exit handler (#375)
+
 # 0.10.0
 
 * feature: Add a test hook (#180)
