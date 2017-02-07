@@ -386,7 +386,7 @@ and hooks. The level for those entries is `info`.
 
 This means that we can override the standard library logger easily:
 
-```
+```go
 logger := logrus.New()
 logger.Formatter = &logrus.JSONFormatter{}
 
@@ -394,7 +394,7 @@ logger.Formatter = &logrus.JSONFormatter{}
 // Note that `log` here references stdlib's log
 // Not logrus imported under the name `log`.
 log.SetOutput(logger.Writer())
-``
+```
 
 #### Rotation
 
