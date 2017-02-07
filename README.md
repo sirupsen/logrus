@@ -331,8 +331,11 @@ The built-in logging formatters are:
   without colors.
   * *Note:* to force colored output when there is no TTY, set the `ForceColors`
     field to `true`.  To force no colored output even if there is a TTY  set the
-    `DisableColors` field to `true`
+    `DisableColors` field to `true`. For Windows, see
+    [github.com/mattn/go-colorable](https://github.com/mattn/go-colorable).
+  * All options are listed in the [generated docs](https://godoc.org/github.com/sirupsen/logrus#TextFormatter).
 * `logrus.JSONFormatter`. Logs fields as JSON.
+  * All options are listed in the [generated docs](https://godoc.org/github.com/sirupsen/logrus#JSONFormatter).
 
 Third party logging formatters:
 
