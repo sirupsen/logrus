@@ -180,6 +180,20 @@ In general, with Logrus using any of the `printf`-family functions should be
 seen as a hint you should add a field, however, you can still use the
 `printf`-family functions with Logrus.
 
+#### Default Fields
+
+Often it's helpful to have fields _always_ attached to log statements in an
+application or parts of one. For example, you may want to always log the
+`request_id` and `user_ip` in the context of a request. Instead of writing
+`log.WithFields(log.Fields{"request_id": request_id, "user_ip": user_ip})` on
+every line, you can create a `logrus.Entry` to pass around instead:
+
+```go
+requestLogger := log.WithFields(log.Fields{"request_id": request_id, user_ip: user_ip})
+requestLogger.Info("something happened on that request") # will log request_id and user_ip
+requestLogger.Warn("something not great happened")
+```
+
 #### Hooks
 
 You can add hooks for logging levels. For example to send errors to an exception
