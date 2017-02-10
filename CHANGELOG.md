@@ -1,6 +1,17 @@
+# 0.11.2
+
+* bug: fix windows terminal detection (#476)
+* feature: Add optional logging of caller method
+
+# 0.11.1
+
+* bug: fix tty detection with custom out (#471)
+
 # 0.11.0
 
-* feature: Add optional logging of caller method
+* performance: Use bufferpool to allocate (#370)
+* terminal: terminal detection for app-engine (#343)
+* feature: exit handler (#375)
 
 # 0.10.0
 

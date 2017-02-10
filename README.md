@@ -116,7 +116,8 @@ func init() {
   // Log as JSON instead of the default ASCII formatter.
   log.SetFormatter(&log.JSONFormatter{})
 
-  // Output to stdout instead of the default stderr, could also be a file.
+  // Output to stdout instead of the default stderr
+  // Can be any io.Writer, see below for File example
   log.SetOutput(os.Stdout)
 
   // Only log the warning severity or above.
@@ -167,7 +168,15 @@ var log = logrus.New()
 func main() {
   // The API for setting attributes is a little different than the package level
   // exported logger. See Godoc.
-  log.Out = os.Stderr
+  log.Out = os.Stdout
+
+  // You could set this to any `io.Writer` such as a file
+  // file, err := os.OpenFile("logrus.log", os.O_CREATE|os.O_WRONLY, 0666)
+  // if err == nil {
+  //  log.Out = file
+  // } else {
+  //  log.Info("Failed to log to file, using default stderr")
+  // }
 
   log.WithFields(logrus.Fields{
     "animal": "walrus",
@@ -199,6 +208,20 @@ hours. The `WithFields` call is optional.
 In general, with Logrus using any of the `printf`-family functions should be
 seen as a hint you should add a field, however, you can still use the
 `printf`-family functions with Logrus.
+
+#### Default Fields
+
+Often it's helpful to have fields _always_ attached to log statements in an
+application or parts of one. For example, you may want to always log the
+`request_id` and `user_ip` in the context of a request. Instead of writing
+`log.WithFields(log.Fields{"request_id": request_id, "user_ip": user_ip})` on
+every line, you can create a `logrus.Entry` to pass around instead:
+
+```go
+requestLogger := log.WithFields(log.Fields{"request_id": request_id, user_ip: user_ip})
+requestLogger.Info("something happened on that request") # will log request_id and user_ip
+requestLogger.Warn("something not great happened")
+```
 
 #### Hooks
 
@@ -235,42 +258,47 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 
 | Hook  | Description |
 | ----- | ----------- |
-| [Airbrake](https://github.com/gemnasium/logrus-airbrake-hook) | Send errors to the Airbrake API V3. Uses the official [`gobrake`](https://github.com/airbrake/gobrake) behind the scenes. |
 | [Airbrake "legacy"](https://github.com/gemnasium/logrus-airbrake-legacy-hook) | Send errors to an exception tracking service compatible with the Airbrake API V2. Uses [`airbrake-go`](https://github.com/tobi/airbrake-go) behind the scenes. |
-| [Papertrail](https://github.com/polds/logrus-papertrail-hook) | Send errors to the [Papertrail](https://papertrailapp.com) hosted logging service via UDP. |
-| [Syslog](https://github.com/Sirupsen/logrus/blob/master/hooks/syslog/syslog.go) | Send errors to remote syslog server. Uses standard library `log/syslog` behind the scenes. |
-| [Bugsnag](https://github.com/Shopify/logrus-bugsnag/blob/master/bugsnag.go) | Send errors to the Bugsnag exception tracking service. |
-| [Sentry](https://github.com/evalphobia/logrus_sentry) | Send errors to the Sentry error logging and aggregation service. |
-| [Hiprus](https://github.com/nubo/hiprus) | Send errors to a channel in hipchat. |
-| [Logrusly](https://github.com/sebest/logrusly) | Send logs to [Loggly](https://www.loggly.com/) |
-| [Slackrus](https://github.com/johntdyer/slackrus) | Hook for Slack chat. |
-| [Journalhook](https://github.com/wercker/journalhook) | Hook for logging to `systemd-journald` |
-| [Graylog](https://github.com/gemnasium/logrus-graylog-hook) | Hook for logging to [Graylog](http://graylog2.org/) |
-| [Raygun](https://github.com/squirkle/logrus-raygun-hook) | Hook for logging to [Raygun.io](http://raygun.io/) |
-| [LFShook](https://github.com/rifflock/lfshook) | Hook for logging to the local filesystem |
-| [Honeybadger](https://github.com/agonzalezro/logrus_honeybadger) | Hook for sending exceptions to Honeybadger |
-| [Mail](https://github.com/zbindenren/logrus_mail) | Hook for sending exceptions via mail |
-| [Rollrus](https://github.com/heroku/rollrus) | Hook for sending errors to rollbar |
-| [Fluentd](https://github.com/evalphobia/logrus_fluent) | Hook for logging to fluentd |
-| [Mongodb](https://github.com/weekface/mgorus) | Hook for logging to mongodb |
-| [Influxus] (http://github.com/vlad-doru/influxus) | Hook for concurrently logging to [InfluxDB] (http://influxdata.com/) |
-| [InfluxDB](https://github.com/Abramovic/logrus_influxdb) | Hook for logging to influxdb |
-| [Octokit](https://github.com/dorajistyle/logrus-octokit-hook) | Hook for logging to github via octokit |
-| [DeferPanic](https://github.com/deferpanic/dp-logrus) | Hook for logging to DeferPanic |
-| [Redis-Hook](https://github.com/rogierlommers/logrus-redis-hook) | Hook for logging to a ELK stack (through Redis) |
+| [Airbrake](https://github.com/gemnasium/logrus-airbrake-hook) | Send errors to the Airbrake API V3. Uses the official [`gobrake`](https://github.com/airbrake/gobrake) behind the scenes. |
+| [Amazon Kinesis](https://github.com/evalphobia/logrus_kinesis) | Hook for logging to [Amazon Kinesis](https://aws.amazon.com/kinesis/) |
 | [Amqp-Hook](https://github.com/vladoatanasov/logrus_amqp) | Hook for logging to Amqp broker (Like RabbitMQ) |
-| [KafkaLogrus](https://github.com/goibibo/KafkaLogrus) | Hook for logging to kafka |
-| [Typetalk](https://github.com/dragon3/logrus-typetalk-hook) | Hook for logging to [Typetalk](https://www.typetalk.in/) |
+| [Bugsnag](https://github.com/Shopify/logrus-bugsnag/blob/master/bugsnag.go) | Send errors to the Bugsnag exception tracking service. |
+| [DeferPanic](https://github.com/deferpanic/dp-logrus) | Hook for logging to DeferPanic |
 | [ElasticSearch](https://github.com/sohlich/elogrus) | Hook for logging to ElasticSearch|
-| [Sumorus](https://github.com/doublefree/sumorus) | Hook for logging to [SumoLogic](https://www.sumologic.com/)|
-| [Scribe](https://github.com/sagar8192/logrus-scribe-hook) | Hook for logging to [Scribe](https://github.com/facebookarchive/scribe)|
-| [Logstash](https://github.com/bshuster-repo/logrus-logstash-hook) | Hook for logging to [Logstash](https://www.elastic.co/products/logstash) |
-| [logz.io](https://github.com/ripcurld00d/logrus-logzio-hook) | Hook for logging to [logz.io](https://logz.io), a Log as a Service using Logstash |
-| [Logmatic.io](https://github.com/logmatic/logmatic-go) | Hook for logging to [Logmatic.io](http://logmatic.io/) |
-| [Pushover](https://github.com/toorop/logrus_pushover) | Send error via [Pushover](https://pushover.net) |
-| [PostgreSQL](https://github.com/gemnasium/logrus-postgresql-hook) | Send logs to [PostgreSQL](http://postgresql.org) |
+| [Fluentd](https://github.com/evalphobia/logrus_fluent) | Hook for logging to fluentd |
+| [Go-Slack](https://github.com/multiplay/go-slack) | Hook for logging to [Slack](https://slack.com) |
+| [Graylog](https://github.com/gemnasium/logrus-graylog-hook) | Hook for logging to [Graylog](http://graylog2.org/) |
+| [Hiprus](https://github.com/nubo/hiprus) | Send errors to a channel in hipchat. |
+| [Honeybadger](https://github.com/agonzalezro/logrus_honeybadger) | Hook for sending exceptions to Honeybadger |
+| [InfluxDB](https://github.com/Abramovic/logrus_influxdb) | Hook for logging to influxdb |
+| [Influxus] (http://github.com/vlad-doru/influxus) | Hook for concurrently logging to [InfluxDB] (http://influxdata.com/) |
+| [Journalhook](https://github.com/wercker/journalhook) | Hook for logging to `systemd-journald` |
+| [KafkaLogrus](https://github.com/goibibo/KafkaLogrus) | Hook for logging to kafka |
+| [LFShook](https://github.com/rifflock/lfshook) | Hook for logging to the local filesystem |
+| [Logentries](https://github.com/jcftang/logentriesrus) | Hook for logging to [Logentries](https://logentries.com/) |
 | [Logentrus](https://github.com/puddingfactory/logentrus) | Hook for logging to [Logentries](https://logentries.com/) |
-
+| [Logmatic.io](https://github.com/logmatic/logmatic-go) | Hook for logging to [Logmatic.io](http://logmatic.io/) |
+| [Logrusly](https://github.com/sebest/logrusly) | Send logs to [Loggly](https://www.loggly.com/) |
+| [Logstash](https://github.com/bshuster-repo/logrus-logstash-hook) | Hook for logging to [Logstash](https://www.elastic.co/products/logstash) |
+| [Mail](https://github.com/zbindenren/logrus_mail) | Hook for sending exceptions via mail |
+| [Mongodb](https://github.com/weekface/mgorus) | Hook for logging to mongodb |
+| [NATS-Hook](https://github.com/rybit/nats_logrus_hook) | Hook for logging to [NATS](https://nats.io) |
+| [Octokit](https://github.com/dorajistyle/logrus-octokit-hook) | Hook for logging to github via octokit |
+| [Papertrail](https://github.com/polds/logrus-papertrail-hook) | Send errors to the [Papertrail](https://papertrailapp.com) hosted logging service via UDP. |
+| [PostgreSQL](https://github.com/gemnasium/logrus-postgresql-hook) | Send logs to [PostgreSQL](http://postgresql.org) |
+| [Pushover](https://github.com/toorop/logrus_pushover) | Send error via [Pushover](https://pushover.net) |
+| [Raygun](https://github.com/squirkle/logrus-raygun-hook) | Hook for logging to [Raygun.io](http://raygun.io/) |
+| [Redis-Hook](https://github.com/rogierlommers/logrus-redis-hook) | Hook for logging to a ELK stack (through Redis) |
+| [Rollrus](https://github.com/heroku/rollrus) | Hook for sending errors to rollbar |
+| [Scribe](https://github.com/sagar8192/logrus-scribe-hook) | Hook for logging to [Scribe](https://github.com/facebookarchive/scribe)|
+| [Sentry](https://github.com/evalphobia/logrus_sentry) | Send errors to the Sentry error logging and aggregation service. |
+| [Slackrus](https://github.com/johntdyer/slackrus) | Hook for Slack chat. |
+| [Stackdriver](https://github.com/knq/sdhook) | Hook for logging to [Google Stackdriver](https://cloud.google.com/logging/) |
+| [Sumorus](https://github.com/doublefree/sumorus) | Hook for logging to [SumoLogic](https://www.sumologic.com/)|
+| [Syslog](https://github.com/Sirupsen/logrus/blob/master/hooks/syslog/syslog.go) | Send errors to remote syslog server. Uses standard library `log/syslog` behind the scenes. |
+| [TraceView](https://github.com/evalphobia/logrus_appneta) | Hook for logging to [AppNeta TraceView](https://www.appneta.com/products/traceview/) |
+| [Typetalk](https://github.com/dragon3/logrus-typetalk-hook) | Hook for logging to [Typetalk](https://www.typetalk.in/) |
+| [logz.io](https://github.com/ripcurld00d/logrus-logzio-hook) | Hook for logging to [logz.io](https://logz.io), a Log as a Service using Logstash |
 
 #### Level logging
 
@@ -346,8 +374,11 @@ The built-in logging formatters are:
   without colors.
   * *Note:* to force colored output when there is no TTY, set the `ForceColors`
     field to `true`.  To force no colored output even if there is a TTY  set the
-    `DisableColors` field to `true`
+    `DisableColors` field to `true`. For Windows, see
+    [github.com/mattn/go-colorable](https://github.com/mattn/go-colorable).
+  * All options are listed in the [generated docs](https://godoc.org/github.com/sirupsen/logrus#TextFormatter).
 * `logrus.JSONFormatter`. Logs fields as JSON.
+  * All options are listed in the [generated docs](https://godoc.org/github.com/sirupsen/logrus#JSONFormatter).
 
 Third party logging formatters:
 
@@ -395,6 +426,18 @@ srv := http.Server{
 
 Each line written to that writer will be printed the usual way, using formatters
 and hooks. The level for those entries is `info`.
+
+This means that we can override the standard library logger easily:
+
+```go
+logger := logrus.New()
+logger.Formatter = &logrus.JSONFormatter{}
+
+// Use logrus for standard log output
+// Note that `log` here references stdlib's log
+// Not logrus imported under the name `log`.
+log.SetOutput(logger.Writer())
+```
 
 #### Rotation
 
