@@ -3,9 +3,9 @@ package logrus
 import (
 	"bytes"
 	"errors"
+	"strings"
 	"testing"
 	"time"
-	"strings"
 )
 
 func TestQuoting(t *testing.T) {
