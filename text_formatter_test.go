@@ -3,9 +3,9 @@ package logrus
 import (
 	"bytes"
 	"errors"
+	"strings"
 	"testing"
 	"time"
-	"strings"
 )
 
 func TestQuoting(t *testing.T) {
@@ -24,6 +24,7 @@ func TestQuoting(t *testing.T) {
 		}
 	}
 
+	checkQuoting(false, "")
 	checkQuoting(false, "abcd")
 	checkQuoting(false, "v1.0")
 	checkQuoting(false, "1234567890")
@@ -32,6 +33,9 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(true, "x,y")
 	checkQuoting(false, errors.New("invalid"))
 	checkQuoting(true, errors.New("invalid argument"))
+
+	tf.QuoteEmptyFields = true
+	checkQuoting(true, "")
 }
 
 func TestTimestampFormat(t *testing.T) {
