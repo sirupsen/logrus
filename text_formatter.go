@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 )
 
 const (
@@ -52,9 +53,13 @@ type TextFormatter struct {
 	// QuoteEmptyFields will wrap empty fields in quotes if true
 	QuoteEmptyFields bool
 
+	// QuoteRune can be set to override the default quote style
+	QuoteRune rune
+
 	// Whether the logger's out is to a terminal
-	isTerminal   bool
-	terminalOnce sync.Once
+	isTerminal bool
+
+	sync.Once
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
@@ -75,7 +80,10 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	prefixFieldClashes(entry.Data)
 
-	f.terminalOnce.Do(func() {
+	f.Do(func() {
+		if f.QuoteRune == 0 || !utf8.ValidRune(f.QuoteRune) {
+			f.QuoteRune = '"'
+		}
 		if entry.Logger != nil {
 			f.isTerminal = IsTerminal(entry.Logger.Out)
 		}
@@ -164,14 +172,14 @@ func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {
 		if !f.needsQuoting(value) {
 			b.WriteString(value)
 		} else {
-			fmt.Fprintf(b, "%q", value)
+			fmt.Fprintf(b, "%c%v%c", f.QuoteRune, value, f.QuoteRune)
 		}
 	case error:
 		errmsg := value.Error()
 		if !f.needsQuoting(errmsg) {
 			b.WriteString(errmsg)
 		} else {
-			fmt.Fprintf(b, "%q", errmsg)
+			fmt.Fprintf(b, "%c%v%c", f.QuoteRune, errmsg, f.QuoteRune)
 		}
 	default:
 		fmt.Fprint(b, value)

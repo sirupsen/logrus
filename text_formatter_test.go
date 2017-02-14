@@ -14,7 +14,7 @@ func TestQuoting(t *testing.T) {
 	checkQuoting := func(q bool, value interface{}) {
 		b, _ := tf.Format(WithField("test", value))
 		idx := bytes.Index(b, ([]byte)("test="))
-		cont := bytes.Contains(b[idx+5:], []byte{'"'})
+		cont := bytes.ContainsRune(b[idx+5:], tf.QuoteRune)
 		if cont != q {
 			if q {
 				t.Errorf("quoting expected for: %#v", value)
@@ -34,6 +34,14 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(false, errors.New("invalid"))
 	checkQuoting(true, errors.New("invalid argument"))
 
+	// Test for custom quote rune.
+	tf.QuoteRune = '`'
+	checkQuoting(false, "")
+	checkQuoting(false, "abcd")
+	checkQuoting(true, "/foobar")
+	checkQuoting(true, errors.New("invalid argument"))
+
+	// Test for quoting empty fields.
 	tf.QuoteEmptyFields = true
 	checkQuoting(true, "")
 }
@@ -45,7 +53,8 @@ func TestTimestampFormat(t *testing.T) {
 		timeStart := bytes.Index(customStr, ([]byte)("time="))
 		timeEnd := bytes.Index(customStr, ([]byte)("level="))
 		timeStr := customStr[timeStart+5 : timeEnd-1]
-		if timeStr[0] == '"' && timeStr[len(timeStr)-1] == '"' {
+		if timeStr[0] == byte(customFormatter.QuoteRune) &&
+			timeStr[len(timeStr)-1] == byte(customFormatter.QuoteRune) {
 			timeStr = timeStr[1 : len(timeStr)-1]
 		}
 		if format == "" {
