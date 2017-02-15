@@ -1,3 +1,8 @@
+# Unreleased
+
+* formatter: configure quoting of empty values (#484)
+* formatter: configure quoting character (default is `"`) (#484)
+
 # 0.11.2
 
 * bug: fix windows terminal detection (#476)
