@@ -57,9 +57,7 @@ func TestTimestampFormat(t *testing.T) {
 	checkTimeStr := func(format string) {
 		customFormatter := &TextFormatter{DisableColors: true, TimestampFormat: format}
 		customStr, _ := customFormatter.Format(WithField("test", "test"))
-		timeStart := bytes.Index(customStr, ([]byte)("time="))
-		timeEnd := bytes.Index(customStr, ([]byte)("level="))
-		timeStr := customStr[timeStart+5+len(customFormatter.QuoteCharacter) : timeEnd-1-len(customFormatter.QuoteCharacter)]
+		timeStr := getTime(customStr, customFormatter)
 		if format == "" {
 			format = time.RFC3339
 		}
@@ -75,9 +73,10 @@ func TestTimestampFormat(t *testing.T) {
 }
 
 func getTime(textFormatted []byte, formatter *TextFormatter) []byte {
-	timeStart := bytes.Index(textFormatted, ([]byte)("time="))
-	timeEnd := bytes.Index(textFormatted, ([]byte)("level="))
-	return textFormatted[timeStart+5+len(formatter.QuoteCharacter) : timeEnd-1-len(formatter.QuoteCharacter)]
+	timeKey := "time="
+	timeStart := bytes.Index(textFormatted, ([]byte)(timeKey))
+	timeEnd := bytes.Index(textFormatted, ([]byte)(" level="))
+	return textFormatted[len(timeKey)+timeStart+len(formatter.QuoteCharacter) : timeEnd-len(formatter.QuoteCharacter)]
 
 }
 
@@ -101,6 +100,27 @@ func TestTimestampInUTCTextFormatter(t *testing.T) {
 	expectedTime := "2012-07-08T19:00:00Z"
 	if string(timeVal) != expectedTime {
 		t.Errorf("Expected \"%s\" to equal \"%s\"", timeVal, expectedTime)
+	}
+}
+
+func TestTimestampInUTCTextFormatterWithColor(t *testing.T) {
+	fiveHours := int(time.Hour/time.Second) * 5
+	est := time.FixedZone("EST", fiveHours)
+	time, err := time.ParseInLocation("2006-Jan-02", "2012-Jul-09", est)
+	if err != nil {
+		t.Errorf("Unable to Parse time/location", err)
+	}
+	entry := &Entry{}
+	entry.Time = time
+
+	tf := &TextFormatter{TimestampInUTC: true, ForceColors: true, FullTimestamp: true}
+	b, err := tf.Format(entry)
+	if err != nil {
+		t.Errorf("Error when formatting", err)
+	}
+	expectedTime := "2012-07-08T19:00:00Z"
+	if !strings.Contains(string(b), expectedTime) {
+		t.Errorf("Expected \"%s\" to contan \"%s\"", b, expectedTime)
 	}
 }
 
