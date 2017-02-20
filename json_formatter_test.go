@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestErrorNotLost(t *testing.T) {
@@ -65,6 +66,33 @@ func TestFieldClashWithTime(t *testing.T) {
 
 	if entry["time"] != "0001-01-01T00:00:00Z" {
 		t.Fatal("time field not set to current time, was: ", entry["time"])
+	}
+}
+
+func TestTimestampInUTC(t *testing.T) {
+	fiveHours := int(time.Hour/time.Second) * 5
+	est := time.FixedZone("EST", fiveHours)
+	time, err := time.ParseInLocation("2006-Jan-02", "2012-Jul-09", est)
+	if err != nil {
+		t.Fatal("Unable to Parse time/location", err)
+	}
+
+	entry := &Entry{}
+	entry.Time = time
+
+	formatter := &JSONFormatter{TimestampInUTC: true}
+	b, err := formatter.Format(entry)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	entryWithJSON := make(map[string]interface{})
+	err = json.Unmarshal(b, &entryWithJSON)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+	if entryWithJSON["time"] != "2012-07-08T19:00:00Z" {
+		t.Fatal("Time was not converted to UTC")
 	}
 }
 
