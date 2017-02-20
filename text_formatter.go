@@ -44,6 +44,8 @@ type TextFormatter struct {
 	// TimestampFormat to use for display when a full timestamp is printed
 	TimestampFormat string
 
+	TimestampInUTC bool
+
 	// The fields are sorted by default for a consistent output. For applications
 	// that log extremely frequently and don't use the JSON formatter this may not
 	// be desired.
@@ -101,7 +103,11 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		f.printColored(b, entry, keys, timestampFormat)
 	} else {
 		if !f.DisableTimestamp {
-			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
+			if f.TimestampInUTC {
+				f.appendKeyValue(b, "time", entry.Time.UTC().Format(timestampFormat))
+			} else {
+				f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
+			}
 		}
 		f.appendKeyValue(b, "level", entry.Level.String())
 		if entry.Message != "" {
