@@ -1,4 +1,4 @@
-# Unreleased
+# 0.11.3
 
 * formatter: configure quoting of empty values (#484)
 * formatter: configure quoting character (default is `"`) (#484)
