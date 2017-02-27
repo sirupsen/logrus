@@ -1,3 +1,7 @@
+# 0.11.4
+
+* bug: fix undefined variable on solaris (#493)
+
 # 0.11.3
 
 * formatter: configure quoting of empty values (#484)
