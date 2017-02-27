@@ -3,6 +3,7 @@
 package logrus
 
 import (
+	"io"
 	"os"
 
 	"golang.org/x/sys/unix"
