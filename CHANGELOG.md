@@ -1,3 +1,7 @@
+# Unreleased
+
+* feature: add writer and writerlevel to entry (#372)
+
 # 0.11.4
 
 * bug: fix undefined variable on solaris (#493)
