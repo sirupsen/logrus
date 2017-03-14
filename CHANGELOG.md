@@ -1,4 +1,4 @@
-# Unreleased
+# 0.11.5
 
 * feature: add writer and writerlevel to entry (#372)
 
