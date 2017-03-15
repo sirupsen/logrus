@@ -184,6 +184,6 @@ func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {
 			fmt.Fprintf(b, "%s%v%s", f.QuoteCharacter, errmsg, f.QuoteCharacter)
 		}
 	default:
-		fmt.Fprint(b, value)
+		fmt.Fprintf(b, "%+v", value)
 	}
 }

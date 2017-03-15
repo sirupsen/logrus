@@ -83,5 +83,18 @@ func TestDisableTimestampWithColoredOutput(t *testing.T) {
 	}
 }
 
+func TestDefaultValueFormatWithStruct(t *testing.T) {
+	tf := &TextFormatter{DisableColors: true}
+	type testStruct struct {
+		keyName string
+	}
+	ts := testStruct{keyName:"test"}
+	b, _ := tf.Format(WithField("structField", ts))
+
+	if !bytes.Contains(b, []byte("keyName")) {
+		t.Errorf("Failed to find struct key names in formatted output, struct: '%+v', formatted string: '%s'", ts, b)
+	}
+}
+
 // TODO add tests for sorting etc., this requires a parser for the text
 // formatter output.
