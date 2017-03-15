@@ -143,21 +143,21 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 
 	if f.DisableTimestamp {
 		if levelColor == red {
-			fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m[%s:%d] %-44s ", levelColor, levelText, file, entry.Line, entry.Message)
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s:%d] %-44s ", levelColor, levelText, file, entry.Line, entry.Message)
 		} else {
-			fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
 		}
 	} else if !f.FullTimestamp {
 		if levelColor == red {
-			fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m[%04d][%s:%d] %-44s", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), file, entry.Line, entry.Message)
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d][%s:%d] %-44s", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), file, entry.Line, entry.Message)
 		} else {
-			fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Message)
 		}
 	} else {
 		if levelColor == red {
-			fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m[%s][%s:%d] %-44s", levelColor, levelText, entry.Time.Format(timestampFormat), file, entry.Line, entry.Message)
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s][%s:%d] %-44s", levelColor, levelText, entry.Time.Format(timestampFormat), file, entry.Line, entry.Message)
 		} else {
-			fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
 		}
 	}
 	for _, k := range keys {
