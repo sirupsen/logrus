@@ -3,6 +3,7 @@ package logrus
 import (
 	"bytes"
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
@@ -40,6 +41,8 @@ type TextFormatter struct {
 	// Enable logging the full timestamp when a TTY is attached instead of just
 	// the time passed since beginning of execution.
 	FullTimestamp bool
+
+	IsFullFilePath bool
 
 	// TimestampFormat to use for display when a full timestamp is printed
 	TimestampFormat string
@@ -131,12 +134,19 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 
 	levelText := strings.ToUpper(entry.Level.String())[0:4]
 
-	if f.DisableTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
-	} else if !f.FullTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Message)
+	var file string
+	if f.IsFullFilePath {
+		file = entry.File
 	} else {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
+		file = filepath.Base(entry.File)
+	}
+
+	if f.DisableTimestamp {
+		fmt.Fprintf(b, " \x1b[%dm%s:%d %s\x1b[0m %-44s ", levelColor, file, entry.Line, levelText, entry.Message)
+	} else if !f.FullTimestamp {
+		fmt.Fprintf(b, " \x1b[%dm%s:%d %s\x1b[0m[%04d] %-44s", levelColor, file, entry.Line, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Message)
+	} else {
+		fmt.Fprintf(b, " \x1b[%dm%s:%d %s\x1b[0m[%s] %-44s", levelColor, file, entry.Line, levelText, entry.Time.Format(timestampFormat), entry.Message)
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
