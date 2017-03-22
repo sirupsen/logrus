@@ -132,12 +132,12 @@ func (entry *Entry) Debug(args ...interface{}) {
 }
 
 func (entry *Entry) Print(args ...interface{}) {
-	entry.Info(args...)
+	entry.log(InfoLevel, fmt.Sprint(args...))
 }
 
 func (entry *Entry) Info(args ...interface{}) {
 	if entry.Logger.Level >= InfoLevel {
-		entry.log(InfoLevel, fmt.Sprint(args...))
+		entry.Print(args...)
 	}
 }
 
@@ -186,7 +186,7 @@ func (entry *Entry) Infof(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Printf(format string, args ...interface{}) {
-	entry.Infof(format, args...)
+	entry.Print(fmt.Sprintf(format, args...))
 }
 
 func (entry *Entry) Warnf(format string, args ...interface{}) {
@@ -233,7 +233,7 @@ func (entry *Entry) Infoln(args ...interface{}) {
 }
 
 func (entry *Entry) Println(args ...interface{}) {
-	entry.Infoln(args...)
+	entry.Print(entry.sprintlnn(args...))
 }
 
 func (entry *Entry) Warnln(args ...interface{}) {
