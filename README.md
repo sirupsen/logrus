@@ -1,4 +1,4 @@
-# Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>&nbsp;[![Build Status](https://travis-ci.org/Sirupsen/logrus.svg?branch=master)](https://travis-ci.org/Sirupsen/logrus)&nbsp;[![GoDoc](https://godoc.org/github.com/Sirupsen/logrus?status.svg)](https://godoc.org/github.com/Sirupsen/logrus)
+# Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>&nbsp;[![Build Status](https://travis-ci.org/sirupsen/logrus.svg?branch=master)](https://travis-ci.org/sirupsen/logrus)&nbsp;[![GoDoc](https://godoc.org/github.com/sirupsen/logrus?status.svg)](https://godoc.org/github.com/sirupsen/logrus)
 
 **Seeing weird case-sensitive problems?** See [this
 issue](https://github.com/sirupsen/logrus/issues/451#issuecomment-264332021).
@@ -60,7 +60,7 @@ The simplest way to use Logrus is simply the package-level exported logger:
 package main
 
 import (
-  log "github.com/Sirupsen/logrus"
+  log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -71,7 +71,7 @@ func main() {
 ```
 
 Note that it's completely api-compatible with the stdlib logger, so you can
-replace your `log` imports everywhere with `log "github.com/Sirupsen/logrus"`
+replace your `log` imports everywhere with `log "github.com/sirupsen/logrus"`
 and you'll now have the flexibility of Logrus. You can customize it all you
 want:
 
@@ -80,7 +80,7 @@ package main
 
 import (
   "os"
-  log "github.com/Sirupsen/logrus"
+  log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -131,7 +131,7 @@ package main
 
 import (
   "os"
-  "github.com/Sirupsen/logrus"
+  "github.com/sirupsen/logrus"
 )
 
 // Create a new instance of the logger. You can have any number of instances.
@@ -206,9 +206,9 @@ Logrus comes with [built-in hooks](hooks/). Add those, or your custom hook, in
 
 ```go
 import (
-  log "github.com/Sirupsen/logrus"
+  log "github.com/sirupsen/logrus"
   "gopkg.in/gemnasium/logrus-airbrake-hook.v2" // the package is named "aibrake"
-  logrus_syslog "github.com/Sirupsen/logrus/hooks/syslog"
+  logrus_syslog "github.com/sirupsen/logrus/hooks/syslog"
   "log/syslog"
 )
 
@@ -269,7 +269,7 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Slackrus](https://github.com/johntdyer/slackrus) | Hook for Slack chat. |
 | [Stackdriver](https://github.com/knq/sdhook) | Hook for logging to [Google Stackdriver](https://cloud.google.com/logging/) |
 | [Sumorus](https://github.com/doublefree/sumorus) | Hook for logging to [SumoLogic](https://www.sumologic.com/)|
-| [Syslog](https://github.com/Sirupsen/logrus/blob/master/hooks/syslog/syslog.go) | Send errors to remote syslog server. Uses standard library `log/syslog` behind the scenes. |
+| [Syslog](https://github.com/sirupsen/logrus/blob/master/hooks/syslog/syslog.go) | Send errors to remote syslog server. Uses standard library `log/syslog` behind the scenes. |
 | [TraceView](https://github.com/evalphobia/logrus_appneta) | Hook for logging to [AppNeta TraceView](https://www.appneta.com/products/traceview/) |
 | [Typetalk](https://github.com/dragon3/logrus-typetalk-hook) | Hook for logging to [Typetalk](https://www.typetalk.in/) |
 | [logz.io](https://github.com/ripcurld00d/logrus-logzio-hook) | Hook for logging to [logz.io](https://logz.io), a Log as a Service using Logstash |
@@ -321,7 +321,7 @@ could do:
 
 ```go
 import (
-  log "github.com/Sirupsen/logrus"
+  log "github.com/sirupsen/logrus"
 )
 
 init() {
