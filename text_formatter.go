@@ -169,11 +169,11 @@ func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interf
 }
 
 func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {
-  msgString := fmt.Sprint(value)
+	msgString := fmt.Sprint(value)
 
-	if needsQuoting(msgString) {
-	  fmt.Fprintf(b, "%q", msgString)
-  } else {
-	  b.WriteString(msgString)
+	if f.needsQuoting(msgString) {
+		fmt.Fprintf(b, "%s", f.QuoteCharacter+msgString+f.QuoteCharacter)
+	} else {
+		b.WriteString(msgString)
 	}
 }

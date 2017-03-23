@@ -33,9 +33,9 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(true, "x,y")
 	checkQuoting(false, errors.New("invalid"))
 	checkQuoting(true, errors.New("invalid argument"))
-  checkQuoting(true, struct{ a string }{"abcd"})
+	checkQuoting(true, struct{ a string }{"abcd"})
 	checkQuoting(false, customTest{"abcd"})
-  	// Test for custom quote character.
+	// Test for custom quote character.
 	tf.QuoteCharacter = "`"
 	checkQuoting(false, "")
 	checkQuoting(false, "abcd")
