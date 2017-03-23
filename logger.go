@@ -300,6 +300,13 @@ func (logger *Logger) Panicln(args ...interface{}) {
 	}
 }
 
+// SetOutput sets the logger output
+func (logger *Logger) SetOutput(out io.Writer) {
+	logger.mu.Lock()
+	logger.Out = out
+	logger.mu.Unlock()
+}
+
 //When file is opened with appending mode, it's safe to
 //write concurrently to a file (within 4k message on Linux).
 //In these cases user can choose to disable the lock.
