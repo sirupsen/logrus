@@ -1,4 +1,3 @@
-package logrus
 
 import (
 	"io"
@@ -77,9 +76,12 @@ func New() *Logger {
 func (logger *Logger) newEntry() *Entry {
 	entry, ok := logger.entryPool.Get().(*Entry)
 	if ok {
+		entry.CallLevel = 1
 		return entry
 	}
-	return NewEntry(logger)
+	c := NewEntry(logger)
+	c.CallLevel += 1
+	return c
 }
 
 func (logger *Logger) releaseEntry(entry *Entry) {

@@ -5,37 +5,9 @@ import (
 	"fmt"
 )
 
-type fieldKey string
-type FieldMap map[fieldKey]string
-
-const (
-	FieldKeyMsg   = "msg"
-	FieldKeyLevel = "level"
-	FieldKeyTime  = "time"
-)
-
-func (f FieldMap) resolve(key fieldKey) string {
-	if k, ok := f[key]; ok {
-		return k
-	}
-
-	return string(key)
-}
-
 type JSONFormatter struct {
 	// TimestampFormat sets the format used for marshaling timestamps.
 	TimestampFormat string
-
-	// FieldMap allows users to customize the names of keys for various fields.
-	// As an example:
-	// formatter := &JSONFormatter{
-	//   	FieldMap: FieldMap{
-	// 		 FieldKeyTime: "@timestamp",
-	// 		 FieldKeyLevel: "@level",
-	// 		 FieldKeyLevel: "@message",
-	//    },
-	// }
-	FieldMap FieldMap
 }
 
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
@@ -57,9 +29,9 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		timestampFormat = DefaultTimestampFormat
 	}
 
-	data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
-	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
-	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
+	data["time"] = entry.Time.Format(timestampFormat)
+	data["msg"] = entry.Message
+	data["level"] = entry.Level.String()
 
 	serialized, err := json.Marshal(data)
 	if err != nil {
