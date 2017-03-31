@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"io"
 	"runtime"
+	"bytes"
 )
 
 func (logger *Logger) Writer() *io.PipeWriter {
@@ -21,6 +22,30 @@ func (entry *Entry) Writer() *io.PipeWriter {
 func (entry *Entry) WriterLevel(level Level) *io.PipeWriter {
 	reader, writer := io.Pipe()
 
+	go entry.writerScanner(reader)
+	runtime.SetFinalizer(writer, writerFinalizer)
+
+	return writer
+}
+
+func (entry *Entry) writerScanner(reader *io.PipeReader) {
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		txt := scanner.Text()
+		printFunc := entry.get_level_function(get_level(txt))
+		printFunc(txt)
+	}
+	if err := scanner.Err(); err != nil {
+		entry.Errorf("Error while reading from Writer: %s", err)
+	}
+	reader.Close()
+}
+
+func writerFinalizer(writer *io.PipeWriter) {
+	writer.Close()
+}
+
+func (entry *Entry) get_level_function(level Level) func(args ...interface{}) {
 	var printFunc func(args ...interface{})
 
 	switch level {
@@ -40,23 +65,22 @@ func (entry *Entry) WriterLevel(level Level) *io.PipeWriter {
 		printFunc = entry.Print
 	}
 
-	go entry.writerScanner(reader, printFunc)
-	runtime.SetFinalizer(writer, writerFinalizer)
-
-	return writer
+	return printFunc
 }
 
-func (entry *Entry) writerScanner(reader *io.PipeReader, printFunc func(args ...interface{})) {
-	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		printFunc(scanner.Text())
+func get_level(line string) Level {
+	var lvl string
+	line_b := []byte(line)
+	x := bytes.IndexByte(line_b, '[')
+	if x >= 0 {
+		y := bytes.IndexByte(line_b[x:], ']')
+		if y >= 0 {
+			lvl = string(line_b[x+1 : x+y])
+		}
 	}
-	if err := scanner.Err(); err != nil {
-		entry.Errorf("Error while reading from Writer: %s", err)
+	level, err := ParseLevel(lvl)
+	if err != nil {
+		level = InfoLevel
 	}
-	reader.Close()
-}
-
-func writerFinalizer(writer *io.PipeWriter) {
-	writer.Close()
+	return level
 }
