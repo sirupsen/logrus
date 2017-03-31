@@ -8,7 +8,7 @@ import (
 )
 
 func (logger *Logger) Writer() *io.PipeWriter {
-	return logger.WriterLevel(InfoLevel)
+	return NewEntry(logger).WriterLevelDynamic()
 }
 
 func (logger *Logger) WriterLevel(level Level) *io.PipeWriter {
@@ -16,19 +16,41 @@ func (logger *Logger) WriterLevel(level Level) *io.PipeWriter {
 }
 
 func (entry *Entry) Writer() *io.PipeWriter {
-	return entry.WriterLevel(InfoLevel)
+	return entry.WriterLevelDynamic()
 }
 
 func (entry *Entry) WriterLevel(level Level) *io.PipeWriter {
 	reader, writer := io.Pipe()
 
-	go entry.writerScanner(reader)
+	printFunc := entry.get_level_function(level)
+
+	go entry.writerScanner(reader, printFunc)
 	runtime.SetFinalizer(writer, writerFinalizer)
 
 	return writer
 }
 
-func (entry *Entry) writerScanner(reader *io.PipeReader) {
+func (entry *Entry) WriterLevelDynamic() *io.PipeWriter {
+	reader, writer := io.Pipe()
+
+	go entry.writerScannerDynamic(reader)
+	runtime.SetFinalizer(writer, writerFinalizer)
+
+	return writer
+}
+
+func (entry *Entry) writerScanner(reader *io.PipeReader, printFunc func(args ...interface{})) {
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		printFunc(scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		entry.Errorf("Error while reading from Writer: %s", err)
+	}
+	reader.Close()
+}
+
+func (entry *Entry) writerScannerDynamic(reader *io.PipeReader) {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		txt := scanner.Text()
