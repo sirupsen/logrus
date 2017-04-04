@@ -69,7 +69,7 @@ func New() *Logger {
 	return &Logger{
 		Out:       os.Stderr,
 		Formatter: new(TextFormatter),
-		Hooks:     make(LevelHooks),
+		Hooks:     *NewLevelHooks(),
 		Level:     InfoLevel,
 	}
 }
