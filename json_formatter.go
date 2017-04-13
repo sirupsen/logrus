@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 )
@@ -28,6 +29,9 @@ type JSONFormatter struct {
 
 	// DisableTimestamp allows disabling automatic timestamps in output
 	DisableTimestamp bool
+
+	// DisableHTMLEscape allows disabling html escaping in output
+	DisableHTMLEscape bool
 
 	// FieldMap allows users to customize the names of keys for various fields.
 	// As an example:
@@ -66,9 +70,18 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
 
-	serialized, err := json.Marshal(data)
+	serialized, err := f.serialize(data)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
 	}
-	return append(serialized, '\n'), nil
+	return serialized, nil
+}
+
+func (f *JSONFormatter) serialize(data Fields) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(!f.DisableHTMLEscape)
+	err := enc.Encode(data)
+
+	return buf.Bytes(), err
 }
