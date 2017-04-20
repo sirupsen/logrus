@@ -6,12 +6,12 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-// test.Hook is a hook designed for dealing with logs in test scenarios.
+// Hook is a hook designed for dealing with logs in test scenarios.
 type Hook struct {
 	Entries []*logrus.Entry
 }
 
-// Installs a test hook for the global logger.
+// NewGlobal installs a test hook for the global logger.
 func NewGlobal() *Hook {
 
 	hook := new(Hook)
@@ -21,7 +21,7 @@ func NewGlobal() *Hook {
 
 }
 
-// Installs a test hook for a given local logger.
+// NewLocal installs a test hook for a given local logger.
 func NewLocal(logger *logrus.Logger) *Hook {
 
 	hook := new(Hook)
@@ -31,7 +31,7 @@ func NewLocal(logger *logrus.Logger) *Hook {
 
 }
 
-// Creates a discarding logger and installs the test hook.
+// NewNullLogger creates a discarding logger and installs the test hook.
 func NewNullLogger() (*logrus.Logger, *Hook) {
 
 	logger := logrus.New()
