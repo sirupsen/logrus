@@ -9,6 +9,9 @@ import (
 
 // Hook is a hook designed for dealing with logs in test scenarios.
 type Hook struct {
+	// Entries is an array of all entries that have been received by this hook.
+	// For safe access, use the AllEntries() method, rather than reading this
+	// value directly.
 	Entries []*logrus.Entry
 	mu      sync.RWMutex
 }
