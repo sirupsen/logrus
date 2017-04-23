@@ -217,6 +217,7 @@ func (entry *Entry) Infof(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Printf(format string, args ...interface{}) {
+	entry.increaseCaller()
 	entry.Infof(format, args...)
 }
 
