@@ -247,6 +247,7 @@ func TestEntryWithFields(t *testing.T) {
 	// Check everything but Data is still the same
 	assert.Equal(t, entry1.Logger, entry2.Logger)
 	assert.Equal(t, entry1.Time, entry2.Time)
+	assert.Equal(t, entry1.Level, entry2.Level)
 	assert.Equal(t, entry1.Message, entry2.Message)
 	assert.Equal(t, entry1.Buffer, entry2.Buffer)
 
@@ -257,6 +258,7 @@ func TestEntryWithFields(t *testing.T) {
 	// Check everything but Data is still the same
 	assert.Equal(t, entry1.Logger, entry3.Logger)
 	assert.Equal(t, entry1.Time, entry3.Time)
+	assert.Equal(t, entry1.Level, entry3.Level)
 	assert.Equal(t, entry1.Message, entry3.Message)
 	assert.Equal(t, entry1.Buffer, entry3.Buffer)
 }

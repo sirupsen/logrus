@@ -200,7 +200,11 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 			data[k] = v
 		}
 	}
-	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, err: fieldErr, Context: entry.Context}
+	// shallow copy
+	newentry := *entry
+	newentry.Data = data
+	newentry.err = fieldErr
+	return &newentry
 }
 
 // WithTime overrides the time of the Entry.
