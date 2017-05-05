@@ -35,7 +35,7 @@ type JSONFormatter struct {
 	//   	FieldMap: FieldMap{
 	// 		 FieldKeyTime: "@timestamp",
 	// 		 FieldKeyLevel: "@level",
-	// 		 FieldKeyLevel: "@message",
+	// 		 FieldKeyMsg: "@message",
 	//    },
 	// }
 	FieldMap FieldMap
