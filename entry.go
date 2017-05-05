@@ -42,10 +42,6 @@ type Entry struct {
 
 	// When formatter is called in entry.log(), an Buffer may be set to entry
 	Buffer *bytes.Buffer
-	// Record the caller's depth
-	CallerOffset int
-	// Init caller's depth
-	InitCallerOffset int
 }
 
 func NewEntry(logger *Logger) *Entry {
@@ -53,8 +49,6 @@ func NewEntry(logger *Logger) *Entry {
 		Logger: logger,
 		// Default is three fields, give a little extra room
 		Data: make(Fields, 5),
-		CallerOffset: 6,
-		InitCallerOffset: 6,
 	}
 }
 
@@ -88,7 +82,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data, CallerOffset:4, InitCallerOffset:4}
+	return &Entry{Logger: entry.Logger, Data: data}
 }
 
 // This function is not declared with a pointer value because otherwise
@@ -132,60 +126,40 @@ func (entry Entry) log(level Level, msg string) {
 	}
 }
 
-func (entry *Entry) increaseCaller(){
-	entry.CallerOffset += 1
-}
-
-func (entry *Entry) clearCaller(){
-	entry.CallerOffset = entry.InitCallerOffset
-}
-
 func (entry *Entry) Debug(args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
-		entry.increaseCaller()
-		defer entry.clearCaller()
 		entry.log(DebugLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Print(args ...interface{}) {
-	entry.increaseCaller()
-	entry.Info(args...)
+	entry.log(InfoLevel, fmt.Sprint(args...))
 }
 
 func (entry *Entry) Info(args ...interface{}) {
 	if entry.Logger.level() >= InfoLevel {
-		entry.increaseCaller()
-		defer entry.clearCaller()
 		entry.log(InfoLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Warn(args ...interface{}) {
 	if entry.Logger.level() >= WarnLevel {
-		entry.increaseCaller()
-		defer entry.clearCaller()
 		entry.log(WarnLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Warning(args ...interface{}) {
-	entry.increaseCaller()
-	entry.Warn(args...)
+	entry.log(WarnLevel, fmt.Sprint(args...))
 }
 
 func (entry *Entry) Error(args ...interface{}) {
 	if entry.Logger.level() >= ErrorLevel {
-		entry.increaseCaller()
-		defer entry.clearCaller()
 		entry.log(ErrorLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
 	if entry.Logger.level() >= FatalLevel {
-		entry.increaseCaller()
-		defer entry.clearCaller()
 		entry.log(FatalLevel, fmt.Sprint(args...))
 	}
 	Exit(1)
@@ -193,8 +167,6 @@ func (entry *Entry) Fatal(args ...interface{}) {
 
 func (entry *Entry) Panic(args ...interface{}) {
 	if entry.Logger.level() >= PanicLevel {
-		entry.increaseCaller()
-		defer entry.clearCaller()
 		entry.log(PanicLevel, fmt.Sprint(args...))
 	}
 	panic(fmt.Sprint(args...))
@@ -204,110 +176,96 @@ func (entry *Entry) Panic(args ...interface{}) {
 
 func (entry *Entry) Debugf(format string, args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
-		entry.increaseCaller()
-		entry.Debug(fmt.Sprintf(format, args...))
+		entry.log(DebugLevel, fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Infof(format string, args ...interface{}) {
 	if entry.Logger.level() >= InfoLevel {
-		entry.increaseCaller()
-		entry.Info(fmt.Sprintf(format, args...))
+		entry.log(InfoLevel, fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Printf(format string, args ...interface{}) {
-	entry.increaseCaller()
-	entry.Infof(format, args...)
+	entry.log(InfoLevel, fmt.Sprintf(format, args...))
 }
 
 func (entry *Entry) Warnf(format string, args ...interface{}) {
 	if entry.Logger.level() >= WarnLevel {
-		entry.increaseCaller()
-		entry.Warn(fmt.Sprintf(format, args...))
+		entry.log(WarnLevel, fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Warningf(format string, args ...interface{}) {
-	entry.increaseCaller()
-	entry.Warnf(format, args...)
+	entry.log(WarnLevel, fmt.Sprintf(format, args...))
 }
 
 func (entry *Entry) Errorf(format string, args ...interface{}) {
 	if entry.Logger.level() >= ErrorLevel {
-		entry.increaseCaller()
-		entry.Error(fmt.Sprintf(format, args...))
+		entry.log(ErrorLevel, fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Fatalf(format string, args ...interface{}) {
 	if entry.Logger.level() >= FatalLevel {
-		entry.increaseCaller()
-		entry.Fatal(fmt.Sprintf(format, args...))
+		entry.log(FatalLevel, fmt.Sprintf(format, args ...))
 	}
 	Exit(1)
 }
 
 func (entry *Entry) Panicf(format string, args ...interface{}) {
 	if entry.Logger.level() >= PanicLevel {
-		entry.increaseCaller()
-		entry.Panic(fmt.Sprintf(format, args...))
+		entry.log(PanicLevel, fmt.Sprintf(format, args...))
 	}
+	panic(fmt.Sprintf(format, args...))
 }
 
 // Entry Println family functions
 
 func (entry *Entry) Debugln(args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
-		entry.increaseCaller()
-		entry.Debug(entry.sprintlnn(args...))
+		entry.log(DebugLevel, entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Infoln(args ...interface{}) {
 	if entry.Logger.level() >= InfoLevel {
-		entry.increaseCaller()
-		entry.Info(entry.sprintlnn(args...))
+		entry.log(InfoLevel, entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Println(args ...interface{}) {
-	entry.increaseCaller()
-	entry.Infoln(args...)
+	entry.log(InfoLevel, entry.sprintlnn(args...))
 }
 
 func (entry *Entry) Warnln(args ...interface{}) {
 	if entry.Logger.level() >= WarnLevel {
-		entry.increaseCaller()
-		entry.Warn(entry.sprintlnn(args...))
+		entry.log(WarnLevel, entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Warningln(args ...interface{}) {
-	entry.increaseCaller()
-	entry.Warnln(args...)
+	entry.log(WarnLevel, entry.sprintlnn(args...))
 }
 
 func (entry *Entry) Errorln(args ...interface{}) {
 	if entry.Logger.level() >= ErrorLevel {
-		entry.increaseCaller()
-		entry.Error(entry.sprintlnn(args...))
+		entry.log(ErrorLevel, entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Fatalln(args ...interface{}) {
 	if entry.Logger.level() >= FatalLevel {
-		entry.increaseCaller()
-		entry.Fatal(entry.sprintlnn(args...))
+		entry.log(FatalLevel, entry.sprintlnn(args...))
 	}
 	Exit(1)
 }
 
 func (entry *Entry) Panicln(args ...interface{}) {
 	if entry.Logger.level() >= PanicLevel {
-		entry.increaseCaller()
-		entry.Panic(entry.sprintlnn(args...))
+		entry.log(PanicLevel, entry.sprintlnn(args...))
 	}
+	panic(fmt.Sprint(args...))
 }
 
 // Sprintlnn => Sprint no newline. This is to get the behavior of how
