@@ -1,6 +1,8 @@
 package logrus
 
 import (
+	"bytes"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -119,4 +121,29 @@ func TestErrorHookShouldFireOnError(t *testing.T) {
 	}, func(fields Fields) {
 		assert.Equal(t, hook.Fired, true)
 	})
+}
+
+type TestFireHook struct {
+}
+
+func (hook *TestFireHook) Fire(entry *Entry) error {
+	entry.Data["wow"] = "whale"
+	return nil
+}
+
+func (hook *TestFireHook) Levels() []Level {
+	return []Level{ErrorLevel}
+}
+
+func TestEntryDataWithHook(t *testing.T) {
+	assert := assert.New(t)
+
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	logger.Hooks.Add(new(TestFireHook))
+	logger.Error("error")
+	assert.Regexp(regexp.MustCompile("wow=whale"), logger.Out.(*bytes.Buffer))
+	logger.Out.(*bytes.Buffer).Reset()
+	logger.Info("info")
+	assert.NotRegexp(regexp.MustCompile("wow=whale"), logger.Out.(*bytes.Buffer))
 }
