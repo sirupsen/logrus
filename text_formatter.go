@@ -126,7 +126,7 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	case ErrorLevel, FatalLevel, PanicLevel:
 		levelColor = red
 	default:
-		levelColor = blue
+		levelColor = green
 	}
 
 	levelText := strings.ToUpper(entry.Level.String())[0:4]
