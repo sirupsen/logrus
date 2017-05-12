@@ -440,21 +440,23 @@ Logrus has a built in facility for asserting the presence of log messages. This 
 * a test logger (`test.NewNullLogger`) that just records log messages (and does not output any):
 
 ```go
-import (
-  "testing"
+import(
+  "github.com/sirupsen/logrus"
   "github.com/sirupsen/logrus/hooks/null"
+  "github.com/stretchr/testify/assert"
+  "testing"
 )
 
-func TestSomething(t *testing.T) {
+func TestSomething(t*testing.T){
   logger, hook := null.NewNullLogger()
-  logger.Error("Hello error")
+  logger.Error("Helloerror")
 
-  assert.Equal(1, len(hook.Entries))
-  assert.Equal(logrus.ErrorLevel, hook.LastEntry().Level)
-  assert.Equal("Hello error", hook.LastEntry().Message)
+  assert.Equal(t, 1, len(hook.Entries))
+  assert.Equal(t, logrus.ErrorLevel, hook.LastEntry().Level)
+  assert.Equal(t, "Helloerror", hook.LastEntry().Message)
 
   hook.Reset()
-  assert.Nil(hook.LastEntry())
+  assert.Nil(t, hook.LastEntry())
 }
 ```
 
