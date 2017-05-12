@@ -41,7 +41,8 @@ func getVersion() (float64, error) {
 	if err != nil {
 		return -1, err
 	}
-
+	
+	// The output should be like "Microsoft Windows [Version XX.X.XXXXXX]"
 	version := strings.Replace(stdout.String(), "\n", "", -1)
 	version = strings.Replace(version, "\r\n", "", -1)
 
@@ -57,7 +58,7 @@ func getVersion() (float64, error) {
 func init() {
 	ver, err := getVersion()
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	// Activate Virtual Processing for Windows CMD
