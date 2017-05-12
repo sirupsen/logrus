@@ -52,6 +52,12 @@ time="2015-03-26T01:27:38-04:00" level=fatal msg="The ice breaks!" err=&{0x20822
 exit status 1
 ```
 
+#### Case-sensitivity
+
+The organization's name was changed to lower-case--and this will not be changed
+back. If you are getting import conflicts due to case sensitivity, please use
+the lower-case import: `github.com/sirupsen/logrus`.
+
 #### Example
 
 The simplest way to use Logrus is simply the package-level exported logger:
