@@ -4,5 +4,10 @@ go:
   - 1.7.x
   - 1.8.x
   - tip
-install: go get -v
-script: GOMAXPROCS=4 GORACE="halt_on_error=1" go test -race -v ./...
+env:
+  - GOMAXPROCS=4 GORACE=halt_on_error=1
+install:
+  - go get github.com/stretchr/testify/assert
+script:
+  - go test -race -v .
+  - cd hooks/null && go test -race -v .
