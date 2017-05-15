@@ -165,7 +165,7 @@ func main() {
 
 #### Fields
 
-Logrus encourages careful, structured logging though logging fields instead of
+Logrus encourages careful, structured logging through logging fields instead of
 long, unparseable error messages. For example, instead of: `log.Fatalf("Failed
 to send event %s to topic %s with key %d")`, you should log the much more
 discoverable:
