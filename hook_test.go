@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -127,6 +127,7 @@ func TestErrorHookShouldFireOnError(t *testing.T) {
 }
 
 type CallerHook struct {
+	StackDepth int
 }
 
 func (hook *CallerHook) Fire(entry *Entry) error {
@@ -146,55 +147,62 @@ func (hook *CallerHook) Levels() []Level {
 }
 
 func (hook *CallerHook) caller(entry *Entry) string {
-	for i := 0; ; i++{
-		if _, file, line, ok := runtime.Caller(10); ok{
-			if strings.Contains(file, "reflect/value.go") == false{
-				return strings.Join([]string{filepath.Base(file), strconv.Itoa(line)}, ":")
-			}
-		}else{
-			return ""
-		}
+	if _, file, line, ok := runtime.Caller(hook.StackDepth); ok {
+		return strings.Join([]string{filepath.Base(file), strconv.Itoa(line)}, ":")
+	} else {
+		return "this is not exist"
 	}
 }
 
-func TestStackDepth(t *testing.T){
+func TestStackDepth(t *testing.T) {
 	assert.Equal(t, true, strings.Contains("/usr/local/go/src/reflect/value.go", "reflect/value.go"))
-	hook := new(CallerHook)
+	hook := &CallerHook{StackDepth: 8}
 	//Be aware expectCaller's line number should equal Invoke(log, logList[i].Log, logList[i].Input...)'s line number
-	expectCaller := "hook_test.go:196"
+	expectCaller := "hook_test.go:218"
 	//How to test panic and fatal?
-	logList := []struct{
-		Log string
+	logList := []struct {
+		Log          string
 		ExpectCaller string
-		Input []interface{}
-		ExpectMsg string
-		ExpectLevel string
+		Input        []interface{}
+		ExpectMsg    string
+		ExpectLevel  string
 	}{
-		{Log:"Debug", ExpectCaller:expectCaller, Input:[]interface{}{"Hello1", "Debug",}, ExpectMsg:"Hello1Debug", ExpectLevel:DebugLevel.String()},
-		{Log:"Debugf", ExpectCaller:expectCaller, Input:[]interface{}{"Hello2 %s", "Debug",}, ExpectMsg:"Hello2 Debug", ExpectLevel:DebugLevel.String()},
-		{Log:"Debugln", ExpectCaller:expectCaller, Input:[]interface{}{"Hello3", "Debug",}, ExpectMsg:"Hello3 Debug", ExpectLevel:DebugLevel.String()},
-		{Log:"Error", ExpectCaller:expectCaller, Input:[]interface{}{"Hello1", "Error",}, ExpectMsg:"Hello1Error", ExpectLevel:ErrorLevel.String()},
-		{Log:"Errorf", ExpectCaller:expectCaller, Input:[]interface{}{"Hello2 %s", "Error",}, ExpectMsg:"Hello2 Error", ExpectLevel:ErrorLevel.String()},
-		{Log:"Errorln", ExpectCaller:expectCaller, Input:[]interface{}{"Hello3", "Error",}, ExpectMsg:"Hello3 Error", ExpectLevel:ErrorLevel.String()},
-		{Log:"Info", ExpectCaller:expectCaller, Input:[]interface{}{"Hello1", "Info",}, ExpectMsg:"Hello1Info", ExpectLevel:InfoLevel.String()},
-		{Log:"Infof", ExpectCaller:expectCaller, Input:[]interface{}{"Hello2 %s", "Info",}, ExpectMsg:"Hello2 Info", ExpectLevel:InfoLevel.String()},
-		{Log:"Infoln", ExpectCaller:expectCaller, Input:[]interface{}{"Hello3", "Info",}, ExpectMsg:"Hello3 Info", ExpectLevel:InfoLevel.String()},
-		{Log:"Warning", ExpectCaller:expectCaller, Input:[]interface{}{"Hello1", "Warning",}, ExpectMsg:"Hello1Warning", ExpectLevel:WarnLevel.String()},
-		{Log:"Warningf", ExpectCaller:expectCaller, Input:[]interface{}{"Hello2 %s", "Warning",}, ExpectMsg:"Hello2 Warning", ExpectLevel:WarnLevel.String()},
-		{Log:"Warningln", ExpectCaller:expectCaller, Input:[]interface{}{"Hello3", "Warning",}, ExpectMsg:"Hello3 Warning", ExpectLevel:WarnLevel.String()},
-		{Log:"Warn", ExpectCaller:expectCaller, Input:[]interface{}{"Hello1", "Warn",}, ExpectMsg:"Hello1Warn", ExpectLevel:WarnLevel.String()},
-		{Log:"Warnf", ExpectCaller:expectCaller, Input:[]interface{}{"Hello2 %s", "Warn",}, ExpectMsg:"Hello2 Warn", ExpectLevel:WarnLevel.String()},
-		{Log:"Warnln", ExpectCaller:expectCaller, Input:[]interface{}{"Hello3", "Warn",}, ExpectMsg:"Hello3 Warn", ExpectLevel:WarnLevel.String()},
-		{Log:"Print", ExpectCaller:expectCaller, Input:[]interface{}{"Hello1", "Print",}, ExpectMsg:"Hello1Print", ExpectLevel:InfoLevel.String()},
-		{Log:"Printf", ExpectCaller:expectCaller, Input:[]interface{}{"Hello2 %s", "Print",}, ExpectMsg:"Hello2 Print", ExpectLevel:InfoLevel.String()},
-		{Log:"Println", ExpectCaller:expectCaller, Input:[]interface{}{"Hello3", "Print",}, ExpectMsg:"Hello3 Print", ExpectLevel:InfoLevel.String()},
+		{Log: "Debug", ExpectCaller: expectCaller, Input: []interface{}{"Hello1", "Debug"}, ExpectMsg: "Hello1Debug", ExpectLevel: DebugLevel.String()},
+		{Log: "Debugf", ExpectCaller: expectCaller, Input: []interface{}{"Hello2 %s", "Debug"}, ExpectMsg: "Hello2 Debug", ExpectLevel: DebugLevel.String()},
+		{Log: "Debugln", ExpectCaller: expectCaller, Input: []interface{}{"Hello3", "Debug"}, ExpectMsg: "Hello3 Debug", ExpectLevel: DebugLevel.String()},
+		{Log: "Error", ExpectCaller: expectCaller, Input: []interface{}{"Hello1", "Error"}, ExpectMsg: "Hello1Error", ExpectLevel: ErrorLevel.String()},
+		{Log: "Errorf", ExpectCaller: expectCaller, Input: []interface{}{"Hello2 %s", "Error"}, ExpectMsg: "Hello2 Error", ExpectLevel: ErrorLevel.String()},
+		{Log: "Errorln", ExpectCaller: expectCaller, Input: []interface{}{"Hello3", "Error"}, ExpectMsg: "Hello3 Error", ExpectLevel: ErrorLevel.String()},
+		{Log: "Info", ExpectCaller: expectCaller, Input: []interface{}{"Hello1", "Info"}, ExpectMsg: "Hello1Info", ExpectLevel: InfoLevel.String()},
+		{Log: "Infof", ExpectCaller: expectCaller, Input: []interface{}{"Hello2 %s", "Info"}, ExpectMsg: "Hello2 Info", ExpectLevel: InfoLevel.String()},
+		{Log: "Infoln", ExpectCaller: expectCaller, Input: []interface{}{"Hello3", "Info"}, ExpectMsg: "Hello3 Info", ExpectLevel: InfoLevel.String()},
+		{Log: "Warning", ExpectCaller: expectCaller, Input: []interface{}{"Hello1", "Warning"}, ExpectMsg: "Hello1Warning", ExpectLevel: WarnLevel.String()},
+		{Log: "Warningf", ExpectCaller: expectCaller, Input: []interface{}{"Hello2 %s", "Warning"}, ExpectMsg: "Hello2 Warning", ExpectLevel: WarnLevel.String()},
+		{Log: "Warningln", ExpectCaller: expectCaller, Input: []interface{}{"Hello3", "Warning"}, ExpectMsg: "Hello3 Warning", ExpectLevel: WarnLevel.String()},
+		{Log: "Warn", ExpectCaller: expectCaller, Input: []interface{}{"Hello1", "Warn"}, ExpectMsg: "Hello1Warn", ExpectLevel: WarnLevel.String()},
+		{Log: "Warnf", ExpectCaller: expectCaller, Input: []interface{}{"Hello2 %s", "Warn"}, ExpectMsg: "Hello2 Warn", ExpectLevel: WarnLevel.String()},
+		{Log: "Warnln", ExpectCaller: expectCaller, Input: []interface{}{"Hello3", "Warn"}, ExpectMsg: "Hello3 Warn", ExpectLevel: WarnLevel.String()},
+		{Log: "Print", ExpectCaller: expectCaller, Input: []interface{}{"Hello1", "Print"}, ExpectMsg: "Hello1Print", ExpectLevel: InfoLevel.String()},
+		{Log: "Printf", ExpectCaller: expectCaller, Input: []interface{}{"Hello2 %s", "Print"}, ExpectMsg: "Hello2 Print", ExpectLevel: InfoLevel.String()},
+		{Log: "Println", ExpectCaller: expectCaller, Input: []interface{}{"Hello3", "Print"}, ExpectMsg: "Hello3 Print", ExpectLevel: InfoLevel.String()},
 	}
-	for i := range logList{
-		LogAndAssertJSON(t, func(log *Logger){
+	for i := range logList {
+		LogAndAssertJSON(t, func(log *Logger) {
 			log.Level = DebugLevel
 			log.Hooks.Add(hook)
 			Invoke(log, logList[i].Log, logList[i].Input...)
-		}, func(fields Fields){
+		}, func(fields Fields) {
+			assert.Equal(t, logList[i].ExpectCaller, fields["caller"])
+			assert.Equal(t, logList[i].ExpectMsg, fields["msg"])
+			assert.Equal(t, logList[i].ExpectLevel, fields["level"])
+		})
+	}
+	for i := range logList {
+		LogAndAssertJSON(t, func(log *Logger) {
+			log.Level = DebugLevel
+			log.Hooks.Add(hook)
+			Invoke(log.WithField("type", "check"), logList[i].Log, logList[i].Input...)
+		}, func(fields Fields) {
 			assert.Equal(t, logList[i].ExpectCaller, fields["caller"])
 			assert.Equal(t, logList[i].ExpectMsg, fields["msg"])
 			assert.Equal(t, logList[i].ExpectLevel, fields["level"])
@@ -202,10 +210,10 @@ func TestStackDepth(t *testing.T){
 	}
 }
 
-func Invoke(any interface{}, name string, args... interface{}) {
-      inputs := make([]reflect.Value, len(args))
-      for i, _ := range args {
-          inputs[i] = reflect.ValueOf(args[i])
-      }
-      reflect.ValueOf(any).MethodByName(name).Call(inputs)
+func Invoke(any interface{}, name string, args ...interface{}) {
+	inputs := make([]reflect.Value, len(args))
+	for i, _ := range args {
+		inputs[i] = reflect.ValueOf(args[i])
+	}
+	reflect.ValueOf(any).MethodByName(name).Call(inputs)
 }

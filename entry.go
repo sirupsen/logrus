@@ -98,7 +98,7 @@ func (entry Entry) log(level Level, msg string) {
 		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
 		entry.Logger.mu.Unlock()
 	}
-	
+
 	buffer = bufferPool.Get().(*bytes.Buffer)
 	buffer.Reset()
 	defer bufferPool.Put(buffer)
@@ -197,7 +197,9 @@ func (entry *Entry) Warnf(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Warningf(format string, args ...interface{}) {
-	entry.log(WarnLevel, fmt.Sprintf(format, args...))
+	if entry.Logger.level() >= WarnLevel {
+		entry.log(WarnLevel, fmt.Sprintf(format, args...))
+	}
 }
 
 func (entry *Entry) Errorf(format string, args ...interface{}) {
@@ -208,7 +210,7 @@ func (entry *Entry) Errorf(format string, args ...interface{}) {
 
 func (entry *Entry) Fatalf(format string, args ...interface{}) {
 	if entry.Logger.level() >= FatalLevel {
-		entry.log(FatalLevel, fmt.Sprintf(format, args ...))
+		entry.log(FatalLevel, fmt.Sprintf(format, args...))
 	}
 	Exit(1)
 }
@@ -245,7 +247,9 @@ func (entry *Entry) Warnln(args ...interface{}) {
 }
 
 func (entry *Entry) Warningln(args ...interface{}) {
-	entry.log(WarnLevel, entry.sprintlnn(args...))
+	if entry.Logger.level() >= WarnLevel {
+		entry.log(WarnLevel, entry.sprintlnn(args...))
+	}
 }
 
 func (entry *Entry) Errorln(args ...interface{}) {
