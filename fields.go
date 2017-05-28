@@ -8,163 +8,165 @@ var (
 	FieldsLogger *Logger
 )
 
+const (
+	SKIP_4 = 4
+	SKIP_5 = 5
+	SKIP_6 = 6
+	SKIP_7 = 7
+)
+
 func (logger *Logger) SetFieldsLogger() {
 	FieldsLogger = logger
 }
 
-func (f Fields) withFields(fields Fields) *Entry {
+func (f Fields) withFields(fields Fields, skip int) *Entry {
 	entry := FieldsLogger.newEntry()
 	defer FieldsLogger.releaseEntry(entry)
-	return entry.WithFields(f)
+	return entry.WithFields(f).WithSkip(skip)
 }
 
 func (f Fields) Debugf(format string, args ...interface{}) {
 	if FieldsLogger.level() >= DebugLevel {
-		f.withFields(f).debugf(format, args...)
+		f.withFields(f, SKIP_6).debugf(format, args...)
 	}
 }
 
 func (f Fields) Infof(format string, args ...interface{}) {
 	if FieldsLogger.level() >= InfoLevel {
-		f.withFields(f).infof(format, args...)
+		f.withFields(f, SKIP_6).infof(format, args...)
 	}
 }
 
 func (f Fields) Printf(format string, args ...interface{}) {
 	if FieldsLogger.level() >= InfoLevel {
-		f.withFields(f).printf(format, args...)
+		f.withFields(f, SKIP_7).printf(format, args...)
 	}
 }
 
 func (f Fields) Warnf(format string, args ...interface{}) {
 	if FieldsLogger.level() >= WarnLevel {
-		f.withFields(f).warnf(format, args...)
+		f.withFields(f, SKIP_6).warnf(format, args...)
 	}
 }
 
 func (f Fields) Warningf(format string, args ...interface{}) {
 	if FieldsLogger.level() >= WarnLevel {
-		f.withFields(f).warnf(format, args...)
+		f.withFields(f, SKIP_6).warnf(format, args...)
 	}
 }
 
 func (f Fields) Errorf(format string, args ...interface{}) {
 	if FieldsLogger.level() >= ErrorLevel {
-		f.withFields(f).errorf(format, args...)
+		f.withFields(f, SKIP_6).errorf(format, args...)
 	}
 }
 
 func (f Fields) Fatalf(format string, args ...interface{}) {
 	if FieldsLogger.level() >= FatalLevel {
-		f.withFields(f).fatalf(format, args...)
+		f.withFields(f, SKIP_6).fatalf(format, args...)
 	}
-	Exit(1)
 }
 
 func (f Fields) Panicf(format string, args ...interface{}) {
 	if FieldsLogger.level() >= PanicLevel {
-		f.withFields(f).panicf(format, args...)
+		f.withFields(f, SKIP_6).panicf(format, args...)
 	}
 }
 
 func (f Fields) Debug(args ...interface{}) {
 	if FieldsLogger.level() >= DebugLevel {
-		f.withFields(f).debug(args...)
+		f.withFields(f, SKIP_5).debug(args...)
 	}
 }
 
 func (f Fields) Info(args ...interface{}) {
 	if FieldsLogger.level() >= InfoLevel {
-		f.withFields(f).info(args...)
+		f.withFields(f, SKIP_5).info(args...)
 	}
 }
 
 func (f Fields) Print(args ...interface{}) {
 	if FieldsLogger.level() >= InfoLevel {
-		f.withFields(f).info(args...)
+		f.withFields(f, SKIP_5).info(args...)
 	}
 }
 
 func (f Fields) Warn(args ...interface{}) {
 	if FieldsLogger.level() >= WarnLevel {
-		f.withFields(f).warn(args...)
+		f.withFields(f, SKIP_5).warn(args...)
 	}
 }
 
 func (f Fields) Warning(args ...interface{}) {
 	if FieldsLogger.level() >= WarnLevel {
-		f.withFields(f).warn(args...)
+		f.withFields(f, SKIP_5).warn(args...)
 	}
 }
 
 func (f Fields) Error(args ...interface{}) {
 	if FieldsLogger.level() >= ErrorLevel {
-		f.withFields(f).error(args...)
+		f.withFields(f, SKIP_5).error(args...)
 	}
 }
 
 func (f Fields) Fatal(args ...interface{}) {
 	if FieldsLogger.level() >= FatalLevel {
-		f.withFields(f).fatal(args...)
+		f.withFields(f, SKIP_5).fatal(args...)
 	}
-	Exit(1)
 }
 
 func (f Fields) Panic(args ...interface{}) {
 	if FieldsLogger.level() >= PanicLevel {
-		f.withFields(f).panic(args...)
+		f.withFields(f, SKIP_5).panic(args...)
 	}
-	Exit(1)
 }
 
 func (f Fields) Debugln(args ...interface{}) {
 	if FieldsLogger.level() >= DebugLevel {
-		f.withFields(f).debugln(args...)
+		f.withFields(f, SKIP_6).debugln(args...)
 	}
 }
 
 func (f Fields) Infoln(args ...interface{}) {
 	if FieldsLogger.level() >= InfoLevel {
-		f.withFields(f).infoln(args...)
+		f.withFields(f, SKIP_6).infoln(args...)
 	}
 }
 
 func (f Fields) Println(args ...interface{}) {
 	if FieldsLogger.level() >= InfoLevel {
-		f.withFields(f).println(args...)
+		f.withFields(f, SKIP_7).println(args...)
 	}
 }
 
 func (f Fields) Warnln(args ...interface{}) {
 	if FieldsLogger.level() >= WarnLevel {
-		f.withFields(f).warnln(args...)
+		f.withFields(f, SKIP_6).warnln(args...)
 	}
 }
 
 func (f Fields) Warningln(args ...interface{}) {
 	if FieldsLogger.level() >= WarnLevel {
-		f.withFields(f).warnln(args...)
+		f.withFields(f, SKIP_6).warnln(args...)
 	}
 }
 
 func (f Fields) Errorln(args ...interface{}) {
 	if FieldsLogger.level() >= ErrorLevel {
-		f.withFields(f).errorln(args...)
+		f.withFields(f, SKIP_6).errorln(args...)
 	}
 }
 
 func (f Fields) Fatalln(args ...interface{}) {
 	if FieldsLogger.level() >= FatalLevel {
-		f.withFields(f).fatalln(args...)
+		f.withFields(f, SKIP_6).fatalln(args...)
 	}
-	Exit(1)
 }
 
 func (f Fields) Panicln(args ...interface{}) {
 	if FieldsLogger.level() >= PanicLevel {
-		f.withFields(f).panicln(args...)
+		f.withFields(f, SKIP_6).panicln(args...)
 	}
-	Exit(1)
 }
 
 // The entry object should not be added to the log level to judge.
@@ -195,7 +197,6 @@ func (entry *Entry) fatal(args ...interface{}) {
 
 func (entry *Entry) panic(args ...interface{}) {
 	entry.log(PanicLevel, fmt.Sprint(args...))
-	panic(fmt.Sprint(args...))
 }
 
 // Entry Printf family functions
@@ -241,7 +242,6 @@ func (entry *Entry) warnln(args ...interface{}) {
 
 func (entry *Entry) errorln(args ...interface{}) {
 	entry.error(entry.sprintlnn(args...))
-
 }
 
 func (entry *Entry) fatalln(args ...interface{}) {
