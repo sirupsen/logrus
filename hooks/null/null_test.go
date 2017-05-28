@@ -1,7 +1,7 @@
 package null
 
 import (
-	"github.com/sirupsen/logrus"
+	"github.com/penhauer-xiao/logrus"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
