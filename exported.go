@@ -74,7 +74,11 @@ func WithFields(fields Fields) *Entry {
 
 // Debug logs a message at level Debug on the standard logger.
 func Debug(args ...interface{}) {
-	std.Debug(args...)
+	if std.level() >= DebugLevel {
+		entry := std.newEntry().WithSkip(skip_5)
+		entry.debug(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Print logs a message at level Info on the standard logger.
@@ -84,37 +88,65 @@ func Print(args ...interface{}) {
 
 // Info logs a message at level Info on the standard logger.
 func Info(args ...interface{}) {
-	std.Info(args...)
+	if std.level() >= InfoLevel {
+		entry := std.newEntry().WithSkip(skip_5)
+		entry.info(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Warn logs a message at level Warn on the standard logger.
 func Warn(args ...interface{}) {
-	std.Warn(args...)
+	if std.level() >= WarnLevel {
+		entry := std.newEntry().WithSkip(skip_5)
+		entry.warn(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Warning logs a message at level Warn on the standard logger.
 func Warning(args ...interface{}) {
-	std.Warning(args...)
+	if std.level() >= WarnLevel {
+		entry := std.newEntry().WithSkip(skip_5)
+		entry.warn(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Error logs a message at level Error on the standard logger.
 func Error(args ...interface{}) {
-	std.Error(args...)
+	if std.level() >= ErrorLevel {
+		entry := std.newEntry().WithSkip(skip_5)
+		entry.error(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Panic logs a message at level Panic on the standard logger.
 func Panic(args ...interface{}) {
-	std.Panic(args...)
+	if std.level() >= PanicLevel {
+		entry := std.newEntry().WithSkip(skip_5)
+		entry.panic(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Fatal logs a message at level Fatal on the standard logger.
 func Fatal(args ...interface{}) {
-	std.Fatal(args...)
+	if std.level() >= FatalLevel {
+		entry := std.newEntry().WithSkip(skip_5)
+		entry.fatal(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Debugf logs a message at level Debug on the standard logger.
 func Debugf(format string, args ...interface{}) {
-	std.Debugf(format, args...)
+	if std.level() >= DebugLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.debugf(format, args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Printf logs a message at level Info on the standard logger.
@@ -154,40 +186,72 @@ func Fatalf(format string, args ...interface{}) {
 
 // Debugln logs a message at level Debug on the standard logger.
 func Debugln(args ...interface{}) {
-	std.Debugln(args...)
+	if std.level() >= DebugLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.debugln(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Println logs a message at level Info on the standard logger.
 func Println(args ...interface{}) {
-	std.Println(args...)
+	if std.level() >= InfoLevel {
+		entry := std.newEntry().WithSkip(skip_7)
+		entry.println(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Infoln logs a message at level Info on the standard logger.
 func Infoln(args ...interface{}) {
-	std.Infoln(args...)
+	if std.level() >= InfoLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.infoln(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Warnln logs a message at level Warn on the standard logger.
 func Warnln(args ...interface{}) {
-	std.Warnln(args...)
+	if std.level() >= WarnLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.warnln(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Warningln logs a message at level Warn on the standard logger.
 func Warningln(args ...interface{}) {
-	std.Warningln(args...)
+	if std.level() >= WarnLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.warnln(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Errorln logs a message at level Error on the standard logger.
 func Errorln(args ...interface{}) {
-	std.Errorln(args...)
+	if std.level() >= ErrorLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.errorln(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Panicln logs a message at level Panic on the standard logger.
 func Panicln(args ...interface{}) {
-	std.Panicln(args...)
+	if std.level() >= PanicLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.panicln(args...)
+		std.releaseEntry(entry)
+	}
 }
 
 // Fatalln logs a message at level Fatal on the standard logger.
 func Fatalln(args ...interface{}) {
-	std.Fatalln(args...)
+	if std.level() >= FatalLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.fatalln(args...)
+		std.releaseEntry(entry)
+	}
 }
