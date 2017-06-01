@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/sirupsen/logrus"
+	"github.com/bigbaser/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
