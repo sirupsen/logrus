@@ -15,7 +15,8 @@ Everything using `logrus` will need to use the lower-case:
 
 I am terribly sorry for this inconvenience. Logrus strives hard for backwards
 compatibility, and the author failed to realize the cascading consequences of
-such a name-change.
+such a name-change. To fix Glide, see [these
+comments](https://github.com/sirupsen/logrus/issues/553#issuecomment-306591437).
 
 Nicely color-coded in development (when a TTY is attached, otherwise just
 plain text):
