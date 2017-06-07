@@ -82,7 +82,13 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data}
+	return &Entry{
+		Logger:  entry.Logger,
+		Data:    data,
+		Time:    entry.Time,
+		Level:   entry.Level,
+		Message: entry.Message,
+	}
 }
 
 // This function is not declared with a pointer value because otherwise
