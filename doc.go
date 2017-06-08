@@ -7,7 +7,7 @@ The simplest way to use Logrus is simply the package-level exported logger:
   package main
 
   import (
-    log "github.com/penhauer-xiao/logrus"
+    log "github.com/bigbaser/logrus"
   )
 
   func main() {
