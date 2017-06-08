@@ -44,6 +44,8 @@ type TextFormatter struct {
 	// TimestampFormat to use for display when a full timestamp is printed
 	TimestampFormat string
 
+	TimestampInUTC bool
+
 	// The fields are sorted by default for a consistent output. For applications
 	// that log extremely frequently and don't use the JSON formatter this may not
 	// be desired.
@@ -101,7 +103,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		f.printColored(b, entry, keys, timestampFormat)
 	} else {
 		if !f.DisableTimestamp {
-			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
+			f.appendKeyValue(b, "time", f.timestamp(entry, timestampFormat))
 		}
 		f.appendKeyValue(b, "level", entry.Level.String())
 		if entry.Message != "" {
@@ -136,12 +138,20 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	} else if !f.FullTimestamp {
 		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Message)
 	} else {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, f.timestamp(entry, timestampFormat), entry.Message)
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
 		fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=", levelColor, k)
 		f.appendValue(b, v)
+	}
+}
+
+func (f *TextFormatter) timestamp(entry *Entry, format string) string {
+	if f.TimestampInUTC {
+		return entry.Time.UTC().Format(format)
+	} else {
+		return entry.Time.Format(format)
 	}
 }
 

@@ -29,6 +29,8 @@ type JSONFormatter struct {
 	// DisableTimestamp allows disabling automatic timestamps in output
 	DisableTimestamp bool
 
+	TimestampInUTC bool
+
 	// FieldMap allows users to customize the names of keys for various fields.
 	// As an example:
 	// formatter := &JSONFormatter{
@@ -61,7 +63,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	}
 
 	if !f.DisableTimestamp {
-		data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
+		data[f.FieldMap.resolve(FieldKeyTime)] = f.timestamp(entry, timestampFormat)
 	}
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
@@ -71,4 +73,12 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
 	}
 	return append(serialized, '\n'), nil
+}
+
+func (f *JSONFormatter) timestamp(entry *Entry, format string) string {
+	if f.TimestampInUTC {
+		return entry.Time.UTC().Format(format)
+	} else {
+		return entry.Time.Format(format)
+	}
 }
