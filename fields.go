@@ -2,6 +2,7 @@ package logrus
 
 import (
 	"fmt"
+	"github.com/kr/pretty"
 )
 
 var (
@@ -25,6 +26,195 @@ func SetFieldsLogger() {
 	FieldsLogger = std
 }
 
+// exported, for logrus to pretty printing for Go values
+
+// Debugf logs a message at level Debug on the standard logger.
+func Debugfp(format string, args ...interface{}) {
+	if std.level() >= DebugLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.debugf(format+" ===>%# v", pretty.Formatter(args))
+		std.releaseEntry(entry)
+	}
+}
+
+// Printf logs a message at level Info on the standard logger.
+func Printfp(format string, args ...interface{}) {
+	if std.level() >= InfoLevel {
+		entry := std.newEntry().WithSkip(skip_7)
+		entry.printf(format+" ===>%# v", pretty.Formatter(args))
+		std.releaseEntry(entry)
+	}
+}
+
+// Infof logs a message at level Info on the standard logger.
+func Infofp(format string, args ...interface{}) {
+	if std.level() >= InfoLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.infof(format+" ===>%# v", pretty.Formatter(args))
+		std.releaseEntry(entry)
+	}
+}
+
+// Warnf logs a message at level Warn on the standard logger.
+func Warnfp(format string, args ...interface{}) {
+	if std.level() >= WarnLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.warnf(format+" ===>%# v", pretty.Formatter(args))
+		std.releaseEntry(entry)
+	}
+}
+
+// Warningf logs a message at level Warn on the standard logger.
+func Warningfp(format string, args ...interface{}) {
+	if std.level() >= WarnLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.warnf(format+" ===>%# v", pretty.Formatter(args))
+		std.releaseEntry(entry)
+	}
+}
+
+// Errorf logs a message at level Error on the standard logger.
+func Errorfp(format string, args ...interface{}) {
+	if std.level() >= ErrorLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.errorf(format+" ===>%# v", pretty.Formatter(args))
+		std.releaseEntry(entry)
+	}
+}
+
+// Panicf logs a message at level Panic on the standard logger.
+func Panicfp(format string, args ...interface{}) {
+	if std.level() >= PanicLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.panicf(format+" ===>%# v", pretty.Formatter(args))
+		std.releaseEntry(entry)
+	}
+}
+
+// Fatalf logs a message at level Fatal on the standard logger.
+func Fatalfp(format string, args ...interface{}) {
+	if std.level() >= FatalLevel {
+		entry := std.newEntry().WithSkip(skip_6)
+		entry.fatalf(format+" ===>%# v", pretty.Formatter(args))
+		std.releaseEntry(entry)
+	}
+}
+
+// for fields to pretty printing for Go values
+func (f Fields) Debugfp(format string, args ...interface{}) {
+	if FieldsLogger.level() >= DebugLevel {
+		f.withFields(f, skip_6).debugf(format+" ===>%# v", pretty.Formatter(args))
+	}
+}
+
+func (f Fields) Infofp(format string, args ...interface{}) {
+	if FieldsLogger.level() >= InfoLevel {
+		f.withFields(f, skip_6).infof(format+" ===>%# v", pretty.Formatter(args))
+	}
+}
+
+func (f Fields) Printfp(format string, args ...interface{}) {
+	if FieldsLogger.level() >= InfoLevel {
+		f.withFields(f, skip_7).printf(format+" ===>%# v", pretty.Formatter(args))
+	}
+}
+
+func (f Fields) Warnfp(format string, args ...interface{}) {
+	if FieldsLogger.level() >= WarnLevel {
+		f.withFields(f, skip_6).warnf(format+" ===>%# v", pretty.Formatter(args))
+	}
+}
+
+func (f Fields) Warningfp(format string, args ...interface{}) {
+	if FieldsLogger.level() >= WarnLevel {
+		f.withFields(f, skip_6).warnf(format+" ===>%# v", pretty.Formatter(args))
+	}
+}
+
+func (f Fields) Errorfp(format string, args ...interface{}) {
+	if FieldsLogger.level() >= ErrorLevel {
+		f.withFields(f, skip_6).errorf(format+" ===>%# v", pretty.Formatter(args))
+	}
+}
+
+func (f Fields) Fatalfp(format string, args ...interface{}) {
+	if FieldsLogger.level() >= FatalLevel {
+		f.withFields(f, skip_6).fatalf(format+" ===>%# v", pretty.Formatter(args))
+	}
+}
+
+func (f Fields) Panicfp(format string, args ...interface{}) {
+	if FieldsLogger.level() >= PanicLevel {
+		f.withFields(f, skip_6).panicf(format+" ===>%# v", pretty.Formatter(args))
+	}
+}
+
+// for logger to pretty printing for Go values
+func (logger *Logger) Debugfp(format string, args ...interface{}) {
+	if logger.level() >= DebugLevel {
+		entry := logger.newEntry().WithSkip(skip_6)
+		entry.debug(format+" ===>%# v", pretty.Formatter(args))
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) Infofp(format string, args ...interface{}) {
+	if logger.level() >= InfoLevel {
+		entry := logger.newEntry().WithSkip(skip_6)
+		entry.infof(format+" ===>%# v", pretty.Formatter(args))
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) Printfp(format string, args ...interface{}) {
+	if logger.level() >= InfoLevel {
+		entry := logger.newEntry().WithSkip(skip_7)
+		entry.printf(format+" ===>%# v", pretty.Formatter(args))
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) Warnfp(format string, args ...interface{}) {
+	if logger.level() >= WarnLevel {
+		entry := logger.newEntry().WithSkip(skip_6)
+		entry.warnf(format+" ===>%# v", pretty.Formatter(args))
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) Warningfp(format string, args ...interface{}) {
+	if logger.level() >= WarnLevel {
+		entry := logger.newEntry().WithSkip(skip_6)
+		entry.warnf(format+" ===>%# v", pretty.Formatter(args))
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) Errorfp(format string, args ...interface{}) {
+	if logger.level() >= ErrorLevel {
+		entry := logger.newEntry().WithSkip(skip_6)
+		entry.errorf(format+" ===>%# v", pretty.Formatter(args))
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) Fatalfp(format string, args ...interface{}) {
+	if logger.level() >= FatalLevel {
+		entry := logger.newEntry().WithSkip(skip_6)
+		entry.fatalf(format+" ===>%# v", pretty.Formatter(args))
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) Panicfp(format string, args ...interface{}) {
+	if logger.level() >= PanicLevel {
+		entry := logger.newEntry().WithSkip(skip_6)
+		entry.panicf(format+" ===>%# v", pretty.Formatter(args))
+		logger.releaseEntry(entry)
+	}
+}
+
+// for fields
 func (f Fields) withFields(fields Fields, skip int) *Entry {
 	entry := FieldsLogger.newEntry()
 	defer FieldsLogger.releaseEntry(entry)
