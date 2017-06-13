@@ -449,13 +449,13 @@ Logrus has a built in facility for asserting the presence of log messages. This 
 ```go
 import(
   "github.com/sirupsen/logrus"
-  "github.com/sirupsen/logrus/hooks/null"
+  "github.com/sirupsen/logrus/hooks/test"
   "github.com/stretchr/testify/assert"
   "testing"
 )
 
 func TestSomething(t*testing.T){
-  logger, hook := null.NewNullLogger()
+  logger, hook := test.NewNullLogger()
   logger.Error("Helloerror")
 
   assert.Equal(t, 1, len(hook.Entries))
