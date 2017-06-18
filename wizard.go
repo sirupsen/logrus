@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path"
@@ -27,6 +28,30 @@ var (
 		-h --help                    Show this screen
 		--conf=FILE                  Load a named configuration file
 	`
+
+	KGWF_config = []byte(`
+kgwf:
+  -
+    raw_import:	https://gopkg.in/
+    new_import: https://github.com/
+    rule:  true
+  -
+    raw_import: https://go.googlesource.com/
+    new_import: https://github.com/golang/
+  -
+    raw_import: https://golang.org/x/
+    new_import: https://github.com/golang/
+  -
+    raw_import: https://google.golang.org/grpc
+    new_import: https://github.com/grpc/grpc-go
+  -
+    raw_import: https://rsc.io/letsencrypt
+    new_import: https://github.com/penhauer-xiao/letsencrypt
+
+log:
+  hookfile: true
+  level: debug
+`)
 )
 
 type sourceFileHook struct {
@@ -79,7 +104,7 @@ func init() {
 	arguments = getCmdArguments()
 	Infofp("The configure the command line parameters such as:", arguments)
 
-	file := ""
+	file := "wizard.kgwf.yaml"
 	viper.SetConfigName("config")
 	if conf := arguments["--conf"]; conf != nil {
 		file = conf.(string)
@@ -90,16 +115,30 @@ func init() {
 		viper.AddConfigPath(path.Dir(file))
 		viper.SetConfigName(strings.Split(path.Base(file), ".")[0])
 		Infof("Using %s for configuration", file)
+	} else if exist(file) {
+		Infof("No configuration file defined, will try to use default (%s)", file)
+		viper.AddConfigPath(".")
+		viper.SetConfigName(file[:strings.LastIndex(file,".")])
+
+		err := viper.ReadInConfig()
+		if err != nil {
+			Fatalf("Fatal error config file: %s", err)
+		}
+	} else if appName == "glide" {
+		Infof("No configuration file defined, Especially for glide configuration (%s)", file)
+		err := viper.ReadConfig(bytes.NewBuffer(KGWF_config))
+		if err != nil {
+			Fatalf("Fatal error config file: %s", err)
+		}
 	} else {
 		Infof("No configuration file defined, will try to use default (config.yaml)")
-	}
-
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(fmt.Sprintf("/etc/%s/", appName))
-	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
-	if err != nil {
-		Fatalf("Fatal error config file: %s", err)
+		viper.SetConfigType("yaml")
+		viper.AddConfigPath(fmt.Sprintf("/etc/%s/", appName))
+		viper.AddConfigPath(".")
+		err := viper.ReadInConfig()
+		if err != nil {
+			Fatalf("Fatal error config file: %s", err)
+		}
 	}
 
 	arguments = cmdArguments(viper.GetString("server.version"))
