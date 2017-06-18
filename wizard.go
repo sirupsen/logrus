@@ -102,13 +102,14 @@ func GetConfig() map[string]interface{} {
 func init() {
 	setAPPName(strings.Replace(os.Args[0], `./`, "", -1))
 
+	file := "wizard.kgwf.yaml"
 	if appName != "glide" {
 		arguments = getCmdArguments()
 		Infofp("The configure the command line parameters such as:", arguments)
+
+		viper.SetConfigName("config")
 	}
 
-	file := "wizard.kgwf.yaml"
-	viper.SetConfigName("config")
 	if conf := arguments["--conf"]; conf != nil {
 		file = conf.(string)
 		if !exist(file) {
@@ -128,14 +129,14 @@ func init() {
 			Fatalf("Fatal error config file: %s", err)
 		}
 	} else if appName == "glide" {
-		Infof("No configuration file defined, Especially for glide configuration (%s)", file)
+		Infof("No configuration file defined, Especially for glide configuration")
+		viper.SetConfigType("yaml")
 		err := viper.ReadConfig(bytes.NewBuffer(KGWF_config))
 		if err != nil {
 			Fatalf("Fatal error config file: %s", err)
 		}
 	} else {
 		Infof("No configuration file defined, will try to use default (config.yaml)")
-		viper.SetConfigType("yaml")
 		viper.AddConfigPath(fmt.Sprintf("/etc/%s/", appName))
 		viper.AddConfigPath(".")
 		err := viper.ReadInConfig()
