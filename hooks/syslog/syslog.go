@@ -4,7 +4,7 @@ package logrus_syslog
 
 import (
 	"fmt"
-	"github.com/bigbaser/logrus"
+	"github.com/penhauer-xiao/logrus"
 	"log/syslog"
 	"os"
 )
