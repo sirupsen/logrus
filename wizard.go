@@ -44,7 +44,7 @@ func (hook *sourceFileHook) Fire(entry *Entry) (_ error) {
 	if pc, fullPath, line, ok := runtime.Caller(entry.Skip); ok {
 		funcName := runtime.FuncForPC(pc).Name()
 		relativePath := fullPath
-		if temp := vendor(fullPath); temp != "" {
+		if temp := vendorPath(fullPath); temp != "" {
 			relativePath = temp
 		}
 
@@ -102,6 +102,8 @@ func init() {
 		Fatalf("Fatal error config file: %s", err)
 	}
 
+	arguments = cmdArguments(viper.GetString("server.version"))
+
 	if viper.GetBool("confg.watch") {
 		viper.WatchConfig()
 		viper.OnConfigChange(func(e fsnotify.Event) {
@@ -136,7 +138,7 @@ func setAPPName(name string) {
 }
 
 func getCmdArguments() map[string]interface{} {
-	arguments, err := docopt.Parse(usage, nil, true, VERSION, false)
+	arguments, err := docopt.Parse(usage, nil, true, "0.0", false)
 	if err != nil {
 		Warning("Error while parsing arguments: ", err)
 	}
@@ -144,7 +146,16 @@ func getCmdArguments() map[string]interface{} {
 	return arguments
 }
 
-func vendor(fullPath string) string {
+func cmdArguments(ver string) map[string]interface{} {
+	arguments, err := docopt.Parse(usage, nil, true, ver, false)
+	if err != nil {
+		Warning("Error while parsing arguments: ", err)
+	}
+
+	return arguments
+}
+
+func vendorPath(fullPath string) string {
 	if i := strings.Index(fullPath, vendor); i != -1 {
 		return fullPath[i+len(vendor):]
 	}
