@@ -112,15 +112,22 @@ func init() {
 	SetFieldsLogger()
 	SetFormatter(new(TextFormatter))
 
-	if level, err := ParseLevel(viper.GetString("log.level")); err == nil {
-		SetLevel(level)
-		AddHook(&sourceFileHook{LogLevel: level})
+	if viper.GetBool("log.hookfile") {
+		if level, err := ParseLevel(viper.GetString("log.level")); err == nil {
+			SetLevel(level)
+			AddHook(&sourceFileHook{LogLevel: level})
+		} else {
+			SetLevel(DebugLevel)
+			AddHook(&sourceFileHook{LogLevel: DebugLevel})
+		}
 	} else {
-		SetLevel(DebugLevel)
-		AddHook(&sourceFileHook{LogLevel: DebugLevel})
+		if level, err := ParseLevel(viper.GetString("log.level")); err == nil {
+			SetLevel(level)
+		} else {
+			SetLevel(DebugLevel)
+		}
 	}
 	Debugln("logrus & viper init done")
-
 }
 
 func setAPPName(name string) {
