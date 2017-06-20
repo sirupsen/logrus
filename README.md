@@ -1,11 +1,7 @@
 # Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>&nbsp;[![Build Status](https://travis-ci.org/sirupsen/logrus.svg?branch=master)](https://travis-ci.org/sirupsen/logrus)&nbsp;[![GoDoc](https://godoc.org/github.com/sirupsen/logrus?status.svg)](https://godoc.org/github.com/sirupsen/logrus)
 
 Logrus is a structured logger for Go (golang), completely API compatible with
-the standard library logger. [Godoc][godoc]. **Please note the Logrus API is not
-yet stable (pre 1.0). Logrus itself is completely stable and has been used in
-many large deployments. The core API is unlikely to change much but please
-version control your Logrus to make sure you aren't fetching latest `master` on
-every build.**
+the standard library logger. [Godoc][godoc].
 
 **Seeing weird case-sensitive problems?** Unfortunately, the author failed to
 realize the consequences of renaming to lower-case. Due to the Go package
