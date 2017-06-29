@@ -105,7 +105,6 @@ func init() {
 	file := "wizard.kgwf.yaml"
 	if appName != "glide" {
 		arguments = getCmdArguments()
-		Infofp("The configure the command line parameters such as:", arguments)
 
 		viper.SetConfigName("config")
 	}
