@@ -3,13 +3,15 @@ package main
 import (
 	"github.com/sirupsen/logrus"
 	// "os"
+	"fmt"
 )
 
 var log = logrus.New()
+var textFormatter = new(logrus.TextFormatter)
 
 func init() {
 	log.Formatter = new(logrus.JSONFormatter)
-	log.Formatter = new(logrus.TextFormatter) // default
+	log.Formatter = textFormatter // default
 
 	// file, err := os.OpenFile("logrus.log", os.O_CREATE|os.O_WRONLY, 0666)
 	// if err == nil {
@@ -22,16 +24,25 @@ func init() {
 }
 
 func main() {
-	defer func() {
-		err := recover()
-		if err != nil {
-			log.WithFields(logrus.Fields{
-				"omg":    true,
-				"err":    err,
-				"number": 100,
-			}).Fatal("The ice breaks!")
-		}
-	}()
+	printExample("Default example")
+
+	// set different color map
+	textFormatter.ColorMap = logrus.ColorMap{
+		logrus.DebugLevel: logrus.Cyan,
+		logrus.InfoLevel: logrus.Gray,
+		logrus.WarnLevel: logrus.Yellow,
+		logrus.ErrorLevel: logrus.Magenta,
+		logrus.FatalLevel: logrus.Red,
+		logrus.PanicLevel: logrus.Red,
+	}
+
+	printExample("Different color example")
+
+	printErrorExample()
+}
+
+func printExample(headline string) {
+	fmt.Printf("\n# %s:\n", headline)
 
 	log.WithFields(logrus.Fields{
 		"animal": "walrus",
@@ -51,6 +62,26 @@ func main() {
 	log.WithFields(logrus.Fields{
 		"temperature": -4,
 	}).Debug("Temperature changes")
+
+	log.WithFields(logrus.Fields{
+		"temperature": -20,
+	}).Error("Temperature changes")
+
+
+}
+
+func printErrorExample() {
+	fmt.Printf("\n# %s:\n", "Error example")
+	defer func() {
+		err := recover()
+		if err != nil {
+			log.WithFields(logrus.Fields{
+				"omg":    true,
+				"err":    err,
+				"number": 100,
+			}).Fatal("The ice breaks!")
+		}
+	}()
 
 	log.WithFields(logrus.Fields{
 		"animal": "orca",

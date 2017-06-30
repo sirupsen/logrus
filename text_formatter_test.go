@@ -83,5 +83,22 @@ func TestDisableTimestampWithColoredOutput(t *testing.T) {
 	}
 }
 
+func TestDifferentColorMap(t *testing.T) {
+	tf := &TextFormatter{}
+	tf.ColorMap = ColorMap{
+		DebugLevel: Magenta,
+		InfoLevel: Magenta,
+		WarnLevel: Magenta,
+		ErrorLevel: Magenta,
+		FatalLevel: Magenta,
+		PanicLevel: Magenta,
+	}
+
+	b, _ := tf.Format(WithField("test", "test"))
+	if !strings.Contains(string(b), "\x1b[35m") {
+		t.Error("Expected magenta color setting")
+	}
+}
+
 // TODO add tests for sorting etc., this requires a parser for the text
 // formatter output.

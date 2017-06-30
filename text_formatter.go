@@ -9,23 +9,44 @@ import (
 	"time"
 )
 
+// NoColor: reset; clears all colors and styles (to white on black)
+// Red: set foreground color to red
+// Green: set foreground color to green
+// Yellow: set foreground color to yellow
+// Blue: set foreground color to blue
+// Magenta: set foreground color to magenta
+// Cyan: set foreground color to cyan
+// Gray: set foreground color to gray
+// Grey: set foreground color to gray (UK)
 const (
-	nocolor = 0
-	red     = 31
-	green   = 32
-	yellow  = 33
-	blue    = 34
-	gray    = 37
+	NoColor = uint8(0)
+	Red     = uint8(31)
+	Green   = uint8(32)
+	Yellow  = uint8(33)
+	Blue    = uint8(34)
+	Magenta = uint8(35)
+	Cyan    = uint8(36)
+	Gray    = uint8(37)
+	Grey    = Gray
 )
 
 var (
-	baseTimestamp time.Time
+	baseTimestamp   time.Time
+	defaultColorMap = ColorMap{
+		DebugLevel: Gray,
+		InfoLevel:  Blue,
+		WarnLevel:  Yellow,
+		ErrorLevel: Red,
+		FatalLevel: Red,
+		PanicLevel: Red,
+	}
 )
 
 func init() {
 	baseTimestamp = time.Now()
 }
 
+// TextFormatter for text and terminal output
 type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
 	ForceColors bool
@@ -56,21 +77,31 @@ type TextFormatter struct {
 	// with something else. For example: ', or `.
 	QuoteCharacter string
 
+	// ColorMap can be set to override the default color map
+	ColorMap ColorMap
+
 	// Whether the logger's out is to a terminal
 	isTerminal bool
 
 	sync.Once
 }
 
+// ColorMap maps levels to colors
+type ColorMap map[Level]uint8
+
 func (f *TextFormatter) init(entry *Entry) {
 	if len(f.QuoteCharacter) == 0 {
 		f.QuoteCharacter = "\""
+	}
+	if f.ColorMap == nil {
+		f.ColorMap = defaultColorMap
 	}
 	if entry.Logger != nil {
 		f.isTerminal = IsTerminal(entry.Logger.Out)
 	}
 }
 
+// Format execute the formatter
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	var b *bytes.Buffer
 	keys := make([]string, 0, len(entry.Data))
@@ -117,18 +148,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 }
 
 func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestampFormat string) {
-	var levelColor int
-	switch entry.Level {
-	case DebugLevel:
-		levelColor = gray
-	case WarnLevel:
-		levelColor = yellow
-	case ErrorLevel, FatalLevel, PanicLevel:
-		levelColor = red
-	default:
-		levelColor = blue
-	}
-
+	levelColor := f.getLevelColor(entry.Level)
 	levelText := strings.ToUpper(entry.Level.String())[0:4]
 
 	if f.DisableTimestamp {
@@ -143,6 +163,13 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 		fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=", levelColor, k)
 		f.appendValue(b, v)
 	}
+}
+
+func (f *TextFormatter) getLevelColor(level Level) uint8 {
+	if val, ok := f.ColorMap[level]; ok {
+		return val
+	}
+	return Gray
 }
 
 func (f *TextFormatter) needsQuoting(text string) bool {
