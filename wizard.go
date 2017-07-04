@@ -41,6 +41,7 @@ kgwf:
   -
     raw_import: https://golang.org/x/
     new_import: https://github.com/golang/
+    split_sub: true
   -
     raw_import: https://google.golang.org/grpc
     new_import: https://github.com/grpc/grpc-go
