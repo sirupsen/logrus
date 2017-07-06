@@ -15,6 +15,11 @@ compatibility, and the author failed to realize the cascading consequences of
 such a name-change. To fix Glide, see [these
 comments](https://github.com/sirupsen/logrus/issues/553#issuecomment-306591437).
 
+**Are you interested in assisting in maintaining Logrus?** Currently I have a
+lot of obligations, and I am unable to provide Logrus with the maintainership it
+needs. If you'd like to help, please reach out to me at `simon at author's
+username dot com`.
+
 Nicely color-coded in development (when a TTY is attached, otherwise just
 plain text):
 
