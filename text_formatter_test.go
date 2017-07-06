@@ -33,7 +33,8 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(true, "x,y")
 	checkQuoting(false, errors.New("invalid"))
 	checkQuoting(true, errors.New("invalid argument"))
-
+	checkQuoting(true, struct{ a string }{"abcd"})
+	checkQuoting(false, customTest{"abcd"})
 	// Test for custom quote character.
 	tf.QuoteCharacter = "`"
 	checkQuoting(false, "")
@@ -51,6 +52,14 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(true, "")
 	checkQuoting(false, "abcd")
 	checkQuoting(true, errors.New("invalid argument"))
+
+}
+
+type customTest struct{ a string }
+
+func (ct customTest) String() string {
+	return ct.a
+
 }
 
 func TestTimestampFormat(t *testing.T) {
