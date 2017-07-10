@@ -221,7 +221,7 @@ Logrus comes with [built-in hooks](hooks/). Add those, or your custom hook, in
 import (
   log "github.com/sirupsen/logrus"
   "gopkg.in/gemnasium/logrus-airbrake-hook.v2" // the package is named "aibrake"
-  logrus_syslog "github.com/sirupsen/logrus/hooks/syslog"
+  logrus_syslog "github.com/penhauer-xiao/logrus/hooks/syslog"
   "log/syslog"
 )
 
@@ -284,6 +284,7 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Stackdriver](https://github.com/knq/sdhook) | Hook for logging to [Google Stackdriver](https://cloud.google.com/logging/) |
 | [Sumorus](https://github.com/doublefree/sumorus) | Hook for logging to [SumoLogic](https://www.sumologic.com/)|
 | [Syslog](https://github.com/sirupsen/logrus/blob/master/hooks/syslog/syslog.go) | Send errors to remote syslog server. Uses standard library `log/syslog` behind the scenes. |
+
 | [Syslog TLS](https://github.com/shinji62/logrus-syslog-ng) | Send errors to remote syslog server with TLS support. |
 | [TraceView](https://github.com/evalphobia/logrus_appneta) | Hook for logging to [AppNeta TraceView](https://www.appneta.com/products/traceview/) |
 | [Typetalk](https://github.com/dragon3/logrus-typetalk-hook) | Hook for logging to [Typetalk](https://www.typetalk.in/) |
