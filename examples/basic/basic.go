@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/penhauer-xiao/logrus"
+	"github.com/sirupsen/logrus"
 	// "os"
 )
 

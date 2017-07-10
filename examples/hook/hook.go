@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/penhauer-xiao/logrus"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/gemnasium/logrus-airbrake-hook.v2"
 )
 

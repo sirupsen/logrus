@@ -73,7 +73,7 @@ The simplest way to use Logrus is simply the package-level exported logger:
 package main
 
 import (
-  log "github.com/penhauer-xiao/logrus"
+  log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -84,7 +84,7 @@ func main() {
 ```
 
 Note that it's completely api-compatible with the stdlib logger, so you can
-replace your `log` imports everywhere with `log "github.com/penhauer-xiao/logrus"`
+replace your `log` imports everywhere with `log "github.com/sirupsen/logrus"`
 and you'll now have the flexibility of Logrus. You can customize it all you
 want:
 
@@ -93,7 +93,7 @@ package main
 
 import (
   "os"
-  log "github.com/penhauer-xiao/logrus"
+  log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -144,7 +144,7 @@ package main
 
 import (
   "os"
-  "github.com/penhauer-xiao/logrus"
+  "github.com/sirupsen/logrus"
 )
 
 // Create a new instance of the logger. You can have any number of instances.
@@ -219,7 +219,7 @@ Logrus comes with [built-in hooks](hooks/). Add those, or your custom hook, in
 
 ```go
 import (
-  log "github.com/penhauer-xiao/logrus"
+  log "github.com/sirupsen/logrus"
   "gopkg.in/gemnasium/logrus-airbrake-hook.v2" // the package is named "aibrake"
   logrus_syslog "github.com/penhauer-xiao/logrus/hooks/syslog"
   "log/syslog"
@@ -284,10 +284,8 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Stackdriver](https://github.com/knq/sdhook) | Hook for logging to [Google Stackdriver](https://cloud.google.com/logging/) |
 | [Sumorus](https://github.com/doublefree/sumorus) | Hook for logging to [SumoLogic](https://www.sumologic.com/)|
 | [Syslog](https://github.com/sirupsen/logrus/blob/master/hooks/syslog/syslog.go) | Send errors to remote syslog server. Uses standard library `log/syslog` behind the scenes. |
-<<<<<<< HEAD
-=======
+
 | [Syslog TLS](https://github.com/shinji62/logrus-syslog-ng) | Send errors to remote syslog server with TLS support. |
->>>>>>> upstream/master
 | [TraceView](https://github.com/evalphobia/logrus_appneta) | Hook for logging to [AppNeta TraceView](https://www.appneta.com/products/traceview/) |
 | [Typetalk](https://github.com/dragon3/logrus-typetalk-hook) | Hook for logging to [Typetalk](https://www.typetalk.in/) |
 | [logz.io](https://github.com/ripcurld00d/logrus-logzio-hook) | Hook for logging to [logz.io](https://logz.io), a Log as a Service using Logstash |
@@ -340,7 +338,7 @@ could do:
 
 ```go
 import (
-  log "github.com/penhauer-xiao/logrus"
+  log "github.com/sirupsen/logrus"
 )
 
 init() {
