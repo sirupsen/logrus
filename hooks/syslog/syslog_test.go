@@ -1,7 +1,11 @@
 package logrus_syslog
 
 import (
+<<<<<<< HEAD
 	"github.com/penhauer-xiao/logrus"
+=======
+	"github.com/sirupsen/logrus"
+>>>>>>> upstream/master
 	"log/syslog"
 	"testing"
 )

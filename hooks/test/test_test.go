@@ -3,7 +3,11 @@ package test
 import (
 	"testing"
 
+<<<<<<< HEAD
 	"github.com/penhauer-xiao/logrus"
+=======
+	"github.com/sirupsen/logrus"
+>>>>>>> upstream/master
 	"github.com/stretchr/testify/assert"
 )
 

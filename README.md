@@ -1,17 +1,24 @@
 # Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>&nbsp;[![Build Status](https://travis-ci.org/sirupsen/logrus.svg?branch=master)](https://travis-ci.org/sirupsen/logrus)&nbsp;[![GoDoc](https://godoc.org/github.com/sirupsen/logrus?status.svg)](https://godoc.org/github.com/sirupsen/logrus)
 
-**Seeing weird case-sensitive problems?** See [this
-issue](https://github.com/sirupsen/logrus/issues/451#issuecomment-264332021).
-This change has been reverted. I apologize for causing this. I greatly
-underestimated the impact this would have. Logrus strives for stability and
-backwards compatibility and failed to provide that.
-
 Logrus is a structured logger for Go (golang), completely API compatible with
-the standard library logger. [Godoc][godoc]. **Please note the Logrus API is not
-yet stable (pre 1.0). Logrus itself is completely stable and has been used in
-many large deployments. The core API is unlikely to change much but please
-version control your Logrus to make sure you aren't fetching latest `master` on
-every build.**
+the standard library logger. [Godoc][godoc].
+
+**Seeing weird case-sensitive problems?** It's in the past been possible to
+import Logrus as both upper- and lower-case. Due to the Go package environment,
+this caused issues in the community and we needed a standard. Some environments
+experienced problems with the upper-case variant, so the lower-case was decided.
+Everything using `logrus` will need to use the lower-case:
+`github.com/sirupsen/logrus`. Any package that isn't, should be changed.
+
+**I am terribly sorry for this inconvenience.** Logrus strives hard for backwards
+compatibility, and the author failed to realize the cascading consequences of
+such a name-change. To fix Glide, see [these
+comments](https://github.com/sirupsen/logrus/issues/553#issuecomment-306591437).
+
+**Are you interested in assisting in maintaining Logrus?** Currently I have a
+lot of obligations, and I am unable to provide Logrus with the maintainership it
+needs. If you'd like to help, please reach out to me at `simon at author's
+username dot com`.
 
 Nicely color-coded in development (when a TTY is attached, otherwise just
 plain text):
@@ -261,6 +268,7 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Logrusly](https://github.com/sebest/logrusly) | Send logs to [Loggly](https://www.loggly.com/) |
 | [Logstash](https://github.com/bshuster-repo/logrus-logstash-hook) | Hook for logging to [Logstash](https://www.elastic.co/products/logstash) |
 | [Mail](https://github.com/zbindenren/logrus_mail) | Hook for sending exceptions via mail |
+| [Mattermost](https://github.com/shuLhan/mattermost-integration/tree/master/hooks/logrus) | Hook for logging to [Mattermost](https://mattermost.com/) |
 | [Mongodb](https://github.com/weekface/mgorus) | Hook for logging to mongodb |
 | [NATS-Hook](https://github.com/rybit/nats_logrus_hook) | Hook for logging to [NATS](https://nats.io) |
 | [Octokit](https://github.com/dorajistyle/logrus-octokit-hook) | Hook for logging to github via octokit |
@@ -276,6 +284,10 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Stackdriver](https://github.com/knq/sdhook) | Hook for logging to [Google Stackdriver](https://cloud.google.com/logging/) |
 | [Sumorus](https://github.com/doublefree/sumorus) | Hook for logging to [SumoLogic](https://www.sumologic.com/)|
 | [Syslog](https://github.com/sirupsen/logrus/blob/master/hooks/syslog/syslog.go) | Send errors to remote syslog server. Uses standard library `log/syslog` behind the scenes. |
+<<<<<<< HEAD
+=======
+| [Syslog TLS](https://github.com/shinji62/logrus-syslog-ng) | Send errors to remote syslog server with TLS support. |
+>>>>>>> upstream/master
 | [TraceView](https://github.com/evalphobia/logrus_appneta) | Hook for logging to [AppNeta TraceView](https://www.appneta.com/products/traceview/) |
 | [Typetalk](https://github.com/dragon3/logrus-typetalk-hook) | Hook for logging to [Typetalk](https://www.typetalk.in/) |
 | [logz.io](https://github.com/ripcurld00d/logrus-logzio-hook) | Hook for logging to [logz.io](https://logz.io), a Log as a Service using Logstash |
@@ -442,14 +454,14 @@ Logrus has a built in facility for asserting the presence of log messages. This 
 
 ```go
 import(
-  "github.com/penhauer-xiao/logrus"
-  "github.com/penhauer-xiao/logrus/hooks/null"
+  "github.com/sirupsen/logrus"
+  "github.com/sirupsen/logrus/hooks/test"
   "github.com/stretchr/testify/assert"
   "testing"
 )
 
 func TestSomething(t*testing.T){
-  logger, hook := null.NewNullLogger()
+  logger, hook := test.NewNullLogger()
   logger.Error("Helloerror")
 
   assert.Equal(t, 1, len(hook.Entries))
