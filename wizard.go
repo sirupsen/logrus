@@ -234,10 +234,3 @@ func exist(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil || os.IsExist(err)
 }
-
-// fmt.Println(fmt.Sprintf("%s", stack()))
-func stack() []byte {
-	buf := make([]byte, 1<<20)
-	n := runtime.Stack(buf, true)
-	return buf[:n]
-}
