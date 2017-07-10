@@ -1,10 +1,9 @@
 package test
 
 import (
-	"testing"
-
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestAllHooks(t *testing.T) {
