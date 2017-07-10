@@ -10,10 +10,10 @@ experienced problems with the upper-case variant, so the lower-case was decided.
 Everything using `logrus` will need to use the lower-case:
 `github.com/sirupsen/logrus`. Any package that isn't, should be changed.
 
-**I am terribly sorry for this inconvenience.** Logrus strives hard for backwards
-compatibility, and the author failed to realize the cascading consequences of
-such a name-change. To fix Glide, see [these
+To fix Glide, see [these
 comments](https://github.com/sirupsen/logrus/issues/553#issuecomment-306591437).
+For an in-depth explanation of the casing issue, see [this
+comment](https://github.com/sirupsen/logrus/issues/570#issuecomment-313933276).
 
 **Are you interested in assisting in maintaining Logrus?** Currently I have a
 lot of obligations, and I am unable to provide Logrus with the maintainership it
