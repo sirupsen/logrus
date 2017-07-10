@@ -50,8 +50,11 @@ kgwf:
     new_import: https://github.com/penhauer-xiao/letsencrypt
 
 log:
-  hookfile: true
   level: debug
+  format: text # text|json
+  	timestamp: 2006-01-02 15:04:05
+  	full_time: true
+  hookfile: true
 `)
 )
 
@@ -158,7 +161,17 @@ func init() {
 	}
 
 	SetFieldsLogger()
-	SetFormatter(new(TextFormatter))
+	if viper.GetString("log.format") == "text" {
+		customFormatter := new(TextFormatter)
+		if viper.GetString("log.format.timestamp") != "" {
+			customFormatter.TimestampFormat = viper.GetString("log.format.timestamp")
+		}
+		customFormatter.FullTimestamp = viper.GetBool("log.format.full_time")
+		SetFormatter(customFormatter)
+	} else {
+		customFormatter := new(JSONFormatter)
+		SetFormatter(customFormatter)
+	}
 
 	if viper.GetBool("log.hookfile") {
 		if level, err := ParseLevel(viper.GetString("log.level")); err == nil {
