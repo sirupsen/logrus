@@ -10,12 +10,24 @@ import (
 )
 
 const (
-	nocolor = 0
-	red     = 31
-	green   = 32
-	yellow  = 33
-	blue    = 34
-	gray    = 37
+	Nocolor = 0
+	Black   = 30
+	Red     = 31
+	Green   = 32
+	Yellow  = 33
+	Blue    = 34
+	Magenta = 35
+	Cyan    = 36
+	Gray    = 37
+
+	BrightBlack   = 40
+	BrightRed     = 41
+	BrightGreen   = 42
+	BrightYellow  = 43
+	BrightBlue    = 44
+	BrightMagenta = 45
+	BrightCyan    = 46
+	BrightGray    = 47
 )
 
 var (
@@ -32,6 +44,13 @@ type TextFormatter struct {
 
 	// Force disabling colors.
 	DisableColors bool
+
+	// Customize the color used for each level.  Keys are logging level constants
+	// defined in this package; values are ANSI color codes.
+	LevelColors map[Level]int
+
+	// Set the number of characters of the level text that are printed.
+	LevelTextLength int
 
 	// Disable timestamp logging. useful when output is redirected to logging
 	// system that already adds timestamps.
@@ -69,6 +88,30 @@ func (f *TextFormatter) init(entry *Entry) {
 	if entry.Logger != nil {
 		f.isTerminal = IsTerminal(entry.Logger.Out)
 	}
+
+	// default level text length
+	if f.LevelTextLength == 0 {
+		f.LevelTextLength = 4
+	}
+
+	// replace missing level colors with defaults
+	defaultLevelColors := map[Level]int{
+		DebugLevel: Gray,
+		WarnLevel:  Yellow,
+		ErrorLevel: Red,
+		FatalLevel: Red,
+		PanicLevel: Red,
+		InfoLevel:  Blue,
+	}
+	levelColors := make(map[Level]int)
+	for level, _ := range defaultLevelColors {
+		if color, exists := f.LevelColors[level]; !exists {
+			levelColors[level] = defaultLevelColors[level]
+		} else {
+			levelColors[level] = color
+		}
+	}
+	f.LevelColors = levelColors
 }
 
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
@@ -117,19 +160,13 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 }
 
 func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestampFormat string) {
-	var levelColor int
-	switch entry.Level {
-	case DebugLevel:
-		levelColor = gray
-	case WarnLevel:
-		levelColor = yellow
-	case ErrorLevel, FatalLevel, PanicLevel:
-		levelColor = red
-	default:
-		levelColor = blue
-	}
+	levelColor := f.LevelColors[entry.Level]
 
-	levelText := strings.ToUpper(entry.Level.String())[0:4]
+	levelText := strings.ToUpper(entry.Level.String())
+	for len(levelText) < f.LevelTextLength {
+		levelText += " "
+	}
+	levelText = levelText[:f.LevelTextLength]
 
 	if f.DisableTimestamp {
 		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
