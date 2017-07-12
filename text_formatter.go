@@ -14,7 +14,7 @@ const (
 	red     = 31
 	green   = 32
 	yellow  = 33
-	blue    = 34
+	blue    = 36
 	gray    = 37
 )
 
