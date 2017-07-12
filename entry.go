@@ -98,13 +98,13 @@ func (entry *Entry) WithSkip(skip int) *Entry {
 
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
-func (entry *Entry) log(level Level, msg string) {
+func (entry Entry) log(level Level, msg string) {
 	var buffer *bytes.Buffer
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
 
-	if err := entry.Logger.Hooks.Fire(level, entry); err != nil {
+	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
 		entry.Logger.mu.Lock()
 		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
 		entry.Logger.mu.Unlock()
@@ -113,7 +113,7 @@ func (entry *Entry) log(level Level, msg string) {
 	buffer.Reset()
 	defer bufferPool.Put(buffer)
 	entry.Buffer = buffer
-	serialized, err := entry.Logger.Formatter.Format(entry)
+	serialized, err := entry.Logger.Formatter.Format(&entry)
 	entry.Buffer = nil
 	if err != nil {
 		entry.Logger.mu.Lock()
