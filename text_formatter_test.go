@@ -28,7 +28,13 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(false, "abcd")
 	checkQuoting(false, "v1.0")
 	checkQuoting(false, "1234567890")
-	checkQuoting(true, "/foobar")
+	checkQuoting(false, "/foobar")
+	checkQuoting(false, "foo_bar")
+	checkQuoting(false, "foo@bar")
+	checkQuoting(false, "foobar^")
+	checkQuoting(false, "+/-_^@f.oobar")
+	checkQuoting(true, "foobar$")
+	checkQuoting(true, "&foobar")
 	checkQuoting(true, "x y")
 	checkQuoting(true, "x,y")
 	checkQuoting(false, errors.New("invalid"))
@@ -38,7 +44,12 @@ func TestQuoting(t *testing.T) {
 	tf.QuoteCharacter = "`"
 	checkQuoting(false, "")
 	checkQuoting(false, "abcd")
-	checkQuoting(true, "/foobar")
+	checkQuoting(false, "/foobar")
+	checkQuoting(false, "foo_bar")
+	checkQuoting(false, "foo@bar")
+	checkQuoting(false, "foobar^")
+	checkQuoting(true, "foobar$")
+	checkQuoting(true, "&foobar")
 	checkQuoting(true, errors.New("invalid argument"))
 
 	// Test for multi-character quotes.
