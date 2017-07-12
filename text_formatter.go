@@ -169,14 +169,8 @@ func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interf
 }
 
 func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {
-	var stringVal string
-
-	switch value := value.(type) {
-	case string:
-		stringVal = value
-	case error:
-		stringVal = value.Error()
-	default:
+	stringVal, ok := value.(string)
+	if !ok {
 		stringVal = fmt.Sprint(value)
 	}
 
