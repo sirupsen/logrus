@@ -24,7 +24,7 @@ func main() {
 	}).Warn("The group's number increased tremendously!")
 
 	// If you set FieldsLogger, you can print the log directly to the object Fields
-	log.SetFieldsLogger()
+	logrus.SetFieldsLogger(log)
 	logrus.Fields{
 		"animal": "walrus",
 		"size":   10,

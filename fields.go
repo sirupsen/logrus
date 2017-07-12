@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	FieldsLogger *Logger
+	FieldsLogger = std
 )
 
 const (
@@ -20,10 +20,10 @@ func (logger *Logger) SetFieldsLogger() {
 	FieldsLogger = logger
 }
 
-func SetFieldsLogger() {
-	std.mu.Lock()
-	defer std.mu.Unlock()
-	FieldsLogger = std
+func SetFieldsLogger(loger *Logger) {
+	loger.mu.Lock()
+	defer loger.mu.Unlock()
+	FieldsLogger = loger
 }
 
 // exported, for logrus to pretty printing for Go values
