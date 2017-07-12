@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"fmt"
 )
 
 func TestQuoting(t *testing.T) {
@@ -73,6 +74,27 @@ func TestEscaping_DefaultQuoteCharacter(t *testing.T) {
 	}{
 		{`ba"r`, `ba\"r`},
 		{`ba'r`, `ba'r`},
+	}
+
+	for _, tc := range testCases {
+		b, _ := tf.Format(WithField("test", tc.value))
+		if !bytes.Contains(b, []byte(tc.expected)) {
+			t.Errorf("escaping expected for %q (result was %q instead of %q)", tc.value, string(b), tc.expected)
+		}
+	}
+}
+
+func TestEscaping_Interface(t *testing.T) {
+	tf := &TextFormatter{DisableColors: true}
+
+	ts := time.Now()
+
+	testCases := []struct {
+		value    interface{}
+		expected string
+	}{
+		{ts, fmt.Sprintf("\"%s\"", ts.String())},
+		{errors.New("error: something went wrong"), "\"error: something went wrong\""},
 	}
 
 	for _, tc := range testCases {
