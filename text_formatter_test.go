@@ -84,13 +84,24 @@ func TestEscaping_DefaultQuoteCharacter(t *testing.T) {
 	}
 }
 
-func TestEscaping_Time(t *testing.T) {
+func TestEscaping_Interface(t *testing.T) {
 	tf := &TextFormatter{DisableColors: true}
+
 	ts := time.Now()
 
-	b, _ := tf.Format(WithField("test", ts))
-	if !bytes.Contains(b, []byte(fmt.Sprintf("\"%s\"", ts.Format("2006-01-02 15:04:05.999999999 -0700 MST")))) {
-		t.Errorf("escaping expected for %q (result was %q)", ts, string(b))
+	testCases := []struct {
+		value    interface{}
+		expected string
+	}{
+		{ts, fmt.Sprintf("\"%s\"", ts.String())},
+		{errors.New("error: something went wrong"), "\"error: something went wrong\""},
+	}
+
+	for _, tc := range testCases {
+		b, _ := tf.Format(WithField("test", tc.value))
+		if !bytes.Contains(b, []byte(tc.expected)) {
+			t.Errorf("escaping expected for %q (result was %q instead of %q)", tc.value, string(b), tc.expected)
+		}
 	}
 }
 
