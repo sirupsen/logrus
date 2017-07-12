@@ -8,5 +8,8 @@ env:
   - GOMAXPROCS=4 GORACE=halt_on_error=1
 install:
   - go get github.com/stretchr/testify/assert
+  - go get github.com/kr/pretty
+  - go get github.com/kr/text
+  - go get github.com/kr/pty
 script:
   - go test -race -v .
