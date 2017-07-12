@@ -42,6 +42,9 @@ type Entry struct {
 
 	// When formatter is called in entry.log(), an Buffer may be set to entry
 	Buffer *bytes.Buffer
+
+	// The argument skip is the number of stack frames
+	Skip int
 }
 
 func NewEntry(logger *Logger) *Entry {
@@ -85,15 +88,23 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return &Entry{Logger: entry.Logger, Data: data}
 }
 
+// Add skip num.
+func (entry *Entry) WithSkip(skip int) *Entry {
+	if skip > entry.Skip {
+		entry.Skip = skip
+	}
+	return entry
+}
+
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
-func (entry Entry) log(level Level, msg string) {
+func (entry *Entry) log(level Level, msg string) {
 	var buffer *bytes.Buffer
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
 
-	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
+	if err := entry.Logger.Hooks.Fire(level, entry); err != nil {
 		entry.Logger.mu.Lock()
 		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
 		entry.Logger.mu.Unlock()
@@ -102,7 +113,7 @@ func (entry Entry) log(level Level, msg string) {
 	buffer.Reset()
 	defer bufferPool.Put(buffer)
 	entry.Buffer = buffer
-	serialized, err := entry.Logger.Formatter.Format(&entry)
+	serialized, err := entry.Logger.Formatter.Format(entry)
 	entry.Buffer = nil
 	if err != nil {
 		entry.Logger.mu.Lock()
@@ -121,100 +132,101 @@ func (entry Entry) log(level Level, msg string) {
 	// panic() to use in Entry#Panic(), we avoid the allocation by checking
 	// directly here.
 	if level <= PanicLevel {
-		panic(&entry)
+		panic(entry)
+	}
+
+	if level <= FatalLevel {
+		Exit(1)
 	}
 }
 
 func (entry *Entry) Debug(args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
-		entry.log(DebugLevel, fmt.Sprint(args...))
+		entry.WithSkip(skip_4).log(DebugLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Print(args ...interface{}) {
-	entry.Info(args...)
+	entry.WithSkip(skip_5).Info(args...)
 }
 
 func (entry *Entry) Info(args ...interface{}) {
 	if entry.Logger.level() >= InfoLevel {
-		entry.log(InfoLevel, fmt.Sprint(args...))
+		entry.WithSkip(skip_4).log(InfoLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Warn(args ...interface{}) {
 	if entry.Logger.level() >= WarnLevel {
-		entry.log(WarnLevel, fmt.Sprint(args...))
+		entry.WithSkip(skip_4).log(WarnLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Warning(args ...interface{}) {
-	entry.Warn(args...)
+	entry.WithSkip(skip_5).Warn(args...)
 }
 
 func (entry *Entry) Error(args ...interface{}) {
 	if entry.Logger.level() >= ErrorLevel {
-		entry.log(ErrorLevel, fmt.Sprint(args...))
+		entry.WithSkip(skip_4).log(ErrorLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
 	if entry.Logger.level() >= FatalLevel {
-		entry.log(FatalLevel, fmt.Sprint(args...))
+		entry.WithSkip(skip_4).log(FatalLevel, fmt.Sprint(args...))
 	}
-	Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
 	if entry.Logger.level() >= PanicLevel {
-		entry.log(PanicLevel, fmt.Sprint(args...))
+		entry.WithSkip(skip_4).log(PanicLevel, fmt.Sprint(args...))
 	}
-	panic(fmt.Sprint(args...))
 }
 
 // Entry Printf family functions
 
 func (entry *Entry) Debugf(format string, args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
-		entry.Debug(fmt.Sprintf(format, args...))
+		entry.WithSkip(skip_5).Debug(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Infof(format string, args ...interface{}) {
 	if entry.Logger.level() >= InfoLevel {
-		entry.Info(fmt.Sprintf(format, args...))
+		entry.WithSkip(skip_5).Info(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Printf(format string, args ...interface{}) {
-	entry.Infof(format, args...)
+	entry.WithSkip(skip_6).Infof(format, args...)
 }
 
 func (entry *Entry) Warnf(format string, args ...interface{}) {
 	if entry.Logger.level() >= WarnLevel {
-		entry.Warn(fmt.Sprintf(format, args...))
+		entry.WithSkip(skip_5).Warn(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Warningf(format string, args ...interface{}) {
-	entry.Warnf(format, args...)
+	entry.WithSkip(skip_6).Warnf(format, args...)
 }
 
 func (entry *Entry) Errorf(format string, args ...interface{}) {
 	if entry.Logger.level() >= ErrorLevel {
-		entry.Error(fmt.Sprintf(format, args...))
+		entry.WithSkip(skip_5).Error(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Fatalf(format string, args ...interface{}) {
 	if entry.Logger.level() >= FatalLevel {
-		entry.Fatal(fmt.Sprintf(format, args...))
+		entry.WithSkip(skip_5).Fatal(fmt.Sprintf(format, args...))
 	}
-	Exit(1)
 }
 
 func (entry *Entry) Panicf(format string, args ...interface{}) {
 	if entry.Logger.level() >= PanicLevel {
-		entry.Panic(fmt.Sprintf(format, args...))
+		entry.WithSkip(skip_5).Panic(fmt.Sprintf(format, args...))
 	}
 }
 
@@ -222,46 +234,45 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 
 func (entry *Entry) Debugln(args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
-		entry.Debug(entry.sprintlnn(args...))
+		entry.WithSkip(skip_5).Debug(entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Infoln(args ...interface{}) {
 	if entry.Logger.level() >= InfoLevel {
-		entry.Info(entry.sprintlnn(args...))
+		entry.WithSkip(skip_5).Info(entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Println(args ...interface{}) {
-	entry.Infoln(args...)
+	entry.WithSkip(skip_6).Infoln(args...)
 }
 
 func (entry *Entry) Warnln(args ...interface{}) {
 	if entry.Logger.level() >= WarnLevel {
-		entry.Warn(entry.sprintlnn(args...))
+		entry.WithSkip(skip_5).Warn(entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Warningln(args ...interface{}) {
-	entry.Warnln(args...)
+	entry.WithSkip(skip_6).Warnln(args...)
 }
 
 func (entry *Entry) Errorln(args ...interface{}) {
 	if entry.Logger.level() >= ErrorLevel {
-		entry.Error(entry.sprintlnn(args...))
+		entry.WithSkip(skip_5).Error(entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Fatalln(args ...interface{}) {
 	if entry.Logger.level() >= FatalLevel {
-		entry.Fatal(entry.sprintlnn(args...))
+		entry.WithSkip(skip_5).Fatal(entry.sprintlnn(args...))
 	}
-	Exit(1)
 }
 
 func (entry *Entry) Panicln(args ...interface{}) {
 	if entry.Logger.level() >= PanicLevel {
-		entry.Panic(entry.sprintlnn(args...))
+		entry.WithSkip(skip_5).Panic(entry.sprintlnn(args...))
 	}
 }
 
