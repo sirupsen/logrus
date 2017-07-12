@@ -112,6 +112,13 @@ func (logger *Logger) WithError(err error) *Entry {
 	return entry.WithError(err)
 }
 
+// Add caller info as single field to the log entry.
+func (logger *Logger) WithCaller(skip int) *Entry {
+	entry := logger.newEntry()
+	defer logger.releaseEntry(entry)
+	return entry.WithCaller(skip + 1)
+}
+
 func (logger *Logger) Debugf(format string, args ...interface{}) {
 	if logger.level() >= DebugLevel {
 		entry := logger.newEntry()
