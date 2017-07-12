@@ -169,27 +169,21 @@ func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interf
 }
 
 func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {
+	var stringVal string
+
 	switch value := value.(type) {
 	case string:
-		if !f.needsQuoting(value) {
-			b.WriteString(value)
-		} else {
-			b.WriteString(f.quoteString(value))
-		}
+		stringVal = value
 	case error:
-		errmsg := value.Error()
-		if !f.needsQuoting(errmsg) {
-			b.WriteString(errmsg)
-		} else {
-			b.WriteString(f.quoteString(errmsg))
-		}
+		stringVal = value.Error()
 	default:
-		s := fmt.Sprint(value)
-		if !f.needsQuoting(s) {
-			b.WriteString(s)
-		} else {
-			b.WriteString(f.quoteString(s))
-		}
+		stringVal = fmt.Sprint(value)
+	}
+
+	if !f.needsQuoting(stringVal) {
+		b.WriteString(stringVal)
+	} else {
+		b.WriteString(f.quoteString(stringVal))
 	}
 }
 
