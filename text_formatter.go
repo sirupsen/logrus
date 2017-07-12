@@ -184,7 +184,12 @@ func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {
 			b.WriteString(f.quoteString(errmsg))
 		}
 	default:
-		fmt.Fprint(b, value)
+		s := fmt.Sprint(value)
+		if !f.needsQuoting(s) {
+			b.WriteString(s)
+		} else {
+			b.WriteString(f.quoteString(s))
+		}
 	}
 }
 

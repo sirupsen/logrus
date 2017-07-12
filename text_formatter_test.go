@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"fmt"
 )
 
 func TestQuoting(t *testing.T) {
@@ -80,6 +81,16 @@ func TestEscaping_DefaultQuoteCharacter(t *testing.T) {
 		if !bytes.Contains(b, []byte(tc.expected)) {
 			t.Errorf("escaping expected for %q (result was %q instead of %q)", tc.value, string(b), tc.expected)
 		}
+	}
+}
+
+func TestEscaping_Time(t *testing.T) {
+	tf := &TextFormatter{DisableColors: true}
+	ts := time.Now()
+
+	b, _ := tf.Format(WithField("test", ts))
+	if !bytes.Contains(b, []byte(fmt.Sprintf("\"%s\"", ts.Format("2006-01-02 15:04:05.999999999 -0700 MST")))) {
+		t.Errorf("escaping expected for %q (result was %q)", ts, string(b))
 	}
 }
 
