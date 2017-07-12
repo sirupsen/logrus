@@ -93,7 +93,6 @@ func TestEscaping_CustomQuoteCharacter(t *testing.T) {
 	}{
 		{`ba"r`, `ba"r`, `'`},
 		{`ba'r`, `ba\'r`, `'`},
-		{`ba^r`, `ba\^r`, `^`},
 		{`ba'r`, `ba'r`, `^`},
 	}
 
