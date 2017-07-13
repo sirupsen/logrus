@@ -2,14 +2,15 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
-	"gopkg.in/gemnasium/logrus-airbrake-hook.v2"
+	testHook "github.com/sirupsen/logrus/hooks/test"
 )
 
 var log = logrus.New()
 
 func init() {
 	log.Formatter = new(logrus.TextFormatter) // default
-	log.Hooks.Add(airbrake.NewHook(123, "xyz", "development"))
+	_, hook := testHook.NewNullLogger()
+	log.Hooks.Add(hook)
 }
 
 func main() {
