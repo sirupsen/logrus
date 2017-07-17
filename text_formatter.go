@@ -34,7 +34,7 @@ var (
 	baseTimestamp   time.Time
 	defaultColorMap = ColorMap{
 		DebugLevel: Gray,
-		InfoLevel:  Blue,
+		InfoLevel:  Cyan,
 		WarnLevel:  Yellow,
 		ErrorLevel: Red,
 		FatalLevel: Red,
