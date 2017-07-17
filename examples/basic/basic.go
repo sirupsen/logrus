@@ -26,7 +26,11 @@ func init() {
 func main() {
 	printExample("Default example")
 
-	// set different color map
+	// set different color
+	textFormatter.SetLevelColor(logrus.WarnLevel, 45)
+	printExample("Different color example")
+
+	// set complete new color map
 	textFormatter.ColorMap = logrus.ColorMap{
 		logrus.DebugLevel: logrus.Cyan,
 		logrus.InfoLevel: logrus.Gray,
@@ -36,7 +40,7 @@ func main() {
 		logrus.PanicLevel: logrus.Red,
 	}
 
-	printExample("Different color example")
+	printExample("Different color map example")
 
 	printErrorExample()
 }

@@ -9,15 +9,10 @@ import (
 	"time"
 )
 
-// NoColor: reset; clears all colors and styles (to white on black)
-// Red: set foreground color to red
-// Green: set foreground color to green
-// Yellow: set foreground color to yellow
-// Blue: set foreground color to blue
-// Magenta: set foreground color to magenta
-// Cyan: set foreground color to cyan
-// Gray: set foreground color to gray
-// Grey: set foreground color to gray (UK)
+// Basic text colors
+//
+// Note: The color support depends on the used terminal.
+// See "http://misc.flogisoft.com/bash/tip_colors_and_formatting#colors" for more information about terminal formatting
 const (
 	NoColor = uint8(0)
 	Red     = uint8(31)
@@ -147,6 +142,11 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
+// SetLevelColor sets a color to a log level in the ColorMap
+func (f *TextFormatter) SetLevelColor(l Level, c uint8) {
+	f.ColorMap[l] = c
+}
+
 func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestampFormat string) {
 	levelColor := f.getLevelColor(entry.Level)
 	levelText := strings.ToUpper(entry.Level.String())[0:4]
@@ -165,8 +165,8 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	}
 }
 
-func (f *TextFormatter) getLevelColor(level Level) uint8 {
-	if val, ok := f.ColorMap[level]; ok {
+func (f *TextFormatter) getLevelColor(l Level) uint8 {
+	if val, ok := f.ColorMap[l]; ok {
 		return val
 	}
 	return Gray
