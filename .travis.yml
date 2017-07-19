@@ -9,4 +9,4 @@ env:
 install:
   - go get github.com/stretchr/testify/assert
 script:
-  - go test -race -v .
+  - go test -race -v ./...
