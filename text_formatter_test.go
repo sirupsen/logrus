@@ -137,7 +137,7 @@ func TestDifferentColorMap(t *testing.T) {
 
 func TestSetLevelColor(t *testing.T) {
 	tf := &TextFormatter{}
-	tf.SetLevelColor(DebugLevel, magenta)
+	tf.SetLevelColor(PanicLevel, magenta)
 
 	b, _ := tf.Format(WithField("test", "test"))
 	if !strings.Contains(string(b), "\x1b[35m") {
