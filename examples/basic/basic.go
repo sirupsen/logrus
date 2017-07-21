@@ -27,20 +27,10 @@ func main() {
 	printExample("Default example")
 
 	// set different color
+	textFormatter.SetLevelColor(logrus.DebugLevel, 36)
+	textFormatter.SetLevelColor(logrus.InfoLevel, 37)
 	textFormatter.SetLevelColor(logrus.WarnLevel, 45)
 	printExample("Different color example")
-
-	// set complete new color map
-	textFormatter.ColorMap = logrus.ColorMap{
-		logrus.DebugLevel: logrus.Cyan,
-		logrus.InfoLevel: logrus.Gray,
-		logrus.WarnLevel: logrus.Yellow,
-		logrus.ErrorLevel: logrus.Magenta,
-		logrus.FatalLevel: logrus.Red,
-		logrus.PanicLevel: logrus.Red,
-	}
-
-	printExample("Different color map example")
 
 	printErrorExample()
 }

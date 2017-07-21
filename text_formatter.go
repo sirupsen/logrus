@@ -11,29 +11,27 @@ import (
 
 // Basic text colors
 //
-// Note: The color support depends on the used terminal.
 // See "http://misc.flogisoft.com/bash/tip_colors_and_formatting#colors" for more information about terminal formatting
 const (
-	NoColor = uint8(0)
-	Red     = uint8(31)
-	Green   = uint8(32)
-	Yellow  = uint8(33)
-	Blue    = uint8(34)
-	Magenta = uint8(35)
-	Cyan    = uint8(36)
-	Gray    = uint8(37)
-	Grey    = Gray
+	noColor = uint8(0)
+	red     = uint8(31)
+	green   = uint8(32)
+	yellow  = uint8(33)
+	blue    = uint8(34)
+	magenta = uint8(35)
+	cyan    = uint8(36)
+	gray    = uint8(37)
 )
 
 var (
 	baseTimestamp   time.Time
-	defaultColorMap = ColorMap{
-		DebugLevel: Gray,
-		InfoLevel:  Cyan,
-		WarnLevel:  Yellow,
-		ErrorLevel: Red,
-		FatalLevel: Red,
-		PanicLevel: Red,
+	defaultColorMap = colorMap{
+		DebugLevel: gray,
+		InfoLevel:  cyan,
+		WarnLevel:  yellow,
+		ErrorLevel: red,
+		FatalLevel: red,
+		PanicLevel: red,
 	}
 )
 
@@ -73,7 +71,7 @@ type TextFormatter struct {
 	QuoteCharacter string
 
 	// ColorMap can be set to override the default color map
-	ColorMap ColorMap
+	colorMap colorMap
 
 	// Whether the logger's out is to a terminal
 	isTerminal bool
@@ -82,14 +80,14 @@ type TextFormatter struct {
 }
 
 // ColorMap maps levels to colors
-type ColorMap map[Level]uint8
+type colorMap map[Level]uint8
 
 func (f *TextFormatter) init(entry *Entry) {
 	if len(f.QuoteCharacter) == 0 {
 		f.QuoteCharacter = "\""
 	}
-	if f.ColorMap == nil {
-		f.ColorMap = defaultColorMap
+	if f.colorMap == nil {
+		f.colorMap = defaultColorMap
 	}
 	if entry.Logger != nil {
 		f.isTerminal = IsTerminal(entry.Logger.Out)
@@ -144,7 +142,10 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 // SetLevelColor sets a color to a log level in the ColorMap
 func (f *TextFormatter) SetLevelColor(l Level, c uint8) {
-	f.ColorMap[l] = c
+	if f.colorMap == nil {
+		f.colorMap = defaultColorMap
+	}
+	f.colorMap[l] = c
 }
 
 func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestampFormat string) {
@@ -166,10 +167,10 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 }
 
 func (f *TextFormatter) getLevelColor(l Level) uint8 {
-	if val, ok := f.ColorMap[l]; ok {
+	if val, ok := f.colorMap[l]; ok {
 		return val
 	}
-	return Gray
+	return gray
 }
 
 func (f *TextFormatter) needsQuoting(text string) bool {
