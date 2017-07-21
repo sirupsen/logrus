@@ -118,23 +118,6 @@ func TestDisableTimestampWithColoredOutput(t *testing.T) {
 	}
 }
 
-func TestDifferentColorMap(t *testing.T) {
-	tf := &TextFormatter{}
-	tf.colorMap = colorMap{
-		DebugLevel: magenta,
-		InfoLevel: magenta,
-		WarnLevel: magenta,
-		ErrorLevel: magenta,
-		FatalLevel: magenta,
-		PanicLevel: magenta,
-	}
-
-	b, _ := tf.Format(WithField("test", "test"))
-	if !strings.Contains(string(b), "\x1b[35m") {
-		t.Error("Expected magenta color setting")
-	}
-}
-
 func TestSetLevelColor(t *testing.T) {
 	tf := &TextFormatter{}
 
