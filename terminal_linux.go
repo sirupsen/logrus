@@ -11,4 +11,4 @@ import "golang.org/x/sys/unix"
 
 const ioctlReadTermios = unix.TCGETS
 
-type Termios syscall.Termios
+type Termios unix.Termios
