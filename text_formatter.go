@@ -154,7 +154,7 @@ func (f *TextFormatter) needsQuoting(text string) bool {
 }
 
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interface{}) {
-	if b.String() != "" {
+	if b.Len() > 0 {
 		b.WriteByte(' ')
 	}
 	b.WriteString(key)
