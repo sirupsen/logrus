@@ -9,5 +9,7 @@ env:
 install:
   - go get github.com/stretchr/testify/assert
   - go get gopkg.in/gemnasium/logrus-airbrake-hook.v2
+  - go get golang.org/x/sys/unix
+  - go get golang.org/x/sys/windows
 script:
   - go test -race -v ./...
