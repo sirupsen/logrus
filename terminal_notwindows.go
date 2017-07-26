@@ -3,7 +3,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build linux darwin freebsd openbsd netbsd dragonfly
+// +build linux darwin freebsd openbsd netbsd dragonfly nacl
 // +build !appengine
 
 package logrus
