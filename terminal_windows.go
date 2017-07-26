@@ -15,11 +15,12 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
-var kernel32 = syscall.NewLazyDLL("kernel32.dll")
+var kernel32 = windows.NewLazyDLL("kernel32.dll")
 
 var (
 	procGetConsoleMode = kernel32.NewProc("GetConsoleMode")
@@ -41,7 +42,7 @@ func getVersion() (float64, error) {
 	if err != nil {
 		return -1, err
 	}
-	
+
 	// The output should be like "Microsoft Windows [Version XX.X.XXXXXX]"
 	version := strings.Replace(stdout.String(), "\n", "", -1)
 	version = strings.Replace(version, "\r\n", "", -1)
@@ -64,7 +65,7 @@ func init() {
 	// Activate Virtual Processing for Windows CMD
 	// Info: https://msdn.microsoft.com/en-us/library/windows/desktop/ms686033(v=vs.85).aspx
 	if ver >= 10 {
-		handle := syscall.Handle(os.Stderr.Fd())
+		handle := windows.Handle(os.Stderr.Fd())
 		procSetConsoleMode.Call(uintptr(handle), enableProcessedOutput|enableWrapAtEolOutput|enableVirtualTerminalProcessing)
 	}
 }
@@ -74,7 +75,7 @@ func IsTerminal(f io.Writer) bool {
 	switch v := f.(type) {
 	case *os.File:
 		var st uint32
-		r, _, e := syscall.Syscall(procGetConsoleMode.Addr(), 2, uintptr(v.Fd()), uintptr(unsafe.Pointer(&st)), 0)
+		r, _, e := windows.Syscall(procGetConsoleMode.Addr(), 2, uintptr(v.Fd()), uintptr(unsafe.Pointer(&st)), 0)
 		return r != 0 && e == 0
 	default:
 		return false
