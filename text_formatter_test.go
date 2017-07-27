@@ -28,6 +28,51 @@ func TestFormatting(t *testing.T) {
 	}
 }
 
+func TestColoredStringFormatting(t *testing.T) {
+	tf := &TextFormatter{ForceColors: true}
+
+	testCases := []struct {
+		message  string
+		expected string
+	}{
+		{"hello", "\x1b[31mPANI\x1b[0m[-9223372036] hello                                        \n"},
+		{"", "\x1b[31mPANI\x1b[0m[-9223372036]                                              \n"},
+	}
+
+	for _, tc := range testCases {
+		e := &Entry{Message: tc.message}
+		b, _ := tf.Format(e)
+
+		if string(b) != tc.expected {
+			t.Errorf("formatting expected for %q (result was %q instead of %q)", tc.message, string(b), tc.expected)
+		}
+	}
+}
+
+func TestEmptyStringFormatting(t *testing.T) {
+	tf := &TextFormatter{
+		ForceColors:          true,
+		DisableEmptyMessages: true,
+	}
+
+	testCases := []struct {
+		message  string
+		expected string
+	}{
+		{"hello", "\x1b[31mPANI\x1b[0m[-9223372036] hello                                        \n"},
+		{"", "\x1b[31mPANI\x1b[0m[-9223372036]\n"},
+	}
+
+	for _, tc := range testCases {
+		e := &Entry{Message: tc.message}
+		b, _ := tf.Format(e)
+
+		if string(b) != tc.expected {
+			t.Errorf("formatting expected for %q (result was %q instead of %q)", tc.message, string(b), tc.expected)
+		}
+	}
+}
+
 func TestQuoting(t *testing.T) {
 	tf := &TextFormatter{DisableColors: true}
 

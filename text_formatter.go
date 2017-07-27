@@ -56,12 +56,22 @@ type TextFormatter struct {
 	// Whether the logger's out is to a terminal
 	isTerminal bool
 
+	// Format the message a particular way. The default is ' %-44s '.
+	MessageFormat string
+
+	// Disable logging empty messages. If set to true empty messages will not be
+	// printed in the log statement
+	DisableEmptyMessages bool
+
 	sync.Once
 }
 
 func (f *TextFormatter) init(entry *Entry) {
 	if entry.Logger != nil {
 		f.isTerminal = IsTerminal(entry.Logger.Out)
+	}
+	if f.MessageFormat == "" {
+		f.MessageFormat = " %-44s "
 	}
 }
 
@@ -127,12 +137,17 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	levelText := strings.ToUpper(entry.Level.String())[0:4]
 
 	if f.DisableTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m", levelColor, levelText)
 	} else if !f.FullTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Message)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d]", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second))
 	} else {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s]", levelColor, levelText, entry.Time.Format(timestampFormat))
 	}
+
+	if !f.DisableEmptyMessages || entry.Message != "" {
+		fmt.Fprintf(b, f.MessageFormat, entry.Message)
+	}
+
 	for _, k := range keys {
 		v := entry.Data[k]
 		fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=", levelColor, k)
