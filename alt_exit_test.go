@@ -2,7 +2,10 @@ package logrus
 
 import (
 	"io/ioutil"
+	"log"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -16,14 +19,20 @@ func TestRegister(t *testing.T) {
 }
 
 func TestHandler(t *testing.T) {
-	gofile := "/tmp/testprog.go"
+	tempDir, err := ioutil.TempDir("", "test_handler")
+	if err != nil {
+		log.Fatalf("can't create temp dir. %q", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	gofile := filepath.Join(tempDir, "gofile.go")
 	if err := ioutil.WriteFile(gofile, testprog, 0666); err != nil {
 		t.Fatalf("can't create go file. %q", err)
 	}
 
-	outfile := "/tmp/testprog.out"
+	outfile := filepath.Join(tempDir, "outfile.out")
 	arg := time.Now().UTC().String()
-	err := exec.Command("go", "run", gofile, outfile, arg).Run()
+	err = exec.Command("go", "run", gofile, outfile, arg).Run()
 	if err == nil {
 		t.Fatalf("completed normally, should have failed")
 	}
