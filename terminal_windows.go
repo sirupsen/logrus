@@ -15,8 +15,8 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"unsafe"
 
+	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/sys/windows"
 )
 
@@ -74,9 +74,7 @@ func init() {
 func IsTerminal(f io.Writer) bool {
 	switch v := f.(type) {
 	case *os.File:
-		var st uint32
-		r, _, e := windows.Syscall(procGetConsoleMode.Addr(), 2, uintptr(v.Fd()), uintptr(unsafe.Pointer(&st)), 0)
-		return r != 0 && e == 0
+		return terminal.IsTerminal(int(v.Fd()))
 	default:
 		return false
 	}
