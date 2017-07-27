@@ -11,14 +11,14 @@ func TestRegister(t *testing.T) {
 	current := len(handlers)
 	RegisterExitHandler(func() {})
 	if len(handlers) != current+1 {
-		t.Fatalf("can't add handler")
+		t.Fatalf("expected %d handlers, got %d", current+1, len(handlers))
 	}
 }
 
 func TestHandler(t *testing.T) {
 	gofile := "/tmp/testprog.go"
 	if err := ioutil.WriteFile(gofile, testprog, 0666); err != nil {
-		t.Fatalf("can't create go file")
+		t.Fatalf("can't create go file. %q", err)
 	}
 
 	outfile := "/tmp/testprog.out"
@@ -30,11 +30,11 @@ func TestHandler(t *testing.T) {
 
 	data, err := ioutil.ReadFile(outfile)
 	if err != nil {
-		t.Fatalf("can't read output file %s", outfile)
+		t.Fatalf("can't read output file %s. %q", outfile, err)
 	}
 
 	if string(data) != arg {
-		t.Fatalf("bad data")
+		t.Fatalf("bad data. Expected %q, got %q", data, arg)
 	}
 }
 
