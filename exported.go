@@ -39,14 +39,14 @@ func SetReportCaller(include bool) {
 func SetLevel(level Level) {
 	std.mu.Lock()
 	defer std.mu.Unlock()
-	std.Level = level
+	std.SetLevel(level)
 }
 
 // GetLevel returns the standard logger level.
 func GetLevel() Level {
 	std.mu.Lock()
 	defer std.mu.Unlock()
-	return std.Level
+	return std.level()
 }
 
 // AddHook adds a hook to the standard logger hooks.
