@@ -1,8 +1,6 @@
 package logrus
 
-import (
-	"time"
-)
+import "time"
 
 // DefaultTimestampFormat is YYYY-mm-DDTHH:MM:SS-TZ
 const DefaultTimestampFormat = time.RFC3339
