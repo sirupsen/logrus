@@ -113,7 +113,7 @@ func TestReportCallerHelperDirect(t *testing.T) {
 
 	assert.Equal(t, "direct", fields["msg"])
 	assert.Equal(t, "info", fields["level"])
-	assert.Equal(t, "github.com/dclendenan/logrus.logSomething", fields["func"])
+	assert.Regexp(t, "github.com/.*/logrus.logSomething", fields["func"])
 }
 
 // TestReportCallerHelperDirect - verify reference when logging from a function called via pointer
@@ -123,7 +123,7 @@ func TestReportCallerHelperViaPointer(t *testing.T) {
 
 	assert.Equal(t, "via pointer", fields["msg"])
 	assert.Equal(t, "info", fields["level"])
-	assert.Equal(t, "github.com/dclendenan/logrus.logSomething", fields["func"])
+	assert.Regexp(t, "github.com/.*/logrus.logSomething", fields["func"])
 }
 
 func TestPrint(t *testing.T) {
