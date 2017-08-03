@@ -66,6 +66,8 @@ To ensure this behaviour even if a TTY is attached, set your formatter as follow
 	})
 ```
 
+#### Logging Method Name
+
 If you wish to add the calling method as a field, instruct the logger via:
 ```go
 log.SetReportCaller(true)
