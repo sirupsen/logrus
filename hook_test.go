@@ -137,6 +137,8 @@ func TestAddHookRace(t *testing.T) {
 		}()
 		wg.Wait()
 	}, func(fields Fields) {
-		assert.Equal(t, hook.Fired, true)
+		// the line may have been logged
+		// before the hook was added, so we can't
+		// actually assert on the hook
 	})
 }
