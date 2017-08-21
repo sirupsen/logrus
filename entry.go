@@ -43,6 +43,9 @@ type Entry struct {
 
 	// When formatter is called in entry.log(), an Buffer may be set to entry
 	Buffer *bytes.Buffer
+
+	// Caller frames is the number of frames to skip to obtain the details of the original caller
+	callerFrames int
 }
 
 func NewEntry(logger *Logger) *Entry {
@@ -51,6 +54,21 @@ func NewEntry(logger *Logger) *Entry {
 		// Default is three fields, give a little extra room
 		Data: make(Fields, 5),
 	}
+}
+
+// CallerFrames returns the number of frames to skip to obtain the caller info
+func (entry *Entry) CallerFrames() int {
+	return entry.callerFrames
+}
+
+// Resets caller frames state to 0
+func (entry *Entry) resetCallerFrames() {
+	entry.callerFrames = 0
+}
+
+// Adds the specified frames to existing caller frames count
+func (entry *Entry) addCallerFrames(frames int) {
+	entry.callerFrames += frames
 }
 
 // Returns the string representation from the reader and ultimately the
@@ -93,6 +111,7 @@ func (entry Entry) log(level Level, msg string) {
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
+	entry.addCallerFrames(3) // add 1 for this frame, 1 for Hooks.Fire below, and 1 for the Hook.Fire method
 
 	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
 		entry.Logger.mu.Lock()
@@ -128,38 +147,52 @@ func (entry Entry) log(level Level, msg string) {
 
 func (entry *Entry) Debug(args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.log(DebugLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Print(args ...interface{}) {
+	entry.addCallerFrames(1) // add 1 for this frame
+	defer entry.resetCallerFrames()
 	entry.Info(args...)
 }
 
 func (entry *Entry) Info(args ...interface{}) {
 	if entry.Logger.level() >= InfoLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.log(InfoLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Warn(args ...interface{}) {
 	if entry.Logger.level() >= WarnLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.log(WarnLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Warning(args ...interface{}) {
+	entry.addCallerFrames(1) // add 1 for this frame
+	defer entry.resetCallerFrames()
 	entry.Warn(args...)
 }
 
 func (entry *Entry) Error(args ...interface{}) {
 	if entry.Logger.level() >= ErrorLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.log(ErrorLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
 	if entry.Logger.level() >= FatalLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.log(FatalLevel, fmt.Sprint(args...))
 	}
 	Exit(1)
@@ -167,6 +200,8 @@ func (entry *Entry) Fatal(args ...interface{}) {
 
 func (entry *Entry) Panic(args ...interface{}) {
 	if entry.Logger.level() >= PanicLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.log(PanicLevel, fmt.Sprint(args...))
 	}
 	panic(fmt.Sprint(args...))
@@ -176,38 +211,52 @@ func (entry *Entry) Panic(args ...interface{}) {
 
 func (entry *Entry) Debugf(format string, args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.Debug(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Infof(format string, args ...interface{}) {
 	if entry.Logger.level() >= InfoLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.Info(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Printf(format string, args ...interface{}) {
+	entry.addCallerFrames(1) // add 1 for this frame
+	defer entry.resetCallerFrames()
 	entry.Infof(format, args...)
 }
 
 func (entry *Entry) Warnf(format string, args ...interface{}) {
 	if entry.Logger.level() >= WarnLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.Warn(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Warningf(format string, args ...interface{}) {
+	entry.addCallerFrames(1) // add 1 for this frame
+	defer entry.resetCallerFrames()
 	entry.Warnf(format, args...)
 }
 
 func (entry *Entry) Errorf(format string, args ...interface{}) {
 	if entry.Logger.level() >= ErrorLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.Error(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Fatalf(format string, args ...interface{}) {
 	if entry.Logger.level() >= FatalLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.Fatal(fmt.Sprintf(format, args...))
 	}
 	Exit(1)
@@ -215,6 +264,8 @@ func (entry *Entry) Fatalf(format string, args ...interface{}) {
 
 func (entry *Entry) Panicf(format string, args ...interface{}) {
 	if entry.Logger.level() >= PanicLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.Panic(fmt.Sprintf(format, args...))
 	}
 }
@@ -223,38 +274,52 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 
 func (entry *Entry) Debugln(args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.Debug(entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Infoln(args ...interface{}) {
 	if entry.Logger.level() >= InfoLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.Info(entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Println(args ...interface{}) {
+	entry.addCallerFrames(1) // add 1 for this frame
+	defer entry.resetCallerFrames()
 	entry.Infoln(args...)
 }
 
 func (entry *Entry) Warnln(args ...interface{}) {
 	if entry.Logger.level() >= WarnLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.Warn(entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Warningln(args ...interface{}) {
+	entry.addCallerFrames(1) // add 1 for this frame
+	defer entry.resetCallerFrames()
 	entry.Warnln(args...)
 }
 
 func (entry *Entry) Errorln(args ...interface{}) {
 	if entry.Logger.level() >= ErrorLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.Error(entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Fatalln(args ...interface{}) {
 	if entry.Logger.level() >= FatalLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.Fatal(entry.sprintlnn(args...))
 	}
 	Exit(1)
@@ -262,6 +327,8 @@ func (entry *Entry) Fatalln(args ...interface{}) {
 
 func (entry *Entry) Panicln(args ...interface{}) {
 	if entry.Logger.level() >= PanicLevel {
+		entry.addCallerFrames(1) // add 1 for this frame
+		defer entry.resetCallerFrames()
 		entry.Panic(entry.sprintlnn(args...))
 	}
 }

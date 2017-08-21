@@ -84,6 +84,7 @@ func (logger *Logger) newEntry() *Entry {
 }
 
 func (logger *Logger) releaseEntry(entry *Entry) {
+	entry.resetCallerFrames() // reset frame state on entry
 	logger.entryPool.Put(entry)
 }
 
@@ -115,6 +116,7 @@ func (logger *Logger) WithError(err error) *Entry {
 func (logger *Logger) Debugf(format string, args ...interface{}) {
 	if logger.level() >= DebugLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Debugf(format, args...)
 		logger.releaseEntry(entry)
 	}
@@ -123,6 +125,7 @@ func (logger *Logger) Debugf(format string, args ...interface{}) {
 func (logger *Logger) Infof(format string, args ...interface{}) {
 	if logger.level() >= InfoLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Infof(format, args...)
 		logger.releaseEntry(entry)
 	}
@@ -130,6 +133,7 @@ func (logger *Logger) Infof(format string, args ...interface{}) {
 
 func (logger *Logger) Printf(format string, args ...interface{}) {
 	entry := logger.newEntry()
+	entry.addCallerFrames(1)
 	entry.Printf(format, args...)
 	logger.releaseEntry(entry)
 }
@@ -137,6 +141,7 @@ func (logger *Logger) Printf(format string, args ...interface{}) {
 func (logger *Logger) Warnf(format string, args ...interface{}) {
 	if logger.level() >= WarnLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Warnf(format, args...)
 		logger.releaseEntry(entry)
 	}
@@ -145,6 +150,7 @@ func (logger *Logger) Warnf(format string, args ...interface{}) {
 func (logger *Logger) Warningf(format string, args ...interface{}) {
 	if logger.level() >= WarnLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Warnf(format, args...)
 		logger.releaseEntry(entry)
 	}
@@ -153,6 +159,7 @@ func (logger *Logger) Warningf(format string, args ...interface{}) {
 func (logger *Logger) Errorf(format string, args ...interface{}) {
 	if logger.level() >= ErrorLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Errorf(format, args...)
 		logger.releaseEntry(entry)
 	}
@@ -161,6 +168,7 @@ func (logger *Logger) Errorf(format string, args ...interface{}) {
 func (logger *Logger) Fatalf(format string, args ...interface{}) {
 	if logger.level() >= FatalLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Fatalf(format, args...)
 		logger.releaseEntry(entry)
 	}
@@ -170,6 +178,7 @@ func (logger *Logger) Fatalf(format string, args ...interface{}) {
 func (logger *Logger) Panicf(format string, args ...interface{}) {
 	if logger.level() >= PanicLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Panicf(format, args...)
 		logger.releaseEntry(entry)
 	}
@@ -178,6 +187,7 @@ func (logger *Logger) Panicf(format string, args ...interface{}) {
 func (logger *Logger) Debug(args ...interface{}) {
 	if logger.level() >= DebugLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Debug(args...)
 		logger.releaseEntry(entry)
 	}
@@ -186,6 +196,7 @@ func (logger *Logger) Debug(args ...interface{}) {
 func (logger *Logger) Info(args ...interface{}) {
 	if logger.level() >= InfoLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Info(args...)
 		logger.releaseEntry(entry)
 	}
@@ -193,6 +204,7 @@ func (logger *Logger) Info(args ...interface{}) {
 
 func (logger *Logger) Print(args ...interface{}) {
 	entry := logger.newEntry()
+	entry.addCallerFrames(1)
 	entry.Info(args...)
 	logger.releaseEntry(entry)
 }
@@ -200,6 +212,7 @@ func (logger *Logger) Print(args ...interface{}) {
 func (logger *Logger) Warn(args ...interface{}) {
 	if logger.level() >= WarnLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Warn(args...)
 		logger.releaseEntry(entry)
 	}
@@ -208,6 +221,7 @@ func (logger *Logger) Warn(args ...interface{}) {
 func (logger *Logger) Warning(args ...interface{}) {
 	if logger.level() >= WarnLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Warn(args...)
 		logger.releaseEntry(entry)
 	}
@@ -216,6 +230,7 @@ func (logger *Logger) Warning(args ...interface{}) {
 func (logger *Logger) Error(args ...interface{}) {
 	if logger.level() >= ErrorLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Error(args...)
 		logger.releaseEntry(entry)
 	}
@@ -224,6 +239,7 @@ func (logger *Logger) Error(args ...interface{}) {
 func (logger *Logger) Fatal(args ...interface{}) {
 	if logger.level() >= FatalLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Fatal(args...)
 		logger.releaseEntry(entry)
 	}
@@ -233,6 +249,7 @@ func (logger *Logger) Fatal(args ...interface{}) {
 func (logger *Logger) Panic(args ...interface{}) {
 	if logger.level() >= PanicLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Panic(args...)
 		logger.releaseEntry(entry)
 	}
@@ -241,6 +258,7 @@ func (logger *Logger) Panic(args ...interface{}) {
 func (logger *Logger) Debugln(args ...interface{}) {
 	if logger.level() >= DebugLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Debugln(args...)
 		logger.releaseEntry(entry)
 	}
@@ -249,6 +267,7 @@ func (logger *Logger) Debugln(args ...interface{}) {
 func (logger *Logger) Infoln(args ...interface{}) {
 	if logger.level() >= InfoLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Infoln(args...)
 		logger.releaseEntry(entry)
 	}
@@ -256,6 +275,7 @@ func (logger *Logger) Infoln(args ...interface{}) {
 
 func (logger *Logger) Println(args ...interface{}) {
 	entry := logger.newEntry()
+	entry.addCallerFrames(1)
 	entry.Println(args...)
 	logger.releaseEntry(entry)
 }
@@ -263,6 +283,7 @@ func (logger *Logger) Println(args ...interface{}) {
 func (logger *Logger) Warnln(args ...interface{}) {
 	if logger.level() >= WarnLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Warnln(args...)
 		logger.releaseEntry(entry)
 	}
@@ -271,6 +292,7 @@ func (logger *Logger) Warnln(args ...interface{}) {
 func (logger *Logger) Warningln(args ...interface{}) {
 	if logger.level() >= WarnLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Warnln(args...)
 		logger.releaseEntry(entry)
 	}
@@ -279,6 +301,7 @@ func (logger *Logger) Warningln(args ...interface{}) {
 func (logger *Logger) Errorln(args ...interface{}) {
 	if logger.level() >= ErrorLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Errorln(args...)
 		logger.releaseEntry(entry)
 	}
@@ -287,6 +310,7 @@ func (logger *Logger) Errorln(args ...interface{}) {
 func (logger *Logger) Fatalln(args ...interface{}) {
 	if logger.level() >= FatalLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Fatalln(args...)
 		logger.releaseEntry(entry)
 	}
@@ -296,6 +320,7 @@ func (logger *Logger) Fatalln(args ...interface{}) {
 func (logger *Logger) Panicln(args ...interface{}) {
 	if logger.level() >= PanicLevel {
 		entry := logger.newEntry()
+		entry.addCallerFrames(1)
 		entry.Panicln(args...)
 		logger.releaseEntry(entry)
 	}
@@ -314,4 +339,221 @@ func (logger *Logger) level() Level {
 
 func (logger *Logger) SetLevel(level Level) {
 	atomic.StoreUint32((*uint32)(&logger.Level), uint32(level))
+}
+
+
+
+// These methods contain a field for passing caller frames
+
+func (logger *Logger) fDebugf(frames int, format string, args ...interface{}) {
+	if logger.level() >= DebugLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Debugf(format, args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fInfof(frames int, format string, args ...interface{}) {
+	if logger.level() >= InfoLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Infof(format, args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fPrintf(frames int, format string, args ...interface{}) {
+	entry := logger.newEntry()
+	entry.addCallerFrames(frames + 1)
+	entry.Printf(format, args...)
+	logger.releaseEntry(entry)
+}
+
+func (logger *Logger) fWarnf(frames int, format string, args ...interface{}) {
+	if logger.level() >= WarnLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Warnf(format, args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fWarningf(frames int, format string, args ...interface{}) {
+	if logger.level() >= WarnLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Warnf(format, args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fErrorf(frames int, format string, args ...interface{}) {
+	if logger.level() >= ErrorLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Errorf(format, args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fFatalf(frames int, format string, args ...interface{}) {
+	if logger.level() >= FatalLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Fatalf(format, args...)
+		logger.releaseEntry(entry)
+	}
+	Exit(1)
+}
+
+func (logger *Logger) fPanicf(frames int, format string, args ...interface{}) {
+	if logger.level() >= PanicLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Panicf(format, args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fDebug(frames int, args ...interface{}) {
+	if logger.level() >= DebugLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Debug(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fInfo(frames int, args ...interface{}) {
+	if logger.level() >= InfoLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Info(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fPrint(frames int, args ...interface{}) {
+	entry := logger.newEntry()
+	entry.addCallerFrames(frames + 1)
+	entry.Info(args...)
+	logger.releaseEntry(entry)
+}
+
+func (logger *Logger) fWarn(frames int, args ...interface{}) {
+	if logger.level() >= WarnLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Warn(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fWarning(frames int, args ...interface{}) {
+	if logger.level() >= WarnLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Warn(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fError(frames int, args ...interface{}) {
+	if logger.level() >= ErrorLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Error(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fFatal(frames int, args ...interface{}) {
+	if logger.level() >= FatalLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Fatal(args...)
+		logger.releaseEntry(entry)
+	}
+	Exit(1)
+}
+
+func (logger *Logger) fPanic(frames int, args ...interface{}) {
+	if logger.level() >= PanicLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Panic(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fDebugln(frames int, args ...interface{}) {
+	if logger.level() >= DebugLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Debugln(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fInfoln(frames int, args ...interface{}) {
+	if logger.level() >= InfoLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Infoln(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fPrintln(frames int, args ...interface{}) {
+	entry := logger.newEntry()
+	entry.addCallerFrames(frames + 1)
+	entry.Println(args...)
+	logger.releaseEntry(entry)
+}
+
+func (logger *Logger) fWarnln(frames int, args ...interface{}) {
+	if logger.level() >= WarnLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Warnln(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fWarningln(frames int, args ...interface{}) {
+	if logger.level() >= WarnLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Warnln(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fErrorln(frames int, args ...interface{}) {
+	if logger.level() >= ErrorLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Errorln(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) fFatalln(frames int, args ...interface{}) {
+	if logger.level() >= FatalLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Fatalln(args...)
+		logger.releaseEntry(entry)
+	}
+	Exit(1)
+}
+
+func (logger *Logger) fPanicln(frames int, args ...interface{}) {
+	if logger.level() >= PanicLevel {
+		entry := logger.newEntry()
+		entry.addCallerFrames(frames + 1)
+		entry.Panicln(args...)
+		logger.releaseEntry(entry)
+	}
 }
