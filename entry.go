@@ -69,12 +69,7 @@ func (entry *Entry) String() (string, error) {
 
 // Add caller info as single field (using the key defined in CallerKey) to the Entry.
 func (entry *Entry) WithCaller(skip int) *Entry {
-	var (
-		file string
-		line int
-		ok   bool
-	)
-	_, file, line, ok = runtime.Caller(skip)
+	_, file, line, ok := runtime.Caller(skip)
 	if !ok {
 		file = "???"
 		line = 0

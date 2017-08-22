@@ -20,23 +20,25 @@ func TestEntryWithCaller(t *testing.T) {
 	logger.Out = &bytes.Buffer{}
 	entry := NewEntry(logger)
 
-	var (
-		file string
-		line int
-		ok   bool
-	)
 	calldepth := 1
-	_, file, line, ok = runtime.Caller(calldepth)
+	_, file, line, ok := runtime.Caller(calldepth)
 	if !ok {
 		file = "???"
 		line = 0
 	}
 	expected := fmt.Sprintf("%s:%d", file, line)
+	assert.Equal(expected, entry.WithCaller(calldepth + 1).Data["caller"])
 
+	calldepth = 1000
+	_, file, line, ok = runtime.Caller(calldepth)
+	if !ok {
+		file = "???"
+		line = 0
+	}
+	expected = fmt.Sprintf("%s:%d", file, line)
 	assert.Equal(expected, entry.WithCaller(calldepth + 1).Data["caller"])
 
 	CallerKey = "caller_info"
-
 	assert.Equal(expected, entry.WithCaller(calldepth + 1).Data["caller_info"])
 }
 
