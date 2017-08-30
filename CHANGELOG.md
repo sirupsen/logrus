@@ -1,6 +1,7 @@
 # 1.0.4
 
-* feature: Add optional logging of caller method
+* Add optional logging of caller method
+
 # 1.0.3
 
 * Replace example files with testable examples

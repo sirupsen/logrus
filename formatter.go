@@ -1,15 +1,9 @@
 package logrus
 
-import (
-	"time"
-)
+import "time"
 
-<<<<<<< HEAD
-// DefaultTimestampFormat is YYYY-mm-DDTHH:MM:SS-TZ
-const DefaultTimestampFormat = time.RFC3339
-=======
+// defaultTimestampFormat is YYYY-mm-DDTHH:MM:SS-TZ
 const defaultTimestampFormat = time.RFC3339
->>>>>>> 89742aefa4b206dcf400792f3bd35b542998eb3b
 
 // The Formatter interface is used to implement a custom Formatter. It takes an
 // `Entry`. It exposes all the fields, including the default ones:
