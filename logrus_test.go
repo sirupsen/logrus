@@ -59,7 +59,9 @@ func LogAndAssertText(t *testing.T, log func(*Logger), assertions func(fields ma
 
 // TestReportCaller verifies that when ReportCaller is set, the 'func' field
 // is added, and when it is unset it is not set or modified
-func TestReportCaller(t *testing.T) {
+// Verify that functions within the Logrus package aren't considered when
+// discovering the caller.
+func TestReportCallerWhenConfigured(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.ReportCaller = false
 		log.Print("testNoCaller")
@@ -77,6 +79,51 @@ func TestReportCaller(t *testing.T) {
 		assert.Equal(t, "info", fields["level"])
 		assert.Equal(t, "testing.tRunner", fields["func"])
 	})
+}
+
+func logSomething(t *testing.T, message string) Fields {
+	var buffer bytes.Buffer
+	var fields Fields
+
+	logger := New()
+	logger.Out = &buffer
+	logger.Formatter = new(JSONFormatter)
+	logger.ReportCaller = true
+
+	// override the filter to allow reporting of functions within the logrus package
+	LogrusPackage = "bogusForTesting"
+
+	entry := logger.WithFields(Fields{
+		"foo": "bar",
+	})
+
+	entry.Info(message)
+
+	err := json.Unmarshal(buffer.Bytes(), &fields)
+	assert.Nil(t, err)
+
+	// now clear the override so as not to mess with other usage
+	LogrusPackage = ""
+	return fields
+}
+
+// TestReportCallerHelperDirect - verify reference when logging from a regular function
+func TestReportCallerHelperDirect(t *testing.T) {
+	fields := logSomething(t, "direct")
+
+	assert.Equal(t, "direct", fields["msg"])
+	assert.Equal(t, "info", fields["level"])
+	assert.Regexp(t, "github.com/.*/logrus.logSomething", fields["func"])
+}
+
+// TestReportCallerHelperDirect - verify reference when logging from a function called via pointer
+func TestReportCallerHelperViaPointer(t *testing.T) {
+	fptr := logSomething
+	fields := fptr(t, "via pointer")
+
+	assert.Equal(t, "via pointer", fields["msg"])
+	assert.Equal(t, "info", fields["level"])
+	assert.Regexp(t, "github.com/.*/logrus.logSomething", fields["func"])
 }
 
 func TestPrint(t *testing.T) {

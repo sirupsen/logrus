@@ -40,12 +40,10 @@ type JSONFormatter struct {
 	//   	FieldMap: FieldMap{
 	// 		 FieldKeyTime:  "@timestamp",
 	// 		 FieldKeyLevel: "@level",
-<<<<<<< HEAD
 	// 		 FieldKeyMsg:   "@message",
 	// 		 FieldKeyFunc:  "@caller",
-=======
-	// 		 FieldKeyMsg: "@message",
->>>>>>> 89742aefa4b206dcf400792f3bd35b542998eb3b
+	// 		 FieldKeyMsg:   "@message",
+	// 		 FieldKeyFunc:  "@caller",
 	//    },
 	// }
 	FieldMap FieldMap
