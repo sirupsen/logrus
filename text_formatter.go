@@ -70,10 +70,6 @@ type TextFormatter struct {
 	// QuoteEmptyFields will wrap empty fields in quotes if true
 	QuoteEmptyFields bool
 
-	// QuoteCharacter can be set to the override the default quoting character "
-	// with something else. For example: ', or `.
-	QuoteCharacter string
-
 	// ColorMap can be set to override the default color map
 	colorMap colorMap
 
@@ -87,9 +83,6 @@ type TextFormatter struct {
 type colorMap map[Level]uint8
 
 func (f *TextFormatter) init(entry *Entry) {
-	if len(f.QuoteCharacter) == 0 {
-		f.QuoteCharacter = "\""
-	}
 	if f.colorMap == nil {
 		f.colorMap = defaultColorMap
 	}
