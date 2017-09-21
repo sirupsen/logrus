@@ -1,8 +1,13 @@
 package logrus
 
-import "time"
+import (
+	"runtime"
+	"time"
+)
 
 const defaultTimestampFormat = time.RFC3339
+
+var EndOfLine string
 
 // The Formatter interface is used to implement a custom Formatter. It takes an
 // `Entry`. It exposes all the fields, including the default ones:
@@ -16,6 +21,14 @@ const defaultTimestampFormat = time.RFC3339
 // logged to `logger.Out`.
 type Formatter interface {
 	Format(*Entry) ([]byte, error)
+}
+
+func init() {
+	if runtime.GOOS == "windows" {
+		EndOfLine = "\r\n"
+	} else {
+		EndOfLine = "\n"
+	}
 }
 
 // This is to not silently overwrite `time`, `msg` and `level` fields when

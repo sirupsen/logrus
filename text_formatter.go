@@ -120,7 +120,12 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		}
 	}
 
-	b.WriteByte('\n')
+	if len(EndOfLine) == 1 {
+		b.WriteByte(EndOfLine[0])
+	} else {
+		b.WriteString(EndOfLine)
+	}
+
 	return b.Bytes(), nil
 }
 
