@@ -16,7 +16,7 @@ type LogWriter struct {
 	// Hooks for the logger instance. These allow firing events based on logging
 	// levels and log entries. For example, to send errors to an error tracking
 	// service, log to StatsD or dump the core on fatal errors.
-	Hooks LevelHooks
+	Hooks ExternalLevelHooks
 	// All log entries pass through the formatter before logged to Out. The
 	// included formatters are `TextFormatter` and `JSONFormatter` for which
 	// TextFormatter is the default. In development (when a TTY is attached) it
@@ -50,8 +50,8 @@ type LogWriter struct {
 func NewLogger() *LogWriter {
 	return &LogWriter{
 		Out:       os.Stderr,
-		Formatter: new(TextFormatter),
-		Hooks:     make(LevelHooks),
+		Formatter: new(JSONFormatter),
+		Hooks:     make(ExternalLevelHooks),
 		Level:     InfoLevel,
 	}
 }
@@ -66,6 +66,10 @@ func (logger *LogWriter) newEntry() *LogEntry {
 
 func (logger *LogWriter) releaseEntry(entry *LogEntry) {
 	logger.entryPool.Put(entry)
+}
+
+func (logger *LogWriter) SetLevel(level Level) {
+	atomic.StoreUint32((*uint32)(&logger.Level), uint32(level))
 }
 
 func (logger *LogWriter) AsLevel(level Level) *LogEntry {
@@ -96,206 +100,112 @@ func (logger *LogWriter) AsPanic() *LogEntry {
 	return logger.AsLevel(PanicLevel)
 }
 
-func (logger *LogWriter) Debugf(format string, args ...interface{}) {
-	if logger.level() >= DebugLevel {
+func (logger *LogWriter) logf(level Level, format string, args ...interface{}) {
+	logger.log(level, fmt.Sprintf(format, args...))
+}
+
+func (logger *LogWriter) logln(level Level, args ...interface{}) {
+	logger.log(level, sprintlnn(args...))
+}
+
+func (logger *LogWriter) log(level Level, message string) {
+	if logger.level() >= level {
 		entry := logger.newEntry()
-		entry.Debugf(format, args...)
+		entry.log(level, message)
 		logger.releaseEntry(entry)
 	}
+}
+
+func (logger *LogWriter) Debugf(format string, args ...interface{}) {
+	logger.logf(DebugLevel, format, args...)
 }
 
 func (logger *LogWriter) Infof(format string, args ...interface{}) {
-	if logger.level() >= InfoLevel {
-		entry := logger.newEntry()
-		entry.Infof(format, args...)
-		logger.releaseEntry(entry)
-	}
-}
-
-func (logger *LogWriter) Printf(format string, args ...interface{}) {
-	entry := logger.newEntry()
-	entry.Printf(format, args...)
-	logger.releaseEntry(entry)
+	logger.logf(InfoLevel, format, args...)
 }
 
 func (logger *LogWriter) Warnf(format string, args ...interface{}) {
-	if logger.level() >= WarnLevel {
-		entry := logger.newEntry()
-		entry.Warnf(format, args...)
-		logger.releaseEntry(entry)
-	}
+	logger.logf(WarnLevel, format, args...)
 }
 
 func (logger *LogWriter) Warningf(format string, args ...interface{}) {
-	if logger.level() >= WarnLevel {
-		entry := logger.newEntry()
-		entry.Warnf(format, args...)
-		logger.releaseEntry(entry)
-	}
+	logger.Warnf(format, args...)
 }
 
 func (logger *LogWriter) Errorf(format string, args ...interface{}) {
-	if logger.level() >= ErrorLevel {
-		entry := logger.newEntry()
-		entry.Errorf(format, args...)
-		logger.releaseEntry(entry)
-	}
+	logger.logf(ErrorLevel, format, args...)
 }
 
 func (logger *LogWriter) Fatalf(format string, args ...interface{}) {
-	if logger.level() >= FatalLevel {
-		entry := logger.newEntry()
-		entry.Fatalf(format, args...)
-		logger.releaseEntry(entry)
-	}
+	logger.logf(FatalLevel, format, args...)
 	Exit(1)
 }
 
 func (logger *LogWriter) Panicf(format string, args ...interface{}) {
-	if logger.level() >= PanicLevel {
-		entry := logger.newEntry()
-		entry.Panicf(format, args...)
-		logger.releaseEntry(entry)
-	}
+	logger.logf(PanicLevel, format, args...)
+	panic(fmt.Sprint(args...))
 }
 
 func (logger *LogWriter) Debug(args ...interface{}) {
-	if logger.level() >= DebugLevel {
-		entry := logger.newEntry()
-		entry.Debug(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.log(DebugLevel, fmt.Sprint(args...))
 }
 
 func (logger *LogWriter) Info(args ...interface{}) {
-	if logger.level() >= InfoLevel {
-		entry := logger.newEntry()
-		entry.Info(args...)
-		logger.releaseEntry(entry)
-	}
-}
-
-func (logger *LogWriter) Print(args ...interface{}) {
-	entry := logger.newEntry()
-	entry.Info(args...)
-	logger.releaseEntry(entry)
+	logger.log(InfoLevel, fmt.Sprint(args...))
 }
 
 func (logger *LogWriter) Warn(args ...interface{}) {
-	if logger.level() >= WarnLevel {
-		entry := logger.newEntry()
-		entry.Warn(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.log(WarnLevel, fmt.Sprint(args...))
 }
 
 func (logger *LogWriter) Warning(args ...interface{}) {
-	if logger.level() >= WarnLevel {
-		entry := logger.newEntry()
-		entry.Warn(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.Warn(args...)
 }
 
 func (logger *LogWriter) Error(args ...interface{}) {
-	if logger.level() >= ErrorLevel {
-		entry := logger.newEntry()
-		entry.Error(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.log(ErrorLevel, fmt.Sprint(args...))
 }
 
 func (logger *LogWriter) Fatal(args ...interface{}) {
-	if logger.level() >= FatalLevel {
-		entry := logger.newEntry()
-		entry.Fatal(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.log(FatalLevel, fmt.Sprint(args...))
 	Exit(1)
 }
 
 func (logger *LogWriter) Panic(args ...interface{}) {
-	if logger.level() >= PanicLevel {
-		entry := logger.newEntry()
-		entry.Panic(args...)
-		logger.releaseEntry(entry)
-	}
+	msg := fmt.Sprint(args...)
+	logger.log(PanicLevel, msg)
+	panic(msg)
 }
 
 func (logger *LogWriter) Debugln(args ...interface{}) {
-	if logger.level() >= DebugLevel {
-		entry := logger.newEntry()
-		entry.Debugln(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.logln(DebugLevel, args...)
 }
 
 func (logger *LogWriter) Infoln(args ...interface{}) {
-	if logger.level() >= InfoLevel {
-		entry := logger.newEntry()
-		entry.Infoln(args...)
-		logger.releaseEntry(entry)
-	}
-}
-
-func (logger *LogWriter) Println(args ...interface{}) {
-	entry := logger.newEntry()
-	entry.Println(args...)
-	logger.releaseEntry(entry)
+	logger.logln(InfoLevel, args...)
 }
 
 func (logger *LogWriter) Warnln(args ...interface{}) {
-	if logger.level() >= WarnLevel {
-		entry := logger.newEntry()
-		entry.Warnln(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.logln(WarnLevel, args...)
 }
 
 func (logger *LogWriter) Warningln(args ...interface{}) {
-	if logger.level() >= WarnLevel {
-		entry := logger.newEntry()
-		entry.Warnln(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.logln(WarnLevel, args...)
 }
 
 func (logger *LogWriter) Errorln(args ...interface{}) {
-	if logger.level() >= ErrorLevel {
-		entry := logger.newEntry()
-		entry.Errorln(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.logln(ErrorLevel, args...)
 }
 
 func (logger *LogWriter) Fatalln(args ...interface{}) {
-	if logger.level() >= FatalLevel {
-		entry := logger.newEntry()
-		entry.Fatalln(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.logln(FatalLevel, args...)
 	Exit(1)
 }
 
 func (logger *LogWriter) Panicln(args ...interface{}) {
-	if logger.level() >= PanicLevel {
-		entry := logger.newEntry()
-		entry.Panicln(args...)
-		logger.releaseEntry(entry)
-	}
-}
-
-func (logger *LogWriter) WriteF(format string, args ...interface{}) {
-	if !logger.hasDesiredStatus() {
-		fmt.Fprint(os.Stderr, "Unknown log level. Call SetLevel or any of AsXYZ methods before calling Write methods")
-		return
-	}
-	desired := logger.desiredLevel()
-	if desired >= logger.level() {
-		entry := logger.newEntry()
-		entry.log(desired, fmt.Sprintf(format, args...))
-		logger.releaseEntry(entry)
-	}
+	msg := fmt.Sprint(args...)
+	logger.logln(PanicLevel, msg)
+	panic(msg)
 }
 
 //When file is opened with appending mode, it's safe to
@@ -309,32 +219,7 @@ func (logger *LogWriter) level() Level {
 	return Level(atomic.LoadUint32((*uint32)(&logger.Level)))
 }
 
-func (logger *LogWriter) desiredLevel() Level {
-	return Level(atomic.LoadUint32((*uint32)(&logger.asLevel)))
-}
-
-func (logger *LogWriter) setDesiredStatus(set bool) {
-	var status int32
-	if set {
-		status = 1
-	}
-	atomic.StoreInt32(&logger.asLevelStatus, status)
-}
-
-func (logger *LogWriter) hasDesiredStatus() bool {
-	return atomic.LoadInt32(&logger.asLevelStatus) == 1
-}
-
-func (logger *LogWriter) SetLevel(level Level) {
-	atomic.StoreUint32((*uint32)(&logger.Level), uint32(level))
-	logger.setDesiredLevel(level)
-}
-
-func (logger *LogWriter) setDesiredLevel(level Level) {
-	atomic.StoreUint32((*uint32)(&logger.asLevel), uint32(level))
-}
-
-func (logger *LogWriter) AddHook(hook Hook) {
+func (logger *LogWriter) AddHook(hook ExternalHook) {
 	logger.mu.Lock()
 	defer logger.mu.Unlock()
 	logger.Hooks.Add(hook)
