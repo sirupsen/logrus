@@ -1,14 +1,96 @@
 package logrus
 
 import (
-	"testing"
-
 	"bytes"
 	"encoding/json"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
+func logEntryAndAssertJSON(t *testing.T, loggerLevel Level, log func(*LogEntry), assertions func(Fields, *LogEntry)) {
+	t.Helper()
+	var buffer bytes.Buffer
+	var fields Fields
+
+	logger := NewLogger(loggerLevel)
+	logger.SetLevel(loggerLevel)
+	logger.Out = &buffer
+	logger.Formatter = new(JSONFormatter)
+
+	entry := logger.Entry()
+
+	log(entry)
+
+	json.Unmarshal(buffer.Bytes(), &fields)
+
+	assertions(fields, entry)
+}
+
+func TestEntryLogging(t *testing.T) {
+	testCases := []struct {
+		title                 string
+		loggerLevel           Level
+		entryLevel            Level
+		expectedLevelAfterLog Level
+		message               string
+		shouldLog             bool
+	}{
+		{
+			title:                 "entry_with_the_same_level_as_log_level_should_log",
+			loggerLevel:           DebugLevel,
+			entryLevel:            DebugLevel,
+			expectedLevelAfterLog: DebugLevel,
+			message:               "log me",
+			shouldLog:             true,
+		},
+		{
+			title:                 "entry_with_the_level_lower_than_the_log_level_should_log",
+			loggerLevel:           DebugLevel,
+			entryLevel:            InfoLevel,
+			expectedLevelAfterLog: DebugLevel,
+			message:               "log me",
+			shouldLog:             true,
+		},
+		{
+			title:                 "entry_with_the_level_higher_than_the_log_level_should_not_log",
+			loggerLevel:           InfoLevel,
+			entryLevel:            DebugLevel,
+			expectedLevelAfterLog: InfoLevel,
+			message:               "log me",
+			shouldLog:             false,
+		},
+	}
+	assert := assert.New(t)
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			logEntryAndAssertJSON(t, tc.loggerLevel,
+				func(entry *LogEntry) {
+					entry.AsLevel(tc.entryLevel).Write(tc.message)
+				},
+				func(fields Fields, entry *LogEntry) {
+					assert.Equal(tc.expectedLevelAfterLog, entry.Level)
+					assert.Equal(tc.expectedLevelAfterLog, entry.Logger.Level)
+					msg, ok := fields["msg"]
+					if tc.shouldLog {
+						if !ok {
+							t.Error("Failed to retrieve the message. Nothing was logged")
+						}
+						if logged, ok := checkLoggedMessage(tc.message, msg); !ok {
+							t.Errorf("expected %s, received '%v'", tc.message, logged)
+						}
+						return
+					}
+					if ok {
+						t.Errorf("we shouldn't have logged anything but the output was %v", fields)
+					}
+				})
+		})
+	}
+}
+
 func TestEntryInstantiation(t *testing.T) {
-	logger := NewLogger()
+	logger := NewLogger(InfoLevel)
 	buf := &bytes.Buffer{}
 	logger.Out = buf
 
@@ -38,7 +120,7 @@ func TestEntryInstantiation(t *testing.T) {
 		},
 		{
 			title:    "valid_entry_created_by_logger_should_log",
-			entry:    logger.AsDebug(),
+			entry:    logger.Entry(),
 			writable: true,
 			message:  "some cool stuff",
 		},
@@ -73,9 +155,14 @@ func assertLoggedMessage(t *testing.T, expected string, output *bytes.Buffer) {
 	if !ok {
 		t.Error("Failed to retrieve the message. Nothing was logged")
 	}
-	if logged, ok := msg.(string); !ok || logged != expected {
+	if logged, ok := checkLoggedMessage(expected, msg); !ok {
 		t.Errorf("expected %s, received '%v'", expected, logged)
 	}
+}
+
+func checkLoggedMessage(expected string, actual interface{}) (string, bool) {
+	logged, ok := actual.(string)
+	return logged, ok && logged == expected
 }
 
 func inspectJsonOutput(t *testing.T, buffer *bytes.Buffer) Fields {

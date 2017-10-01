@@ -47,12 +47,12 @@ type LogWriter struct {
 //    }
 //
 // It's recommended to make this a global instance called `log`.
-func NewLogger() *LogWriter {
+func NewLogger(level Level) *LogWriter {
 	return &LogWriter{
 		Out:       os.Stderr,
 		Formatter: new(JSONFormatter),
 		Hooks:     make(ExternalLevelHooks),
-		Level:     InfoLevel,
+		Level:     level,
 	}
 }
 
@@ -72,32 +72,8 @@ func (logger *LogWriter) SetLevel(level Level) {
 	atomic.StoreUint32((*uint32)(&logger.Level), uint32(level))
 }
 
-func (logger *LogWriter) AsLevel(level Level) *LogEntry {
+func (logger *LogWriter) Entry() *LogEntry {
 	return logger.newEntry()
-}
-
-func (logger *LogWriter) AsDebug() *LogEntry {
-	return logger.AsLevel(DebugLevel)
-}
-
-func (logger *LogWriter) AsInfo() *LogEntry {
-	return logger.AsLevel(InfoLevel)
-}
-
-func (logger *LogWriter) AsWarning() *LogEntry {
-	return logger.AsLevel(WarnLevel)
-}
-
-func (logger *LogWriter) AsError() *LogEntry {
-	return logger.AsLevel(ErrorLevel)
-}
-
-func (logger *LogWriter) AsFatal() *LogEntry {
-	return logger.AsLevel(FatalLevel)
-}
-
-func (logger *LogWriter) AsPanic() *LogEntry {
-	return logger.AsLevel(PanicLevel)
 }
 
 func (logger *LogWriter) logf(level Level, format string, args ...interface{}) {
