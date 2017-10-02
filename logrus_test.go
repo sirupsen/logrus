@@ -242,6 +242,7 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 }
 
 func TestConvertLevelToString(t *testing.T) {
+	assert.Equal(t, "trace", TraceLevel.String())
 	assert.Equal(t, "debug", DebugLevel.String())
 	assert.Equal(t, "info", InfoLevel.String())
 	assert.Equal(t, "warning", WarnLevel.String())
@@ -306,6 +307,14 @@ func TestParseLevel(t *testing.T) {
 	l, err = ParseLevel("DEBUG")
 	assert.Nil(t, err)
 	assert.Equal(t, DebugLevel, l)
+
+	l, err = ParseLevel("trace")
+	assert.Nil(t, err)
+	assert.Equal(t, TraceLevel, l)
+
+	l, err = ParseLevel("TRACE")
+	assert.Nil(t, err)
+	assert.Equal(t, TraceLevel, l)
 
 	l, err = ParseLevel("invalid")
 	assert.Equal(t, "not a valid logrus Level: \"invalid\"", err.Error())
