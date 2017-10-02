@@ -122,7 +122,7 @@ func Fatal(args ...interface{}) {
 	std.Fatal(args...)
 }
 
-// Tracef logs a message at level Debug on the standard logger.
+// Tracef logs a message at level Trace on the standard logger.
 func Tracef(format string, args ...interface{}) {
 	std.Tracef(format, args...)
 }
@@ -167,7 +167,7 @@ func Fatalf(format string, args ...interface{}) {
 	std.Fatalf(format, args...)
 }
 
-// Traceln logs a message at level Debug on the standard logger.
+// Traceln logs a message at level Trace on the standard logger.
 func Traceln(args ...interface{}) {
 	std.Traceln(args...)
 }
