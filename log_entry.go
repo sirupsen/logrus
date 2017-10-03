@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+type formatMode int
+
+const (
+	formatted formatMode = iota
+	unformatted
+	newLine
+)
+
 // An entry is the final or intermediate Logrus logging entry. It contains all
 // the fields passed with WithField{,s}. It's finally logged when Debug, Info,
 // Warn, Error, Fatal or Panic is called on it. These objects can be reused and
@@ -40,7 +48,16 @@ type LogEntry struct {
 
 func NewLogEntry(logger *LogWriter) *LogEntry {
 	// Default is three fields, give a little extra room
-	return newLogEntry(logger, make(Fields, 5))
+	return NewLogEntryWithFields(logger, make(Fields, 5))
+}
+
+func NewLogEntryWithFields(logger *LogWriter, fields Fields) *LogEntry {
+	return newLogEntry(logger, fields)
+}
+
+func NewLogEntryWithField(logger *LogWriter, key string, value interface{}) *LogEntry {
+	fields := Fields{key: value}
+	return NewLogEntryWithFields(logger, fields)
 }
 
 func newLogEntry(logger *LogWriter, data Fields) *LogEntry {
@@ -87,7 +104,7 @@ func (entry *LogEntry) WithField(key string, value interface{}) *LogEntry {
 
 func (entry *LogEntry) WithFields(fields Fields) *LogEntry {
 	level, ok := entry.getLevel()
-	if !ok || level < entry.Logger.level() {
+	if !ok || level > entry.Logger.level() {
 		return entry
 	}
 	data := make(Fields, len(entry.Data)+len(fields))
@@ -105,18 +122,18 @@ func (entry *LogEntry) WithError(err error) *LogEntry {
 }
 
 func (entry *LogEntry) Writef(format string, args ...interface{}) {
-	entry.write(fmt.Sprintf(format, args...))
+	entry.write(formatted, format, args...)
 }
 
 func (entry *LogEntry) Write(args ...interface{}) {
-	entry.write(fmt.Sprint(args...))
+	entry.write(unformatted, "", args...)
 }
 
 func (entry *LogEntry) Writeln(args ...interface{}) {
-	entry.write(sprintlnn(args...))
+	entry.write(newLine, "", args...)
 }
 
-func (entry *LogEntry) write(message string) {
+func (entry *LogEntry) write(mode formatMode, format string, args ...interface{}) {
 	level, ok := entry.checkLevel()
 	if !ok {
 		return
@@ -124,13 +141,26 @@ func (entry *LogEntry) write(message string) {
 
 	loggerLevel := entry.Logger.level()
 	if loggerLevel >= level {
+		message := constructMessage(mode, format, args...)
 		entry.log(level, message)
 	}
 
 	if loggerLevel != level {
 		//reset the LogEntry's level to the Logger's level value
-		entry.setLevel(entry.Logger.Level)
+		entry.setLevel(loggerLevel)
 	}
+}
+
+func constructMessage(mode formatMode, format string, args ...interface{}) string {
+	switch mode {
+	case formatted:
+		return fmt.Sprintf(format, args...)
+	case unformatted:
+		return fmt.Sprint(args...)
+	case newLine:
+		return sprintlnn(args...)
+	}
+	return fmt.Sprintf(format, args...)
 }
 
 // This function is not declared with a pointer value because otherwise

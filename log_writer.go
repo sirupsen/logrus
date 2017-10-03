@@ -56,10 +56,13 @@ func NewLogger(level Level) *LogWriter {
 	}
 }
 
-func (logger *LogWriter) newEntry() *LogEntry {
+func (logger *LogWriter) newEntry(fields Fields) *LogEntry {
 	entry, ok := logger.entryPool.Get().(*LogEntry)
 	if ok {
 		return entry
+	}
+	if fields != nil {
+		return NewLogEntryWithFields(logger, fields)
 	}
 	return NewLogEntry(logger)
 }
@@ -73,7 +76,16 @@ func (logger *LogWriter) SetLevel(level Level) {
 }
 
 func (logger *LogWriter) Entry() *LogEntry {
-	return logger.newEntry()
+	return logger.newEntry(nil)
+}
+
+func (logger *LogWriter) EntryWithFields(fields Fields) *LogEntry {
+	return logger.newEntry(fields)
+}
+
+func (logger *LogWriter) EntryWithField(key string, value interface{}) *LogEntry {
+	fields := Fields{key: value}
+	return logger.newEntry(fields)
 }
 
 func (logger *LogWriter) logf(level Level, format string, args ...interface{}) {
@@ -86,7 +98,7 @@ func (logger *LogWriter) logln(level Level, args ...interface{}) {
 
 func (logger *LogWriter) log(level Level, message string) {
 	if logger.level() >= level {
-		entry := logger.newEntry()
+		entry := logger.newEntry(nil)
 		entry.log(level, message)
 		logger.releaseEntry(entry)
 	}
