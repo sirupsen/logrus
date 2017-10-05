@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"sync/atomic"
 	"time"
 )
 
@@ -32,12 +31,6 @@ type LogEntry struct {
 	// Level the log entry was logged at: Debug, Info, Warn, Error, Fatal or Panic
 	// This field will be set on entry firing and the value will be equal to the one in Logger struct field.
 	Level Level
-	// This is to address the scenario's in which LogEntry has not been created either
-	// by the Logger or by calling NewLogEntry method. Because Level does not have
-	// an Unknown state, we won't be able to determine what level we should write the logs at
-	// In that case we will log an error to 'Stderr' and move on without logging
-	//1 = level has been set, 0: level has not been set (Unknown)
-	levelStatus int32
 
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
 	Message string
@@ -46,65 +39,98 @@ type LogEntry struct {
 	Buffer *bytes.Buffer
 }
 
+// NewLogEntry creates a new log entry
 func NewLogEntry(logger *LogWriter) *LogEntry {
 	// Default is three fields, give a little extra room
 	return NewLogEntryWithFields(logger, make(Fields, 5))
 }
 
+// NewLogEntryWithFields creates a new log entry and adds a struct of fields to the entry
 func NewLogEntryWithFields(logger *LogWriter, fields Fields) *LogEntry {
 	return newLogEntry(logger, fields)
 }
 
+// NewLogEntryWithField creates a new log entry and adds a field to the entry
+//If you want multiple fields, use `NewLogEntryWithFields`
 func NewLogEntryWithField(logger *LogWriter, key string, value interface{}) *LogEntry {
-	fields := Fields{key: value}
-	return NewLogEntryWithFields(logger, fields)
+	//Do not change this to Fields{key:value}. You will end up getting more allocations
+	fields := make(Fields, 1)
+	fields[key] = value
+	return newLogEntry(logger, fields)
 }
 
 func newLogEntry(logger *LogWriter, data Fields) *LogEntry {
-	entry := &LogEntry{
+	return &LogEntry{
 		Logger: logger,
 		Data:   data,
+		Level:  logger.Level,
 	}
-	entry.setLevel(logger.Level)
-	return entry
 }
 
+func (entry *LogEntry) cloneAs(level Level) *LogEntry {
+	return &LogEntry{
+		Logger: entry.Logger,
+		Data:   entry.Data,
+		Level:  level,
+	}
+}
+
+// AsLevel clones the entry into a new log entry and sets the level to the specified value.
+// Make sure you call this method before calling WithField, WithFields and WithError methods
 func (entry *LogEntry) AsLevel(level Level) *LogEntry {
-	entry.setLevel(level)
-	return entry
+	return entry.cloneAs(level)
 }
 
+// AsDebug clones the entry into a new log entry and sets the level to `debug`
+// Make sure you call this method before calling WithField, WithFields and WithError methods
 func (entry *LogEntry) AsDebug() *LogEntry {
 	return entry.AsLevel(DebugLevel)
 }
 
+// AsInfo clones the entry into a new log entry and sets the level to `info`
+// Make sure you call this method before calling WithField, WithFields and WithError methods
 func (entry *LogEntry) AsInfo() *LogEntry {
 	return entry.AsLevel(InfoLevel)
 }
 
+// AsWarning clones the entry into a new log entry and sets the level to `warning`
+// Make sure you call this method before calling WithField, WithFields and WithError methods
 func (entry *LogEntry) AsWarning() *LogEntry {
 	return entry.AsLevel(WarnLevel)
 }
 
+// AsError clones the entry into a new log entry and sets the level to `error`
+// Make sure you call this method before calling WithField, WithFields and WithError methods
 func (entry *LogEntry) AsError() *LogEntry {
 	return entry.AsLevel(ErrorLevel)
 }
 
+// AsFatal clones the entry into a new log entry and sets the level to `fatal`
+// Make sure you call this method before calling WithField, WithFields and WithError methods
 func (entry *LogEntry) AsFatal() *LogEntry {
 	return entry.AsLevel(FatalLevel)
 }
 
+// AsPanic clones the entry into a new log entry and sets the level to `panic`
+// Make sure you call this method before calling WithField, WithFields and WithError methods
 func (entry *LogEntry) AsPanic() *LogEntry {
 	return entry.AsLevel(PanicLevel)
 }
 
+// WithField adds a field to the log entry, note that it doesn't log until you call Write.
 func (entry *LogEntry) WithField(key string, value interface{}) *LogEntry {
-	return entry.WithFields(Fields{key: value})
+	if entry.Level > entry.Logger.level() {
+		return entry
+	}
+	//Do not change this to Fields{key:value}. You will end up getting more allocations
+	fields := make(Fields, 1)
+	fields[key] = value
+	return entry.WithFields(fields)
 }
 
+// WithFields adds a struct of fields to the log entry
 func (entry *LogEntry) WithFields(fields Fields) *LogEntry {
-	level, ok := entry.getLevel()
-	if !ok || level > entry.Logger.level() {
+	if entry.Level > entry.Logger.level() {
 		return entry
 	}
 	data := make(Fields, len(entry.Data)+len(fields))
@@ -114,9 +140,14 @@ func (entry *LogEntry) WithFields(fields Fields) *LogEntry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return newLogEntry(entry.Logger, data)
+	return &LogEntry{
+		Data:   data,
+		Level:  entry.Level,
+		Logger: entry.Logger,
+	}
 }
 
+// WithError adds an error as single field to the log entry
 func (entry *LogEntry) WithError(err error) *LogEntry {
 	return entry.WithField(ErrorKey, err)
 }
@@ -134,20 +165,9 @@ func (entry *LogEntry) Writeln(args ...interface{}) {
 }
 
 func (entry *LogEntry) write(mode formatMode, format string, args ...interface{}) {
-	level, ok := entry.checkLevel()
-	if !ok {
-		return
-	}
-
-	loggerLevel := entry.Logger.level()
-	if loggerLevel >= level {
+	if entry.Logger.level() >= entry.Level {
 		message := constructMessage(mode, format, args...)
-		entry.log(level, message)
-	}
-
-	if loggerLevel != level {
-		//reset the LogEntry's level to the Logger's level value
-		entry.setLevel(loggerLevel)
+		entry.log(entry.Level, message)
 	}
 }
 
@@ -198,31 +218,16 @@ func (entry LogEntry) log(level Level, msg string) {
 		entry.Logger.mu.Unlock()
 	}
 
+	if level == FatalLevel {
+		Exit(1)
+	}
+
 	// To avoid Entry#log() returning a value that only would make sense for
 	// panic() to use in Entry#Panic(), we avoid the allocation by checking
 	// directly here.
 	if level <= PanicLevel {
 		panic(&entry)
 	}
-}
-
-func (entry *LogEntry) checkLevel() (Level, bool) {
-	level, ok := entry.getLevel()
-	if !ok {
-		fmt.Fprintln(os.Stderr, "Unknown logging level. Call AsLevel before using the entry")
-	}
-	return level, ok
-}
-
-func (entry *LogEntry) setLevel(level Level) {
-	atomic.StoreUint32((*uint32)(&entry.Level), uint32(level))
-	atomic.StoreInt32((*int32)(&entry.levelStatus), 1)
-}
-
-func (entry *LogEntry) getLevel() (Level, bool) {
-	level := Level(atomic.LoadUint32((*uint32)(&entry.Level)))
-	ok := atomic.LoadInt32((*int32)(&entry.levelStatus)) == 1
-	return level, ok
 }
 
 // Returns the string representation from the reader and ultimately the

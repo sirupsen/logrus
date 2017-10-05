@@ -1,2 +1,5 @@
 logrus
 .idea
+*.svg
+*.prof
+*.exe

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +19,7 @@ func logEntryAndAssertJSON(loggerLevel Level, log func(*LogEntry), assertions fu
 	logger.Out = &buffer
 	logger.Formatter = new(JSONFormatter)
 
-	entry := logger.Entry()
+	entry := NewLogEntry(logger)
 
 	log(entry)
 
@@ -37,7 +38,7 @@ func logEntryAndAssertText(t *testing.T, loggerLevel Level, log func(*LogEntry),
 		DisableColors: true,
 	}
 
-	entry := logger.Entry()
+	entry := NewLogEntry(logger)
 
 	log(entry)
 
@@ -63,32 +64,28 @@ func logEntryAndAssertText(t *testing.T, loggerLevel Level, log func(*LogEntry),
 
 func TestEntryLoggingWithTextFormatter(t *testing.T) {
 	testCases := []struct {
-		title                 string
-		loggerLevel           Level
-		entryLevel            Level
-		expectedLevelAfterLog Level
-		message               string
+		title       string
+		loggerLevel Level
+		entryLevel  Level
+		message     string
 	}{
 		{
-			title:                 "entry_with_the_same_level_as_log_level_should_log",
-			loggerLevel:           DebugLevel,
-			entryLevel:            DebugLevel,
-			expectedLevelAfterLog: DebugLevel,
-			message:               "message",
+			title:       "entry_with_the_same_level_as_log_level_should_log",
+			loggerLevel: DebugLevel,
+			entryLevel:  DebugLevel,
+			message:     "message",
 		},
 		{
-			title:                 "entry_with_the_level_lower_than_the_log_level_should_log",
-			loggerLevel:           DebugLevel,
-			entryLevel:            InfoLevel,
-			expectedLevelAfterLog: DebugLevel,
-			message:               "message",
+			title:       "entry_with_the_level_lower_than_the_log_level_should_log",
+			loggerLevel: DebugLevel,
+			entryLevel:  InfoLevel,
+			message:     "message",
 		},
 		{
-			title:                 "entry_with_the_level_higher_than_the_log_level_should_not_log",
-			loggerLevel:           InfoLevel,
-			entryLevel:            DebugLevel,
-			expectedLevelAfterLog: InfoLevel,
-			message:               "message",
+			title:       "entry_with_the_level_higher_than_the_log_level_should_not_log",
+			loggerLevel: InfoLevel,
+			entryLevel:  DebugLevel,
+			message:     "message",
 		},
 	}
 	assrt := assert.New(t)
@@ -100,8 +97,8 @@ func TestEntryLoggingWithTextFormatter(t *testing.T) {
 					entry.AsLevel(tc.entryLevel).Write(tc.message)
 				},
 				func(fields Fields, entry *LogEntry) {
-					assrt.Equal(tc.expectedLevelAfterLog, entry.Level)
-					assrt.Equal(tc.expectedLevelAfterLog, entry.Logger.Level)
+					assrt.Equal(tc.loggerLevel, entry.Level)
+					assrt.Equal(tc.loggerLevel, entry.Logger.Level)
 					msg, ok := fields["msg"]
 					if shouldLog {
 						if !ok {
@@ -122,32 +119,28 @@ func TestEntryLoggingWithTextFormatter(t *testing.T) {
 
 func TestEntryLoggingWithJSONFormatter(t *testing.T) {
 	testCases := []struct {
-		title                 string
-		loggerLevel           Level
-		entryLevel            Level
-		expectedLevelAfterLog Level
-		message               string
+		title       string
+		loggerLevel Level
+		entryLevel  Level
+		message     string
 	}{
 		{
-			title:                 "entry_with_the_same_level_as_log_level_should_log",
-			loggerLevel:           DebugLevel,
-			entryLevel:            DebugLevel,
-			expectedLevelAfterLog: DebugLevel,
-			message:               "log me",
+			title:       "entry_with_the_same_level_as_log_level_should_log",
+			loggerLevel: DebugLevel,
+			entryLevel:  DebugLevel,
+			message:     "log me",
 		},
 		{
-			title:                 "entry_with_the_level_lower_than_the_log_level_should_log",
-			loggerLevel:           DebugLevel,
-			entryLevel:            InfoLevel,
-			expectedLevelAfterLog: DebugLevel,
-			message:               "log me",
+			title:       "entry_with_the_level_lower_than_the_log_level_should_log",
+			loggerLevel: DebugLevel,
+			entryLevel:  InfoLevel,
+			message:     "log me",
 		},
 		{
-			title:                 "entry_with_the_level_higher_than_the_log_level_should_not_log",
-			loggerLevel:           InfoLevel,
-			entryLevel:            DebugLevel,
-			expectedLevelAfterLog: InfoLevel,
-			message:               "log me",
+			title:       "entry_with_the_level_higher_than_the_log_level_should_not_log",
+			loggerLevel: InfoLevel,
+			entryLevel:  DebugLevel,
+			message:     "log me",
 		},
 	}
 	assrt := assert.New(t)
@@ -160,8 +153,8 @@ func TestEntryLoggingWithJSONFormatter(t *testing.T) {
 					entry.AsLevel(tc.entryLevel).Write(tc.message)
 				},
 				func(fields Fields, entry *LogEntry) {
-					assrt.Equal(tc.expectedLevelAfterLog, entry.Level)
-					assrt.Equal(tc.expectedLevelAfterLog, entry.Logger.Level)
+					assrt.Equal(tc.loggerLevel, entry.Level)
+					assrt.Equal(tc.loggerLevel, entry.Logger.Level)
 					msg, ok := fields["msg"]
 					if shouldLog {
 						if !ok {
@@ -182,32 +175,28 @@ func TestEntryLoggingWithJSONFormatter(t *testing.T) {
 
 func TestWithField(t *testing.T) {
 	testCases := []struct {
-		title                 string
-		loggerLevel           Level
-		entryLevel            Level
-		expectedLevelAfterLog Level
-		message               string
+		title       string
+		loggerLevel Level
+		entryLevel  Level
+		message     string
 	}{
 		{
-			title:                 "entry_with_the_same_level_as_log_level_should_log",
-			loggerLevel:           DebugLevel,
-			entryLevel:            DebugLevel,
-			expectedLevelAfterLog: DebugLevel,
-			message:               "log me",
+			title:       "entry_with_the_same_level_as_log_level_should_log",
+			loggerLevel: DebugLevel,
+			entryLevel:  DebugLevel,
+			message:     "log me",
 		},
 		{
-			title:                 "entry_with_the_level_lower_than_the_log_level_should_log",
-			loggerLevel:           DebugLevel,
-			entryLevel:            InfoLevel,
-			expectedLevelAfterLog: DebugLevel,
-			message:               "log me",
+			title:       "entry_with_the_level_lower_than_the_log_level_should_log",
+			loggerLevel: DebugLevel,
+			entryLevel:  InfoLevel,
+			message:     "log me",
 		},
 		{
-			title:                 "entry_with_the_level_higher_than_the_log_level_should_not_log",
-			loggerLevel:           InfoLevel,
-			entryLevel:            DebugLevel,
-			expectedLevelAfterLog: InfoLevel,
-			message:               "log me",
+			title:       "entry_with_the_level_higher_than_the_log_level_should_not_log",
+			loggerLevel: InfoLevel,
+			entryLevel:  DebugLevel,
+			message:     "log me",
 		},
 	}
 	assrt := assert.New(t)
@@ -220,7 +209,8 @@ func TestWithField(t *testing.T) {
 					entry.AsLevel(tc.entryLevel).WithField(fieldKey, tc.title).Write(tc.message)
 				},
 				func(fields Fields, entry *LogEntry) {
-					assrt.Equal(tc.expectedLevelAfterLog, entry.Logger.Level)
+					assrt.Equal(tc.loggerLevel, entry.Level)
+					assrt.Equal(tc.loggerLevel, entry.Logger.Level)
 					msg, msgOk := fields["msg"]
 					field, fieldOk := fields[fieldKey]
 					if shouldLog {
@@ -244,7 +234,7 @@ func TestWithField(t *testing.T) {
 	}
 }
 
-func TestWithFieldChaining(t *testing.T) {
+func TestWithFields(t *testing.T) {
 	testCases := []struct {
 		title          string
 		message        string
@@ -290,7 +280,8 @@ func TestWithFieldChaining(t *testing.T) {
 
 			logger := NewLogger(tc.loggerLevel)
 			logger.Out = &buffer
-			entry := logger.EntryWithFields(tc.originalFields)
+			logger.Formatter = new(JSONFormatter)
+			entry := logger.WithFields(tc.originalFields)
 			entry.AsLevel(tc.entryLevel).WithFields(tc.logFields).Write(tc.message)
 
 			json.Unmarshal(buffer.Bytes(), &fields)
@@ -313,6 +304,76 @@ func TestWithFieldChaining(t *testing.T) {
 
 				return
 			}
+			if len(fields) > 0 {
+				t.Errorf("we shouldn't have logged anything but the output was %v", fields)
+			}
+		})
+	}
+}
+
+func TestWithError(t *testing.T) {
+	testCases := []struct {
+		title          string
+		message        string
+		originalFields Fields
+		err            error
+		entryLevel     Level
+		loggerLevel    Level
+		shouldLog      bool
+	}{
+		{
+			title:          "original_fields_and_error_should_get_logged",
+			message:        "message",
+			originalFields: Fields{"original_key": "original_value"},
+			err:            errors.New("test error"),
+			entryLevel:     DebugLevel,
+			loggerLevel:    DebugLevel,
+			shouldLog:      true,
+		},
+		{
+			title:          "no_fields_should_get_logged_if_entry_level_is_higher_than_logger_level",
+			message:        "message",
+			originalFields: Fields{"original_key": "original_value"},
+			err:            errors.New("test error"),
+			entryLevel:     DebugLevel,
+			loggerLevel:    InfoLevel,
+			shouldLog:      false,
+		},
+	}
+	assrt := assert.New(t)
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			var buffer bytes.Buffer
+			var fields Fields
+
+			logger := NewLogger(tc.loggerLevel)
+			logger.Out = &buffer
+			logger.Formatter = new(JSONFormatter)
+			entry := logger.WithFields(tc.originalFields)
+			cloned := entry.AsLevel(tc.entryLevel).WithError(tc.err)
+			cloned.Write(tc.message)
+
+			json.Unmarshal(buffer.Bytes(), &fields)
+
+			assrt.Equal(entry.Data, tc.originalFields)
+			assrt.Equal(tc.loggerLevel, entry.Level)
+
+			if tc.shouldLog {
+				msg, ok := fields["msg"]
+				if !ok {
+					t.Error("Failed to retrieve the message. Nothing was logged")
+				}
+
+				if logged, ok := checkLoggedField(tc.message, msg); !ok {
+					t.Errorf("expected %s, received '%v'", tc.message, logged)
+				}
+
+				assertFields(t, Fields{ErrorKey: tc.err.Error()}, fields)
+				assertFields(t, tc.originalFields, fields)
+
+				return
+			}
+			assertFields(t, tc.originalFields, cloned.Data)
 			if len(fields) > 0 {
 				t.Errorf("we shouldn't have logged anything but the output was %v", fields)
 			}
@@ -351,7 +412,7 @@ func TestEntryInstantiation(t *testing.T) {
 		},
 		{
 			title:    "valid_entry_created_by_logger_should_log",
-			entry:    logger.Entry(),
+			entry:    NewLogEntry(logger),
 			writable: true,
 			message:  "some cool stuff",
 		},

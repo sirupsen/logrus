@@ -11,7 +11,7 @@ import (
 type LogWriter struct {
 	// The logs are `io.Copy`'d to this in a mutex. It's common to set this to a
 	// file, or leave it default which is `os.Stderr`. You can also set this to
-	// something more adventorous, such as logging to Kafka.
+	// something more adventurous, such as logging to Kafka.
 	Out io.Writer
 	// Hooks for the logger instance. These allow firing events based on logging
 	// levels and log entries. For example, to send errors to an error tracking
@@ -35,164 +35,138 @@ type LogWriter struct {
 	entryPool sync.Pool
 }
 
-// Creates a new logger. Configuration should be set by changing `Formatter`,
-// `Out` and `Hooks` directly on the default logger instance. You can also just
-// instantiate your own:
-//
-//    var log = &Logger{
-//      Out: os.Stderr,
-//      Formatter: new(JSONFormatter),
-//      Hooks: make(LevelHooks),
-//      Level: logrus.DebugLevel,
-//    }
-//
+// Creates a new log writer. Configuration should be set by changing `Formatter` (default TextFormatter),
+// `Out` (default os.Stderr) and `Hooks` directly on the default logger instance.
 // It's recommended to make this a global instance called `log`.
 func NewLogger(level Level) *LogWriter {
 	return &LogWriter{
-		Out:       os.Stderr,
-		Formatter: new(JSONFormatter),
-		Hooks:     make(ExternalLevelHooks),
-		Level:     level,
+		Out: os.Stderr,
+		Formatter: &TextFormatter{
+			DisableSorting: true,
+		},
+		Hooks: make(ExternalLevelHooks),
+		Level: level,
 	}
 }
 
-func (logger *LogWriter) newEntry(fields Fields) *LogEntry {
-	entry, ok := logger.entryPool.Get().(*LogEntry)
-	if ok {
-		return entry
-	}
-	if fields != nil {
-		return NewLogEntryWithFields(logger, fields)
-	}
-	return NewLogEntry(logger)
+// SetLevel sets the log writer's log level
+func (logger *LogWriter) SetLevel(level Level) {
+	atomic.StoreUint32((*uint32)(&logger.Level), uint32(level))
+}
+
+// WithFields adds a struct of fields to the log entry
+func (logger *LogWriter) WithFields(fields Fields) *LogEntry {
+	entry := logger.newEntry()
+	defer logger.releaseEntry(entry)
+	return entry.WithFields(fields)
+}
+
+// WithField adds a field to the log entry, note that it doesn't log until you call Write.
+// It only creates a log entry. If you want multiple fields, use `WithFields`.
+func (logger *LogWriter) WithField(key string, value interface{}) *LogEntry {
+	entry := logger.newEntry()
+	defer logger.releaseEntry(entry)
+	return entry.WithField(key, value)
 }
 
 func (logger *LogWriter) releaseEntry(entry *LogEntry) {
 	logger.entryPool.Put(entry)
 }
 
-func (logger *LogWriter) SetLevel(level Level) {
-	atomic.StoreUint32((*uint32)(&logger.Level), uint32(level))
-}
-
-func (logger *LogWriter) Entry() *LogEntry {
-	return logger.newEntry(nil)
-}
-
-func (logger *LogWriter) EntryWithFields(fields Fields) *LogEntry {
-	return logger.newEntry(fields)
-}
-
-func (logger *LogWriter) EntryWithField(key string, value interface{}) *LogEntry {
-	fields := Fields{key: value}
-	return logger.newEntry(fields)
-}
-
-func (logger *LogWriter) logf(level Level, format string, args ...interface{}) {
-	logger.log(level, fmt.Sprintf(format, args...))
-}
-
-func (logger *LogWriter) logln(level Level, args ...interface{}) {
-	logger.log(level, sprintlnn(args...))
-}
-
-func (logger *LogWriter) log(level Level, message string) {
+func (logger *LogWriter) log(level Level, mode formatMode, format string, args ...interface{}) {
 	if logger.level() >= level {
-		entry := logger.newEntry(nil)
+		entry := logger.newEntry()
+		message := constructMessage(mode, format, args...)
 		entry.log(level, message)
 		logger.releaseEntry(entry)
 	}
 }
 
+func (logger *LogWriter) newEntry() *LogEntry {
+	entry, ok := logger.entryPool.Get().(*LogEntry)
+	if ok {
+		return entry
+	}
+	return NewLogEntry(logger)
+}
+
 func (logger *LogWriter) Debugf(format string, args ...interface{}) {
-	logger.logf(DebugLevel, format, args...)
+	logger.log(DebugLevel, formatted, format, args...)
 }
 
 func (logger *LogWriter) Infof(format string, args ...interface{}) {
-	logger.logf(InfoLevel, format, args...)
-}
-
-func (logger *LogWriter) Warnf(format string, args ...interface{}) {
-	logger.logf(WarnLevel, format, args...)
+	logger.log(InfoLevel, formatted, format, args...)
 }
 
 func (logger *LogWriter) Warningf(format string, args ...interface{}) {
-	logger.Warnf(format, args...)
+	logger.log(WarnLevel, formatted, format, args...)
 }
 
 func (logger *LogWriter) Errorf(format string, args ...interface{}) {
-	logger.logf(ErrorLevel, format, args...)
+	logger.log(ErrorLevel, formatted, format, args...)
 }
 
 func (logger *LogWriter) Fatalf(format string, args ...interface{}) {
-	logger.logf(FatalLevel, format, args...)
+	logger.log(FatalLevel, formatted, format, args...)
 	Exit(1)
 }
 
 func (logger *LogWriter) Panicf(format string, args ...interface{}) {
-	logger.logf(PanicLevel, format, args...)
+	logger.log(PanicLevel, formatted, format, args...)
 	panic(fmt.Sprint(args...))
 }
 
 func (logger *LogWriter) Debug(args ...interface{}) {
-	logger.log(DebugLevel, fmt.Sprint(args...))
+	logger.log(DebugLevel, unformatted, "", args...)
 }
 
 func (logger *LogWriter) Info(args ...interface{}) {
-	logger.log(InfoLevel, fmt.Sprint(args...))
-}
-
-func (logger *LogWriter) Warn(args ...interface{}) {
-	logger.log(WarnLevel, fmt.Sprint(args...))
+	logger.log(InfoLevel, unformatted, "", args...)
 }
 
 func (logger *LogWriter) Warning(args ...interface{}) {
-	logger.Warn(args...)
+	logger.log(WarnLevel, unformatted, "", args...)
 }
 
 func (logger *LogWriter) Error(args ...interface{}) {
-	logger.log(ErrorLevel, fmt.Sprint(args...))
+	logger.log(ErrorLevel, unformatted, "", args...)
 }
 
 func (logger *LogWriter) Fatal(args ...interface{}) {
-	logger.log(FatalLevel, fmt.Sprint(args...))
+	logger.log(FatalLevel, unformatted, "", args...)
 	Exit(1)
 }
 
 func (logger *LogWriter) Panic(args ...interface{}) {
 	msg := fmt.Sprint(args...)
-	logger.log(PanicLevel, msg)
+	logger.log(PanicLevel, unformatted, "", args...)
 	panic(msg)
 }
 
 func (logger *LogWriter) Debugln(args ...interface{}) {
-	logger.logln(DebugLevel, args...)
+	logger.log(DebugLevel, newLine, "", args...)
 }
 
 func (logger *LogWriter) Infoln(args ...interface{}) {
-	logger.logln(InfoLevel, args...)
-}
-
-func (logger *LogWriter) Warnln(args ...interface{}) {
-	logger.logln(WarnLevel, args...)
+	logger.log(InfoLevel, newLine, "", args...)
 }
 
 func (logger *LogWriter) Warningln(args ...interface{}) {
-	logger.logln(WarnLevel, args...)
+	logger.log(WarnLevel, newLine, "", args...)
 }
 
 func (logger *LogWriter) Errorln(args ...interface{}) {
-	logger.logln(ErrorLevel, args...)
+	logger.log(ErrorLevel, newLine, "", args...)
 }
 
 func (logger *LogWriter) Fatalln(args ...interface{}) {
-	logger.logln(FatalLevel, args...)
+	logger.log(FatalLevel, newLine, "", args...)
 	Exit(1)
 }
 
 func (logger *LogWriter) Panicln(args ...interface{}) {
 	msg := fmt.Sprint(args...)
-	logger.logln(PanicLevel, msg)
+	logger.log(PanicLevel, newLine, "", msg)
 	panic(msg)
 }
 
