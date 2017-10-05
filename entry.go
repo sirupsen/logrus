@@ -226,13 +226,13 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 
 func (entry *Entry) Debugln(args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
-		entry.Debug(entry.sprintlnn(args...))
+		entry.Debug(sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Infoln(args ...interface{}) {
 	if entry.Logger.level() >= InfoLevel {
-		entry.Info(entry.sprintlnn(args...))
+		entry.Info(sprintlnn(args...))
 	}
 }
 
@@ -242,7 +242,7 @@ func (entry *Entry) Println(args ...interface{}) {
 
 func (entry *Entry) Warnln(args ...interface{}) {
 	if entry.Logger.level() >= WarnLevel {
-		entry.Warn(entry.sprintlnn(args...))
+		entry.Warn(sprintlnn(args...))
 	}
 }
 
@@ -252,20 +252,20 @@ func (entry *Entry) Warningln(args ...interface{}) {
 
 func (entry *Entry) Errorln(args ...interface{}) {
 	if entry.Logger.level() >= ErrorLevel {
-		entry.Error(entry.sprintlnn(args...))
+		entry.Error(sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Fatalln(args ...interface{}) {
 	if entry.Logger.level() >= FatalLevel {
-		entry.Fatal(entry.sprintlnn(args...))
+		entry.Fatal(sprintlnn(args...))
 	}
 	Exit(1)
 }
 
 func (entry *Entry) Panicln(args ...interface{}) {
 	if entry.Logger.level() >= PanicLevel {
-		entry.Panic(entry.sprintlnn(args...))
+		entry.Panic(sprintlnn(args...))
 	}
 }
 
@@ -273,7 +273,7 @@ func (entry *Entry) Panicln(args ...interface{}) {
 // fmt.Sprintln where spaces are always added between operands, regardless of
 // their type. Instead of vendoring the Sprintln implementation to spare a
 // string allocation, we do the simplest thing.
-func (entry *Entry) sprintlnn(args ...interface{}) string {
+func sprintlnn(args ...interface{}) string {
 	msg := fmt.Sprintln(args...)
 	return msg[:len(msg)-1]
 }

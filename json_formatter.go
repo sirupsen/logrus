@@ -3,6 +3,7 @@ package logrus
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type fieldKey string
@@ -47,8 +48,17 @@ type JSONFormatter struct {
 
 // Format renders a single log entry
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
-	data := make(Fields, len(entry.Data)+3)
-	for k, v := range entry.Data {
+	return f.format(entry.Data, entry.Time, entry.Level, entry.Message)
+}
+
+// Format renders a single log entry
+func (f *JSONFormatter) FormatEntry(entry *LogEntry) ([]byte, error) {
+	return f.format(entry.Data, entry.Time, entry.Level, entry.Message)
+}
+
+func (f *JSONFormatter) format(fields Fields, t time.Time, level Level, message string) ([]byte, error) {
+	data := make(Fields, len(fields)+3)
+	for k, v := range fields {
 		switch v := v.(type) {
 		case error:
 			// Otherwise errors are ignored by `encoding/json`
@@ -66,14 +76,14 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	}
 
 	if !f.DisableTimestamp {
-		data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
+		data[f.FieldMap.resolve(FieldKeyTime)] = t.Format(timestampFormat)
 	}
-	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
-	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
+	data[f.FieldMap.resolve(FieldKeyMsg)] = message
+	data[f.FieldMap.resolve(FieldKeyLevel)] = level.String()
 
 	serialized, err := json.Marshal(data)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
+		return nil, fmt.Errorf("failed to marshal fields to JSON, %v", err)
 	}
 	return append(serialized, '\n'), nil
 }
