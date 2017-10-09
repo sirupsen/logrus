@@ -10,7 +10,7 @@ import (
 type Logger struct {
 	// The logs are `io.Copy`'d to this in a mutex. It's common to set this to a
 	// file, or leave it default which is `os.Stderr`. You can also set this to
-	// something more adventorous, such as logging to Kafka.
+	// something more adventurous, such as logging to Kafka.
 	Out io.Writer
 	// Hooks for the logger instance. These allow firing events based on logging
 	// levels and log entries. For example, to send errors to an error tracking
