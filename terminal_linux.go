@@ -7,7 +7,7 @@
 
 package logrus
 
-import "golang.org/x/sys/unix"
+import "github.com/golang/sys/unix"
 
 const ioctlReadTermios = unix.TCGETS
 
