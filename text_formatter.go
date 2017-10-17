@@ -42,6 +42,9 @@ type TextFormatter struct {
 	// system that already adds timestamps.
 	DisableTimestamp bool
 
+	// Disable log level logging.
+	DisableLogLevel bool
+
 	// Enable logging the full timestamp when a TTY is attached instead of just
 	// the time passed since beginning of execution.
 	FullTimestamp bool
@@ -111,7 +114,9 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		if !f.DisableTimestamp {
 			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
 		}
-		f.appendKeyValue(b, "level", entry.Level.String())
+		if !f.DisableLogLevel {
+			f.appendKeyValue(b, "level", entry.Level.String())
+		}
 		if entry.Message != "" {
 			f.appendKeyValue(b, "msg", entry.Message)
 		}

@@ -137,5 +137,24 @@ func TestDisableTimestampWithColoredOutput(t *testing.T) {
 	}
 }
 
+func TestDisableLogLevelWithoutColoredOutput(t *testing.T) {
+	tf := &TextFormatter{DisableColors: true, DisableLogLevel: true}
+
+	testCases := []struct {
+		value    string
+		expected string
+	}{
+		{`foo`, "time=\"0001-01-01T00:00:00Z\" test=foo\n"},
+	}
+
+	for _, tc := range testCases {
+		b, _ := tf.Format(WithField("test", tc.value))
+
+		if string(b) != tc.expected {
+			t.Errorf("formatting expected for %q (result was %q instead of %q)", tc.value, string(b), tc.expected)
+		}
+	}
+}
+
 // TODO add tests for sorting etc., this requires a parser for the text
 // formatter output.
