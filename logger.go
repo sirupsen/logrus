@@ -112,6 +112,23 @@ func (logger *Logger) WithError(err error) *Entry {
 	return entry.WithError(err)
 }
 
+func (logger *Logger) Logf(level Level, format string, args ...interface{}) {
+	switch level {
+	case DebugLevel:
+		Debugf(format, args)
+	case InfoLevel:
+		Infof(format, args)
+	case WarnLevel:
+		Warnf(format, args)
+	case ErrorLevel:
+		Errorf(format, args)
+	case FatalLevel:
+		Fatalf(format, args)
+	case PanicLevel:
+		Panicf(format, args)
+	}
+}
+
 func (logger *Logger) Debugf(format string, args ...interface{}) {
 	if logger.level() >= DebugLevel {
 		entry := logger.newEntry()
@@ -175,6 +192,23 @@ func (logger *Logger) Panicf(format string, args ...interface{}) {
 	}
 }
 
+func (logger *Logger) Log(level Level, args ...interface{}) {
+	switch level {
+	case DebugLevel:
+		Debug(args)
+	case InfoLevel:
+		Info(args)
+	case WarnLevel:
+		Warn(args)
+	case ErrorLevel:
+		Error(args)
+	case FatalLevel:
+		Fatal(args)
+	case PanicLevel:
+		Panic(args)
+	}
+}
+
 func (logger *Logger) Debug(args ...interface{}) {
 	if logger.level() >= DebugLevel {
 		entry := logger.newEntry()
@@ -235,6 +269,23 @@ func (logger *Logger) Panic(args ...interface{}) {
 		entry := logger.newEntry()
 		entry.Panic(args...)
 		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) Logln(level Level, args ...interface{}) {
+	switch level {
+	case DebugLevel:
+		Debugln(args)
+	case InfoLevel:
+		Infoln(args)
+	case WarnLevel:
+		Warnln(args)
+	case ErrorLevel:
+		Errorln(args)
+	case FatalLevel:
+		Fatalln(args)
+	case PanicLevel:
+		Panicln(args)
 	}
 }
 
