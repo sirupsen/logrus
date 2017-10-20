@@ -183,7 +183,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestampFormat string) {
 	var levelColor int
 	switch entry.Level {
-	case DebugLevel:
+	case DebugLevel, TraceLevel:
 		levelColor = gray
 	case WarnLevel:
 		levelColor = yellow
