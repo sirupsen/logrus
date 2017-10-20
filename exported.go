@@ -48,6 +48,20 @@ func AddHook(hook Hook) {
 	std.Hooks.Add(hook)
 }
 
+// AddDefault adds a default field to the standard logger
+func AddDefault(key string, value interface{}) {
+	std.mu.Lock()
+	defer std.mu.Unlock()
+	std.AddDefault(key, value)
+}
+
+// AddDefaults adds a default field to the standard logger
+func AddDefaults(fields Fields) {
+	std.mu.Lock()
+	defer std.mu.Unlock()
+	std.AddDefaults(fields)
+}
+
 // WithError creates an entry from the standard logger and adds an error to it, using the value defined in ErrorKey as key.
 func WithError(err error) *Entry {
 	return std.WithField(ErrorKey, err)

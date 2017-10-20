@@ -83,6 +83,40 @@ func TestWarn(t *testing.T) {
 	})
 }
 
+func TestInfoWithDefault(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.AddDefault("test-key", "test-value")
+		log.Info("test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test")
+		assert.Equal(t, fields["level"], "info")
+		assert.Equal(t, fields["test-key"], "test-value")
+	})
+}
+
+func TestInfoWithDefaults(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.AddDefaults(Fields{"test-key1": "test value 1", "test-key2": "test value 2"})
+		log.Info("test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test")
+		assert.Equal(t, fields["level"], "info")
+		assert.Equal(t, fields["test-key1"], "test value 1")
+		assert.Equal(t, fields["test-key2"], "test value 2")
+	})
+}
+
+func TestInfoWithDefaultHasDefaultOverwritten(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.AddDefault("test-key", "test-value")
+		log.WithField("test-key", "overwritten value").Info("test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test")
+		assert.Equal(t, fields["level"], "info")
+		assert.Equal(t, fields["test-key"], "overwritten value")
+	})
+}
+
 func TestInfolnShouldAddSpacesBetweenStrings(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Infoln("test", "test")

@@ -31,6 +31,8 @@ type Logger struct {
 	mu MutexWrap
 	// Reusable empty entry
 	entryPool sync.Pool
+	// Default fields to be added to all entries
+	defaultFields Fields
 }
 
 type MutexWrap struct {
@@ -63,15 +65,17 @@ func (mw *MutexWrap) Disable() {
 //      Formatter: new(JSONFormatter),
 //      Hooks: make(LevelHooks),
 //      Level: logrus.DebugLevel,
+//      defaultFields: make(Fields),
 //    }
 //
 // It's recommended to make this a global instance called `log`.
 func New() *Logger {
 	return &Logger{
-		Out:       os.Stderr,
-		Formatter: new(TextFormatter),
-		Hooks:     make(LevelHooks),
-		Level:     InfoLevel,
+		Out:           os.Stderr,
+		Formatter:     new(TextFormatter),
+		Hooks:         make(LevelHooks),
+		Level:         InfoLevel,
+		defaultFields: make(Fields),
 	}
 }
 
@@ -80,7 +84,7 @@ func (logger *Logger) newEntry() *Entry {
 	if ok {
 		return entry
 	}
-	return NewEntry(logger)
+	return NewEntry(logger).WithFields(logger.defaultFields)
 }
 
 func (logger *Logger) releaseEntry(entry *Entry) {
@@ -320,4 +324,14 @@ func (logger *Logger) AddHook(hook Hook) {
 	logger.mu.Lock()
 	defer logger.mu.Unlock()
 	logger.Hooks.Add(hook)
+}
+
+func (logger *Logger) AddDefault(key string, value interface{}) {
+	logger.defaultFields[key] = value
+}
+
+func (logger *Logger) AddDefaults(fields Fields) {
+	for k, v := range fields {
+		logger.defaultFields[k] = v
+	}
 }
