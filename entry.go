@@ -135,6 +135,12 @@ func (entry *Entry) Debug(args ...interface{}) {
 	}
 }
 
+func (entry *Entry) Trace(args ...interface{}) {
+	if entry.Logger.level() >= TraceLevel {
+		entry.log(TraceLevel, fmt.Sprint(args...))
+	}
+}
+
 func (entry *Entry) Print(args ...interface{}) {
 	entry.Info(args...)
 }
@@ -183,6 +189,12 @@ func (entry *Entry) Debugf(format string, args ...interface{}) {
 	}
 }
 
+func (entry *Entry) Tracef(format string, args ...interface{}) {
+	if entry.Logger.level() >= TraceLevel {
+		entry.Trace(fmt.Sprintf(format, args...))
+	}
+}
+
 func (entry *Entry) Infof(format string, args ...interface{}) {
 	if entry.Logger.level() >= InfoLevel {
 		entry.Info(fmt.Sprintf(format, args...))
@@ -223,6 +235,12 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 }
 
 // Entry Println family functions
+
+func (entry *Entry) Traceln(args ...interface{}) {
+	if entry.Logger.level() >= TraceLevel {
+		entry.Trace(entry.sprintlnn(args...))
+	}
+}
 
 func (entry *Entry) Debugln(args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
