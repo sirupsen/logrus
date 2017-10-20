@@ -10,7 +10,7 @@ func Example_basic() {
 	log.Formatter = new(logrus.JSONFormatter)
 	log.Formatter = new(logrus.TextFormatter)                     //default
 	log.Formatter.(*logrus.TextFormatter).DisableTimestamp = true // remove timestamp from test output
-	log.Level = logrus.DebugLevel
+	log.Level = logrus.TraceLevel
 	log.Out = os.Stdout
 
 	// file, err := os.OpenFile("logrus.log", os.O_CREATE|os.O_WRONLY, 0666)
