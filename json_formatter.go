@@ -16,6 +16,7 @@ const (
 	FieldKeyMsg   = "msg"
 	FieldKeyLevel = "level"
 	FieldKeyTime  = "time"
+	FieldKeyFile  = "file"
 )
 
 func (f FieldMap) resolve(key fieldKey) string {
