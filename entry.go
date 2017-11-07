@@ -93,6 +93,11 @@ func (entry Entry) log(level Level, msg string) {
 	entry.Time = time.Now()
 	entry.Level = level
 	entry.Message = msg
+	data := make(Fields, len(entry.Data))
+        for k, v := range entry.Data {
+                data[k] = v
+        }
+        entry.Data = data
 
 	entry.Logger.mu.Lock()
 	err := entry.Logger.Hooks.Fire(level, &entry)
