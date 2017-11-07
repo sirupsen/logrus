@@ -35,6 +35,7 @@ type Entry struct {
 	Time time.Time
 
 	// Level the log entry was logged at: Debug, Info, Warn, Error, Fatal or Panic
+	// This field will be set on entry firing and the value will be equal to the one in Logger struct field.
 	Level Level
 
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
@@ -93,7 +94,10 @@ func (entry Entry) log(level Level, msg string) {
 	entry.Level = level
 	entry.Message = msg
 
-	if err := entry.Logger.Hooks.Fire(level, &entry); err != nil {
+	entry.Logger.mu.Lock()
+	err := entry.Logger.Hooks.Fire(level, &entry)
+	entry.Logger.mu.Unlock()
+	if err != nil {
 		entry.Logger.mu.Lock()
 		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
 		entry.Logger.mu.Unlock()
