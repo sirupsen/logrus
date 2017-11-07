@@ -1,7 +1,7 @@
 package logrus
 
 import (
-	"encoding/json"
+	json "github.com/sirupsen/logrus/jsonx"
 	"fmt"
 )
 
@@ -43,6 +43,8 @@ type JSONFormatter struct {
 	//    },
 	// }
 	FieldMap FieldMap
+
+	Options json.MarshalOptions
 }
 
 // Format renders a single log entry
@@ -71,9 +73,13 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
 
-	serialized, err := json.Marshal(data)
+	serialized, err := json.MarshalWithOptions(data, f.Options)
+
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
 	}
+
 	return append(serialized, '\n'), nil
 }
+
+
