@@ -137,5 +137,17 @@ func TestDisableTimestampWithColoredOutput(t *testing.T) {
 	}
 }
 
+func TestStruct(t *testing.T) {
+	tf := &TextFormatter{DisableTimestamp: true, ForceColors: true}
+
+	_, err := tf.Format(WithField("testStruct", &testStruct{Func: func(){}, String:"string"}))
+
+	if  err!=nil {
+		t.Log(err)
+		t.Fail()
+	}
+}
+
+
 // TODO add tests for sorting etc., this requires a parser for the text
 // formatter output.

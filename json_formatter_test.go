@@ -197,3 +197,24 @@ func TestJSONEnableTimestamp(t *testing.T) {
 		t.Error("Timestamp not present", s)
 	}
 }
+
+type testFunc func()
+
+type testStruct struct {
+	Func testFunc
+	String string
+}
+
+func TestJSONStructWithUnserialisableFields(t *testing.T) {
+	formatter := &JSONFormatter{}
+
+	b, err := formatter.Format(WithField("testStruct", &testStruct{Func: func(){}, String:"string"}))
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	s := string(b)
+	if !strings.Contains(s, FieldKeyTime) {
+		t.Error("Timestamp not present", s)
+	}
+}
