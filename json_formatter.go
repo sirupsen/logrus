@@ -73,7 +73,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
 
-	serialized, err := json.MarshalWithOptions(data, f.Options)
+	serialized, err := json.Marshal(data)
 
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
