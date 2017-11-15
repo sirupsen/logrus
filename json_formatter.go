@@ -33,6 +33,9 @@ type JSONFormatter struct {
 	// DisableTimestamp allows disabling automatic timestamps in output
 	DisableTimestamp bool
 
+	// DisableNewline allows disabling of the trailing newline in output
+	DisableNewline bool
+
 	// FieldMap allows users to customize the names of keys for default fields.
 	// As an example:
 	// formatter := &JSONFormatter{
@@ -74,6 +77,10 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	serialized, err := json.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
+	}
+
+	if f.DisableNewline {
+		return serialized, nil
 	}
 	return append(serialized, '\n'), nil
 }
