@@ -384,3 +384,56 @@ func TestEntryWriter(t *testing.T) {
 	assert.Equal(t, fields["foo"], "bar")
 	assert.Equal(t, fields["level"], "warning")
 }
+
+func TestLogsWithoutSplitStream(t *testing.T) {
+	var buffer bytes.Buffer
+
+	logger := New()
+	logger.Out = &buffer
+	logger.Level = DebugLevel
+
+	assert.Nil(t, logger.ErrOut)
+
+	bufferLen := 0
+	assert.Equal(t, bufferLen, buffer.Len())
+	// Assert that this one buffer grows as we log, regardless of severity
+	for _, logCall := range []func(...interface{}){
+		logger.Error,
+		logger.Warn,
+		logger.Info,
+		logger.Debug,
+	} {
+		logCall("foo")
+		assert.True(t, buffer.Len() > bufferLen)
+		bufferLen = buffer.Len()
+	}
+}
+
+func TestLogsWithSplitStream(t *testing.T) {
+	var buffer, errBuffer bytes.Buffer
+
+	logger := New()
+	logger.Out = &buffer
+	logger.ErrOut = &errBuffer
+	logger.Level = DebugLevel
+
+	bufferLen := 0
+	errBufferLen := 0
+	assert.Equal(t, bufferLen, buffer.Len())
+	assert.Equal(t, errBufferLen, buffer.Len())
+	// Assert that ONLY buffer grows as we log with severity below error
+	for _, logCall := range []func(...interface{}){
+		logger.Warn,
+		logger.Info,
+		logger.Debug,
+	} {
+		logCall("foo")
+		assert.True(t, buffer.Len() > bufferLen)
+		assert.Equal(t, errBufferLen, errBuffer.Len())
+		bufferLen = buffer.Len()
+	}
+	// Assert that ONLY errBuffer grows as we log with error severity
+	logger.Error("foo")
+	assert.True(t, errBuffer.Len() > errBufferLen)
+	assert.Equal(t, bufferLen, buffer.Len())
+}

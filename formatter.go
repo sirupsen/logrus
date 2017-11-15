@@ -13,7 +13,8 @@ const defaultTimestampFormat = time.RFC3339
 //
 // Any additional fields added with `WithField` or `WithFields` are also in
 // `entry.Data`. Format is expected to return an array of bytes which are then
-// logged to `logger.Out`.
+// logged to `logger.Out` (or `logger.ErrOut`, if configured and warranted by
+// the severity).
 type Formatter interface {
 	Format(*Entry) ([]byte, error)
 }

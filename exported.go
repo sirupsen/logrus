@@ -20,6 +20,14 @@ func SetOutput(out io.Writer) {
 	std.Out = out
 }
 
+// SetErrOutput sets an optional, dedidated io.Writer for log messages with
+// error severity or above
+func SetErrOutput(errOut io.Writer) {
+	std.mu.Lock()
+	defer std.mu.Unlock()
+	std.ErrOut = errOut
+}
+
 // SetFormatter sets the standard logger formatter.
 func SetFormatter(formatter Formatter) {
 	std.mu.Lock()

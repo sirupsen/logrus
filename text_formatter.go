@@ -58,14 +58,18 @@ type TextFormatter struct {
 	QuoteEmptyFields bool
 
 	// Whether the logger's out is to a terminal
-	isTerminal bool
+	isOutTerminal bool
+
+	// Whether the logger's errOut is to a terminal
+	isErrOutTerminal bool
 
 	sync.Once
 }
 
 func (f *TextFormatter) init(entry *Entry) {
 	if entry.Logger != nil {
-		f.isTerminal = f.checkIfTerminal(entry.Logger.Out)
+		f.isOutTerminal = f.checkIfTerminal(entry.Logger.Out)
+		f.isErrOutTerminal = f.checkIfTerminal(entry.Logger.ErrOut)
 	}
 }
 
@@ -99,7 +103,12 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	f.Do(func() { f.init(entry) })
 
-	isColored := (f.ForceColors || f.isTerminal) && !f.DisableColors
+	var isColored bool
+	if entry.Logger.ErrOut != nil && entry.Level <= ErrorLevel {
+		isColored = (f.ForceColors || f.isErrOutTerminal) && !f.DisableColors
+	} else {
+		isColored = (f.ForceColors || f.isOutTerminal) && !f.DisableColors
+	}
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {

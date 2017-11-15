@@ -104,6 +104,10 @@ func init() {
   // Can be any io.Writer, see below for File example
   log.SetOutput(os.Stdout)
 
+  // Output log messages with error severity or above to a separate io.Writer
+  // Can be any io.Writer
+  log.SetErrOutput(os.Stderr)
+
   // Only log the warning severity or above.
   log.SetLevel(log.WarnLevel)
 }

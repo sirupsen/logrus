@@ -114,7 +114,11 @@ func (entry Entry) log(level Level, msg string) {
 		entry.Logger.mu.Unlock()
 	} else {
 		entry.Logger.mu.Lock()
-		_, err = entry.Logger.Out.Write(serialized)
+		if entry.Logger.ErrOut != nil && entry.Level <= ErrorLevel {
+			_, err = entry.Logger.ErrOut.Write(serialized)
+		} else {
+			_, err = entry.Logger.Out.Write(serialized)
+		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
 		}
