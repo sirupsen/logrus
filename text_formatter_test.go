@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFormatting(t *testing.T) {
@@ -135,6 +137,33 @@ func TestDisableTimestampWithColoredOutput(t *testing.T) {
 	if strings.Contains(string(b), "[0000]") {
 		t.Error("timestamp not expected when DisableTimestamp is true")
 	}
+}
+
+func TestTextFormatterFieldMap(t *testing.T) {
+	formatter := &TextFormatter{
+		DisableColors: true,
+		FieldMap: FieldMap{
+			FieldKeyMsg:   "message",
+			FieldKeyLevel: "somelevel",
+			FieldKeyTime:  "timeywimey",
+		},
+	}
+
+	entry := &Entry{
+		Message: "oh hi",
+		Level:   WarnLevel,
+		Time:    time.Date(1981, time.February, 24, 4, 28, 3, 100, time.UTC),
+	}
+
+	b, err := formatter.Format(entry)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	assert.Equal(t,
+		`timeywimey="1981-02-24T04:28:03Z" somelevel=warning message="oh hi"`+"\n",
+		string(b),
+		"Formatted doesn't respect correct FieldMap")
 }
 
 // TODO add tests for sorting etc., this requires a parser for the text

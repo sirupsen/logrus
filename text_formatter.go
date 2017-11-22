@@ -60,6 +60,15 @@ type TextFormatter struct {
 	// Whether the logger's out is to a terminal
 	isTerminal bool
 
+	// FieldMap allows users to customize the names of keys for default fields.
+	// As an example:
+	// formatter := &JSONFormatter{
+	//     FieldMap: FieldMap{
+	//         FieldKeyTime: "@timestamp",
+	//         FieldKeyLevel: "@level",
+	//         FieldKeyMsg: "@message"}}
+	FieldMap FieldMap
+
 	sync.Once
 }
 
@@ -109,11 +118,11 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		f.printColored(b, entry, keys, timestampFormat)
 	} else {
 		if !f.DisableTimestamp {
-			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
+			f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyTime), entry.Time.Format(timestampFormat))
 		}
-		f.appendKeyValue(b, "level", entry.Level.String())
+		f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyLevel), entry.Level.String())
 		if entry.Message != "" {
-			f.appendKeyValue(b, "msg", entry.Message)
+			f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyMsg), entry.Message)
 		}
 		for _, key := range keys {
 			f.appendKeyValue(b, key, entry.Data[key])
