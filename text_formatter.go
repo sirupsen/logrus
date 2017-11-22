@@ -62,11 +62,11 @@ type TextFormatter struct {
 
 	// FieldMap allows users to customize the names of keys for default fields.
 	// As an example:
-	// formatter := &JSONFormatter{
+	// formatter := &TextFormatter{
 	//     FieldMap: FieldMap{
-	//         FieldKeyTime: "@timestamp",
+	//         FieldKeyTime:  "@timestamp",
 	//         FieldKeyLevel: "@level",
-	//         FieldKeyMsg: "@message"}}
+	//         FieldKeyMsg:   "@message"}}
 	FieldMap FieldMap
 
 	sync.Once
