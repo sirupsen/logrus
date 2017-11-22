@@ -3,8 +3,8 @@ package test
 import (
 	"testing"
 
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
+	"github.com/liyuliang2013/logrus"
+	"github.com/liyuliang2013/testify/assert"
 )
 
 func TestAllHooks(t *testing.T) {

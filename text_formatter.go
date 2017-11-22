@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/crypto/ssh/terminal"
+	"github.com/golang/crypto/ssh/terminal"
 )
 
 const (
