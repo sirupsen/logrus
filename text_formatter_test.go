@@ -53,6 +53,48 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(true, errors.New("invalid argument"))
 }
 
+func TestEscaping_DefaultQuoteCharacter(t *testing.T) {
+	tf := &TextFormatter{DisableColors: true}
+
+	testCases := []struct {
+		value    string
+		expected string
+	}{
+		{`ba"r`, `ba\"r`},
+		{`ba'r`, `ba'r`},
+	}
+
+	for _, tc := range testCases {
+		b, _ := tf.Format(WithField("test", tc.value))
+		if !bytes.Contains(b, []byte(tc.expected)) {
+			t.Errorf("escaping expected for %q (result was %q instead of %q)", tc.value, string(b), tc.expected)
+		}
+	}
+}
+
+func TestEscaping_CustomQuoteCharacter(t *testing.T) {
+	tf := &TextFormatter{DisableColors: true}
+
+	testCases := []struct {
+		value     string
+		expected  string
+		quoteChar string
+	}{
+		{`ba"r`, `ba"r`, `'`},
+		{`ba'r`, `ba\'r`, `'`},
+		{`ba^r`, `ba\^r`, `^`},
+		{`ba'r`, `ba'r`, `^`},
+	}
+
+	for _, tc := range testCases {
+		tf.QuoteCharacter = tc.quoteChar
+		b, _ := tf.Format(WithField("test", tc.value))
+		if !bytes.Contains(b, []byte(tc.expected)) {
+			t.Errorf("escaping expected for %q (result was %q instead of %q)", tc.value, string(b), tc.expected)
+		}
+	}
+}
+
 func TestTimestampFormat(t *testing.T) {
 	checkTimeStr := func(format string) {
 		customFormatter := &TextFormatter{DisableColors: true, TimestampFormat: format}
