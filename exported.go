@@ -35,7 +35,7 @@ func GetLevel() Level {
 
 // AddHook adds a hook to the standard logger hooks.
 func AddHook(hook Hook) {
-	std.Hooks.Add(hook)
+	std.AddHook(hook)
 }
 
 // WithError creates an entry from the standard logger and adds an error to it, using the value defined in ErrorKey as key.
