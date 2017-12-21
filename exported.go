@@ -15,36 +15,26 @@ func StandardLogger() *Logger {
 
 // SetOutput sets the standard logger output.
 func SetOutput(out io.Writer) {
-	std.mu.Lock()
-	defer std.mu.Unlock()
-	std.Out = out
+	std.SetOutput(out)
 }
 
 // SetFormatter sets the standard logger formatter.
 func SetFormatter(formatter Formatter) {
-	std.mu.Lock()
-	defer std.mu.Unlock()
-	std.Formatter = formatter
+	std.SetFormatter(formatter)
 }
 
 // SetLevel sets the standard logger level.
 func SetLevel(level Level) {
-	std.mu.Lock()
-	defer std.mu.Unlock()
 	std.SetLevel(level)
 }
 
 // GetLevel returns the standard logger level.
 func GetLevel() Level {
-	std.mu.Lock()
-	defer std.mu.Unlock()
-	return std.level()
+	return std.GetLevel()
 }
 
 // AddHook adds a hook to the standard logger hooks.
 func AddHook(hook Hook) {
-	std.mu.Lock()
-	defer std.mu.Unlock()
 	std.Hooks.Add(hook)
 }
 
