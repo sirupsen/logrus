@@ -3,6 +3,7 @@ package logrus
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"sync"
 	"time"
@@ -102,6 +103,12 @@ func (entry Entry) log(level Level, msg string) {
 		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
 		entry.Logger.mu.Unlock()
 	}
+
+	// When out is /dev/null , you can stop process
+	if entry.Logger.Out == nil || entry.Logger.Out == ioutil.Discard {
+		return
+	}
+
 	buffer = bufferPool.Get().(*bytes.Buffer)
 	buffer.Reset()
 	defer bufferPool.Put(buffer)
