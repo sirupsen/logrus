@@ -3,9 +3,9 @@ package logrus
 import (
 	"bytes"
 	"fmt"
-	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -14,20 +14,19 @@ const (
 	red     = 31
 	green   = 32
 	yellow  = 33
-	blue    = 34
+	blue    = 36
 	gray    = 37
 )
 
 var (
 	baseTimestamp time.Time
-	isTerminal    bool
 )
 
 func init() {
 	baseTimestamp = time.Now()
-	isTerminal = IsTerminal()
 }
 
+// TextFormatter formats logs into text
 type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
 	ForceColors bool
@@ -51,10 +50,26 @@ type TextFormatter struct {
 	// be desired.
 	DisableSorting bool
 
+
 	// Disables the truncation of the level text to 4 characters.
 	DisableLevelTruncation bool
+
+	// QuoteEmptyFields will wrap empty fields in quotes if true
+	QuoteEmptyFields bool
+
+	// Whether the logger's out is to a terminal
+	isTerminal bool
+
+	sync.Once
 }
 
+func (f *TextFormatter) init(entry *Entry) {
+	if entry.Logger != nil {
+		f.isTerminal = checkIfTerminal(entry.Logger.Out)
+	}
+}
+
+// Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	var b *bytes.Buffer
 	keys := make([]string, 0, len(entry.Data))
@@ -73,12 +88,13 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	prefixFieldClashes(entry.Data)
 
-	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
-	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
+	f.Do(func() { f.init(entry) })
+
+	isColored := (f.ForceColors || f.isTerminal) && !f.DisableColors
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
-		timestampFormat = DefaultTimestampFormat
+		timestampFormat = defaultTimestampFormat
 	}
 	if isColored {
 		f.printColored(b, entry, keys, timestampFormat)
@@ -131,12 +147,15 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	}
 }
 
-func needsQuoting(text string) bool {
+func (f *TextFormatter) needsQuoting(text string) bool {
+	if f.QuoteEmptyFields && len(text) == 0 {
+		return true
+	}
 	for _, ch := range text {
 		if !((ch >= 'a' && ch <= 'z') ||
 			(ch >= 'A' && ch <= 'Z') ||
 			(ch >= '0' && ch <= '9') ||
-			ch == '-' || ch == '.') {
+			ch == '-' || ch == '.' || ch == '_' || ch == '/' || ch == '@' || ch == '^' || ch == '+') {
 			return true
 		}
 	}
@@ -144,29 +163,23 @@ func needsQuoting(text string) bool {
 }
 
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interface{}) {
-
+	if b.Len() > 0 {
+		b.WriteByte(' ')
+	}
 	b.WriteString(key)
 	b.WriteByte('=')
 	f.appendValue(b, value)
-	b.WriteByte(' ')
 }
 
 func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {
-	switch value := value.(type) {
-	case string:
-		if !needsQuoting(value) {
-			b.WriteString(value)
-		} else {
-			fmt.Fprintf(b, "%q", value)
-		}
-	case error:
-		errmsg := value.Error()
-		if !needsQuoting(errmsg) {
-			b.WriteString(errmsg)
-		} else {
-			fmt.Fprintf(b, "%q", errmsg)
-		}
-	default:
-		fmt.Fprint(b, value)
+	stringVal, ok := value.(string)
+	if !ok {
+		stringVal = fmt.Sprint(value)
+	}
+
+	if !f.needsQuoting(stringVal) {
+		b.WriteString(stringVal)
+	} else {
+		b.WriteString(fmt.Sprintf("%q", stringVal))
 	}
 }
