@@ -45,8 +45,8 @@ type TextFormatter struct {
 	// TimestampFormat to use for display when a full timestamp is printed
 	TimestampFormat string
 
-	// IntLogLevels allows users to print log levels as integers instead of transformed strings
-	IntLogLevels bool
+	// EnableIntLogLevels allows users to print log levels as integers instead of transformed strings
+	EnableIntLogLevels bool
 
 	// The fields are sorted by default for a consistent output. For applications
 	// that log extremely frequently and don't use the JSON formatter this may not
@@ -102,8 +102,8 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
 		}
 		var logLevel interface{} = entry.Level.String()
-		if f.IntLogLevels {
-			logLevel = entry.Level
+		if f.EnableIntLogLevels {
+			logLevel = int(entry.Level)
 		}
 		f.appendKeyValue(b, "level", logLevel)
 		if entry.Message != "" {

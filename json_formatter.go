@@ -33,8 +33,8 @@ type JSONFormatter struct {
 	// DisableTimestamp allows disabling automatic timestamps in output
 	DisableTimestamp bool
 
-	// IntLogLevels allows users to print log levels as integers instead of transformed strings
-	IntLogLevels bool
+	// EnableIntLogLevels allows users to print log levels as integers instead of transformed strings
+	EnableIntLogLevels bool
 
 	// FieldMap allows users to customize the names of keys for default fields.
 	// As an example:
@@ -74,7 +74,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 
 	var logLevel interface{} = entry.Level.String()
-	if f.IntLogLevels {
+	if f.EnableIntLogLevels {
 		logLevel = entry.Level
 	}
 	data[f.FieldMap.resolve(FieldKeyLevel)] = logLevel
