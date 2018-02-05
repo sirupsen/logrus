@@ -343,18 +343,18 @@ func TestLoggingRace(t *testing.T) {
 	wg.Wait()
 }
 
-func TestLoggingRaceWithHooksOnFieldLogger(t *testing.T) {
+func TestLoggingRaceWithHooksOnEntry(t *testing.T) {
 	logger := New()
 	hook := new(ModifyHook)
 	logger.AddHook(hook)
-	fieldLogger := logger.WithField("context", "clue")
+	entry := logger.WithField("context", "clue")
 
 	var wg sync.WaitGroup
 	wg.Add(100)
 
 	for i := 0; i < 100; i++ {
 		go func() {
-			fieldLogger.Info("info")
+			entry.Info("info")
 			wg.Done()
 		}()
 	}
