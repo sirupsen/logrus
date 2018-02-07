@@ -220,7 +220,7 @@ Logrus comes with [built-in hooks](hooks/). Add those, or your custom hook, in
 ```go
 import (
   log "github.com/sirupsen/logrus"
-  "gopkg.in/gemnasium/logrus-airbrake-hook.v2" // the package is named "aibrake"
+  "gopkg.in/gemnasium/logrus-airbrake-hook.v2" // the package is named "airbrake"
   logrus_syslog "github.com/sirupsen/logrus/hooks/syslog"
   "log/syslog"
 )
