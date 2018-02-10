@@ -46,6 +46,10 @@ func Example_basic() {
 	}).Info("A group of walrus emerges from the ocean")
 
 	log.WithFields(logrus.Fields{
+		"animal": "walrus",
+	}).Success("Group emerged")
+
+	log.WithFields(logrus.Fields{
 		"omg":    true,
 		"number": 122,
 	}).Warn("The group's number increased tremendously!")
@@ -62,6 +66,7 @@ func Example_basic() {
 	// Output:
 	// level=debug msg="Started observing beach" animal=walrus number=8
 	// level=info msg="A group of walrus emerges from the ocean" animal=walrus size=10
+	// level=success msg="Group emerged" animal=walrus
 	// level=warning msg="The group's number increased tremendously!" number=122 omg=true
 	// level=debug msg="Temperature changes" temperature=-4
 	// level=panic msg="It's over 9000!" animal=orca size=9009

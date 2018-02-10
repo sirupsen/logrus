@@ -24,8 +24,8 @@ type Logger struct {
 	// formatters for examples.
 	Formatter Formatter
 	// The logging level the logger should log at. This is typically (and defaults
-	// to) `logrus.Info`, which allows Info(), Warn(), Error() and Fatal() to be
-	// logged.
+	// to) `logrus.Info`, which allows Success(), Info(), Warn(), Error() and Fatal()
+	// to be logged.
 	Level Level
 	// Used to sync writing to the log. Locking is enabled by Default
 	mu MutexWrap
@@ -120,6 +120,14 @@ func (logger *Logger) Debugf(format string, args ...interface{}) {
 	}
 }
 
+func (logger *Logger) Successf(format string, args ...interface{}) {
+	if logger.level() >= SuccessLevel {
+		entry := logger.newEntry()
+		entry.Successf(format, args...)
+		logger.releaseEntry(entry)
+	}
+}
+
 func (logger *Logger) Infof(format string, args ...interface{}) {
 	if logger.level() >= InfoLevel {
 		entry := logger.newEntry()
@@ -183,6 +191,14 @@ func (logger *Logger) Debug(args ...interface{}) {
 	}
 }
 
+func (logger *Logger) Success(args ...interface{}) {
+	if logger.level() >= SuccessLevel {
+		entry := logger.newEntry()
+		entry.Success(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
 func (logger *Logger) Info(args ...interface{}) {
 	if logger.level() >= InfoLevel {
 		entry := logger.newEntry()
@@ -242,6 +258,14 @@ func (logger *Logger) Debugln(args ...interface{}) {
 	if logger.level() >= DebugLevel {
 		entry := logger.newEntry()
 		entry.Debugln(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) Successln(args ...interface{}) {
+	if logger.level() >= SuccessLevel {
+		entry := logger.newEntry()
+		entry.Successln(args...)
 		logger.releaseEntry(entry)
 	}
 }

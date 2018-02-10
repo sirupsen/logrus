@@ -82,6 +82,11 @@ func Print(args ...interface{}) {
 	std.Print(args...)
 }
 
+// Success logs a message at level Success on the standard logger.
+func Success(args ...interface{}) {
+	std.Success(args...)
+}
+
 // Info logs a message at level Info on the standard logger.
 func Info(args ...interface{}) {
 	std.Info(args...)
@@ -122,6 +127,11 @@ func Printf(format string, args ...interface{}) {
 	std.Printf(format, args...)
 }
 
+// Successf logs a message at level Success on the standard logger.
+func Successf(format string, args ...interface{}) {
+	std.Successf(format, args...)
+}
+
 // Infof logs a message at level Info on the standard logger.
 func Infof(format string, args ...interface{}) {
 	std.Infof(format, args...)
@@ -160,6 +170,11 @@ func Debugln(args ...interface{}) {
 // Println logs a message at level Info on the standard logger.
 func Println(args ...interface{}) {
 	std.Println(args...)
+}
+
+// Successln logs a message at level Success on the standard logger.
+func Successln(args ...interface{}) {
+	std.Successln(args...)
 }
 
 // Infoln logs a message at level Info on the standard logger.

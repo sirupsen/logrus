@@ -65,6 +65,15 @@ func TestPrint(t *testing.T) {
 	})
 }
 
+func TestSuccess(t *testing.T) {
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.Success("test")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["msg"], "test")
+		assert.Equal(t, fields["level"], "success")
+	})
+}
+
 func TestInfo(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.Info("test")
@@ -244,6 +253,7 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 func TestConvertLevelToString(t *testing.T) {
 	assert.Equal(t, "debug", DebugLevel.String())
 	assert.Equal(t, "info", InfoLevel.String())
+	assert.Equal(t, "success", SuccessLevel.String())
 	assert.Equal(t, "warning", WarnLevel.String())
 	assert.Equal(t, "error", ErrorLevel.String())
 	assert.Equal(t, "fatal", FatalLevel.String())
@@ -298,6 +308,14 @@ func TestParseLevel(t *testing.T) {
 	l, err = ParseLevel("INFO")
 	assert.Nil(t, err)
 	assert.Equal(t, InfoLevel, l)
+
+	l, err = ParseLevel("Success")
+	assert.Nil(t, err)
+	assert.Equal(t, SuccessLevel, l)
+
+	l, err = ParseLevel("SUCCESS")
+	assert.Nil(t, err)
+	assert.Equal(t, SuccessLevel, l)
 
 	l, err = ParseLevel("debug")
 	assert.Nil(t, err)
