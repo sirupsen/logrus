@@ -263,6 +263,7 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Influxus](http://github.com/vlad-doru/influxus) | Hook for concurrently logging to [InfluxDB](http://influxdata.com/) |
 | [Journalhook](https://github.com/wercker/journalhook) | Hook for logging to `systemd-journald` |
 | [KafkaLogrus](https://github.com/tracer0tong/kafkalogrus) | Hook for logging to Kafka |
+| [Kafka REST Proxy](https://github.com/Nordstrom/logrus-kafka-rest-proxy) | Hook for logging to [Kafka REST Proxy](https://docs.confluent.io/current/kafka-rest/docs) |
 | [LFShook](https://github.com/rifflock/lfshook) | Hook for logging to the local filesystem |
 | [Logbeat](https://github.com/macandmia/logbeat) | Hook for logging to [Opbeat](https://opbeat.com/) |
 | [Logentries](https://github.com/jcftang/logentriesrus) | Hook for logging to [Logentries](https://logentries.com/) |
