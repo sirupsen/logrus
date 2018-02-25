@@ -108,7 +108,6 @@ func (logger *Logger) setOut() {
 	}
 
 	// create log file
-	fmt.Println("CREATE")
 	f, err := os.Create(logger.Filename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Log file could not be created/opened: %v\n", err)
