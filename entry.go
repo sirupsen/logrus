@@ -131,6 +131,10 @@ func (entry *Entry) write() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v\n", err)
 	} else {
+		// make sure that log file is created (in case logging shall be done
+		// into a file)
+		entry.Logger.setOut()
+		// write log entry
 		_, err = entry.Logger.Out.Write(serialized)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)

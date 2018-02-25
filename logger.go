@@ -1,8 +1,10 @@
 package logrus
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"sync"
 	"sync/atomic"
 )
@@ -12,6 +14,9 @@ type Logger struct {
 	// file, or leave it default which is `os.Stderr`. You can also set this to
 	// something more adventorous, such as logging to Kafka.
 	Out io.Writer
+	// Name of the log file (in case logging shall be done into a file). This is
+	// needed for defered creation of the file
+	Filename string
 	// Hooks for the logger instance. These allow firing events based on logging
 	// levels and log entries. For example, to send errors to an error tracking
 	// service, log to StatsD or dump the core on fatal errors.
@@ -85,6 +90,30 @@ func (logger *Logger) newEntry() *Entry {
 
 func (logger *Logger) releaseEntry(entry *Entry) {
 	logger.entryPool.Put(entry)
+}
+
+// setOut creates the log file (in case logging shall be done into a file,
+// which is indicated by non-empty logger.Filename)
+func (logger *Logger) setOut() {
+	// nothing to do in case filename is not set
+	if len(logger.Filename) == 0 {
+		return
+	}
+
+	// check f file is already created. If that's the case: Nothing to do
+	if reflect.TypeOf(logger.Out).String() == "*os.File" {
+		if logger.Out.(*os.File).Name() == logger.Filename {
+			return
+		}
+	}
+
+	// create log file
+	fmt.Println("CREATE")
+	f, err := os.Create(logger.Filename)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Log file could not be created/opened: %v\n", err)
+	}
+	logger.Out = f
 }
 
 // Adds a field to the log entry, note that it doesn't log until you call

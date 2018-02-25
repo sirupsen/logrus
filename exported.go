@@ -20,6 +20,13 @@ func SetOutput(out io.Writer) {
 	std.Out = out
 }
 
+// SetFilename sets the name of the log file
+func SetFilename(filename string) {
+	std.mu.Lock()
+	defer std.mu.Unlock()
+	std.Filename = filename
+}
+
 // SetFormatter sets the standard logger formatter.
 func SetFormatter(formatter Formatter) {
 	std.mu.Lock()
