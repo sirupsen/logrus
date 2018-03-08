@@ -1,6 +1,10 @@
+# 1.0.5
+* Add optional logging of caller method
+
 # 1.0.4
 
-* Add optional logging of caller method
+* Fix race when adding hooks (#612)
+* Fix terminal check in AppEngine (#635)
 
 # 1.0.3
 
