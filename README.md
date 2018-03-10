@@ -495,7 +495,7 @@ logrus.RegisterExitHandler(handler)
 
 #### Thread safety
 
-By default Logger is protected by mutex for concurrent writes, this mutex is invoked when calling hooks and writing logs.
+By default, Logger is protected by a mutex for concurrent writes. The mutex is held when calling hooks and writing logs.
 If you are sure such locking is not needed, you can call logger.SetNoLock() to disable the locking.
 
 Situation when locking is not needed includes:
