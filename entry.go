@@ -94,7 +94,7 @@ func (entry Entry) log(level Level, msg string) {
 	entry.Level = level
 	entry.Message = msg
 
-	entry.fireHooks()
+	entry = entry.fireHooks()
 
 	buffer = bufferPool.Get().(*bytes.Buffer)
 	buffer.Reset()
@@ -115,13 +115,14 @@ func (entry Entry) log(level Level, msg string) {
 
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
-func (entry Entry) fireHooks() {
+func (entry Entry) fireHooks() Entry {
 	entry.Logger.mu.Lock()
 	defer entry.Logger.mu.Unlock()
 	err := entry.Logger.Hooks.Fire(entry.Level, &entry)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
 	}
+	return entry
 }
 
 func (entry *Entry) write() {
