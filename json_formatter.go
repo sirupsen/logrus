@@ -78,7 +78,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	var err error
 
 	if f.PrettyPrint {
-		serialized, err = json.MarshalIndent(data, "", "\t")
+		serialized, err = json.MarshalIndent(data, "", "  ")
 	} else {
 		serialized, err = json.Marshal(data)
 	}
