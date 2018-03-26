@@ -249,17 +249,17 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Amqp-Hook](https://github.com/vladoatanasov/logrus_amqp) | Hook for logging to Amqp broker (Like RabbitMQ) |
 | [Application Insights](https://github.com/jjcollinge/logrus-appinsights) | Hook for logging to [Application Insights](https://azure.microsoft.com/en-us/services/application-insights/)
 | [AzureTableHook](https://github.com/kpfaulkner/azuretablehook/) | Hook for logging to Azure Table Storage|
-| [Bugsnag](https://github.com/Shopify/logrus-bugsnag/blob/master/bugsnag.go) | Send errors to the Bugsnag exception tracking service. |
+| [Bugsnag](https://github.com/Shopify/logrus-bugsnag/blob/master/bugsnag.go) | Send errors to the [Bugsnag](https://www.bugsnag.com) exception tracking service. |
 | [ClickHouse](https://github.com/oxgrouby/logrus-clickhouse-hook) | Send logs to [ClickHouse](https://clickhouse.yandex/) |
-| [DeferPanic](https://github.com/deferpanic/dp-logrus) | Hook for logging to DeferPanic |
+| [DeferPanic](https://github.com/deferpanic/dp-logrus) | Hook for logging to [DeferPanic](https://deferpanic.com) |
 | [Discordrus](https://github.com/kz/discordrus) | Hook for logging to [Discord](https://discordapp.com/) |
-| [ElasticSearch](https://github.com/sohlich/elogrus) | Hook for logging to ElasticSearch|
+| [ElasticSearch](https://github.com/sohlich/elogrus) | Hook for logging to [ElasticSearch](https://www.elastic.co/products/elasticsearch)|
 | [Firehose](https://github.com/beaubrewer/logrus_firehose) | Hook for logging to [Amazon Firehose](https://aws.amazon.com/kinesis/firehose/)
-| [Fluentd](https://github.com/evalphobia/logrus_fluent) | Hook for logging to fluentd |
+| [Fluentd](https://github.com/evalphobia/logrus_fluent) | Hook for logging to [fluentd](https://www.fluentd.org) |
 | [Go-Slack](https://github.com/multiplay/go-slack) | Hook for logging to [Slack](https://slack.com) |
 | [Graylog](https://github.com/gemnasium/logrus-graylog-hook) | Hook for logging to [Graylog](http://graylog2.org/) |
 | [Hiprus](https://github.com/nubo/hiprus) | Send errors to a channel in hipchat. |
-| [Honeybadger](https://github.com/agonzalezro/logrus_honeybadger) | Hook for sending exceptions to Honeybadger |
+| [Honeybadger](https://github.com/agonzalezro/logrus_honeybadger) | Hook for sending exceptions to [Honeybadger](https://www.honeybadger.io) |
 | [InfluxDB](https://github.com/Abramovic/logrus_influxdb) | Hook for logging to influxdb |
 | [Influxus](http://github.com/vlad-doru/influxus) | Hook for concurrently logging to [InfluxDB](http://influxdata.com/) |
 | [Journalhook](https://github.com/wercker/journalhook) | Hook for logging to `systemd-journald` |
@@ -274,7 +274,7 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Logstash](https://github.com/bshuster-repo/logrus-logstash-hook) | Hook for logging to [Logstash](https://www.elastic.co/products/logstash) |
 | [Mail](https://github.com/zbindenren/logrus_mail) | Hook for sending exceptions via mail |
 | [Mattermost](https://github.com/shuLhan/mattermost-integration/tree/master/hooks/logrus) | Hook for logging to [Mattermost](https://mattermost.com/) |
-| [Mongodb](https://github.com/weekface/mgorus) | Hook for logging to mongodb |
+| [Mongodb](https://github.com/weekface/mgorus) | Hook for logging to [MongoDB](https://www.mongodb.com) |
 | [NATS-Hook](https://github.com/rybit/nats_logrus_hook) | Hook for logging to [NATS](https://nats.io) |
 | [Octokit](https://github.com/dorajistyle/logrus-octokit-hook) | Hook for logging to github via octokit |
 | [Papertrail](https://github.com/polds/logrus-papertrail-hook) | Send errors to the [Papertrail](https://papertrailapp.com) hosted logging service via UDP. |
@@ -283,9 +283,9 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Pushover](https://github.com/toorop/logrus_pushover) | Send error via [Pushover](https://pushover.net) |
 | [Raygun](https://github.com/squirkle/logrus-raygun-hook) | Hook for logging to [Raygun.io](http://raygun.io/) |
 | [Redis-Hook](https://github.com/rogierlommers/logrus-redis-hook) | Hook for logging to a ELK stack (through Redis) |
-| [Rollrus](https://github.com/heroku/rollrus) | Hook for sending errors to rollbar |
+| [Rollrus](https://github.com/heroku/rollrus) | Hook for sending errors to [Rollbar](https://rollbar.com) |
 | [Scribe](https://github.com/sagar8192/logrus-scribe-hook) | Hook for logging to [Scribe](https://github.com/facebookarchive/scribe)|
-| [Sentry](https://github.com/evalphobia/logrus_sentry) | Send errors to the Sentry error logging and aggregation service. |
+| [Sentry](https://github.com/evalphobia/logrus_sentry) | Send errors to the [Sentry](https://sentry.io) error logging and aggregation service. |
 | [Slackrus](https://github.com/johntdyer/slackrus) | Hook for Slack chat. |
 | [Stackdriver](https://github.com/knq/sdhook) | Hook for logging to [Google Stackdriver](https://cloud.google.com/logging/) |
 | [Sumorus](https://github.com/doublefree/sumorus) | Hook for logging to [SumoLogic](https://www.sumologic.com/)|
