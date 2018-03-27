@@ -53,6 +53,12 @@ func WithError(err error) *Entry {
 	return std.WithField(ErrorKey, err)
 }
 
+// WithStackTrace creates an entry from the standard logger and adds an
+// stack trace to it, using the value defined in StackTraceKey as key.
+func WithStackTrace() *Entry {
+	return std.WithStackTrace()
+}
+
 // WithField creates an entry from the standard logger and adds a field to
 // it. If you want multiple fields, use `WithFields`.
 //

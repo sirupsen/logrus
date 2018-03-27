@@ -29,7 +29,33 @@ func TestEntryWithError(t *testing.T) {
 	ErrorKey = "err"
 
 	assert.Equal(err, entry.WithError(err).Data["err"])
+}
 
+func TestEntryWithStackTrace(t *testing.T) {
+	assert := assert.New(t)
+
+	defer func() {
+		StackTraceDepth = 3
+		StackTraceKey = "stacktrace"
+	}()
+
+	StackTraceDepth = 0
+	trace := WithStackTrace().Data[StackTraceKey]
+	assert.Contains(trace, "entry_test.go:43")
+	assert.Contains(trace, "logrus.TestEntryWithStackTrace")
+
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	entry := NewEntry(logger)
+
+	trace = entry.WithStackTrace().Data[StackTraceKey]
+	assert.Contains(trace, "entry_test.go:51")
+	assert.Contains(trace, "logrus.TestEntryWithStackTrace")
+
+	StackTraceKey = "trc"
+	trace = entry.WithStackTrace().Data[StackTraceKey]
+	assert.Contains(trace, "entry_test.go:56")
+	assert.Contains(trace, "logrus.TestEntryWithStackTrace")
 }
 
 func TestEntryPanicln(t *testing.T) {

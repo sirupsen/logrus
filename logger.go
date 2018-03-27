@@ -104,6 +104,13 @@ func (logger *Logger) WithFields(fields Fields) *Entry {
 	return entry.WithFields(fields)
 }
 
+// Adds a stack trace to the log entry. All it does is call `WithStackTrace`.
+func (logger *Logger) WithStackTrace() *Entry {
+	entry := logger.newEntry()
+	defer logger.releaseEntry(entry)
+	return entry.WithStackTrace()
+}
+
 // Add an error as single field to the log entry.  All it does is call
 // `WithError` for the given `error`.
 func (logger *Logger) WithError(err error) *Entry {

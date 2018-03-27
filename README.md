@@ -194,6 +194,23 @@ In general, with Logrus using any of the `printf`-family functions should be
 seen as a hint you should add a field, however, you can still use the
 `printf`-family functions with Logrus.
 
+#### StackTrace
+
+Logrus includes a stack trace generator to set debugging information as part
+of a log entry.
+
+```go
+log.WithStackTrace().Fatal("Failed to send event")
+```
+
+Depending on how we are using Logrus we might want to change the number of stack
+frames to skip before recording them. For further information read the
+documentation of [runtime.Callers](https://golang.org/pkg/runtime/#Callers).
+
+```go
+logrus.StackTraceDepth = 4
+```
+
 #### Default Fields
 
 Often it's helpful to have fields _always_ attached to log statements in an

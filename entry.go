@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
@@ -20,6 +22,12 @@ func init() {
 
 // Defines the key when adding errors using WithError.
 var ErrorKey = "error"
+
+// Defines the key when adding stack traces using WithStackTrace.
+var StackTraceKey = "stacktrace"
+
+// Defines the depth to start logging the stack traces
+var StackTraceDepth = 3
 
 // An entry is the final or intermediate Logrus logging entry. It contains all
 // the fields passed with WithField{,s}. It's finally logged when Debug, Info,
@@ -67,6 +75,27 @@ func (entry *Entry) String() (string, error) {
 // Add an error as single field (using the key defined in ErrorKey) to the Entry.
 func (entry *Entry) WithError(err error) *Entry {
 	return entry.WithField(ErrorKey, err)
+}
+
+// WithStackTrace adds a stack trace as single field (using the key defined in StackTraceKey)
+// to the Entry.
+func (entry *Entry) WithStackTrace() *Entry {
+	pc := make([]uintptr, 64)
+	n := runtime.Callers(StackTraceDepth, pc)
+	info := []string{}
+	if n > 0 {
+		frames := runtime.CallersFrames(pc[:n])
+		for {
+			frame, more := frames.Next()
+			if !strings.Contains(frame.File, "runtime/") {
+				info = append(info, fmt.Sprintf("%s:%d %s", frame.File, frame.Line, frame.Function))
+			}
+			if !more {
+				break
+			}
+		}
+	}
+	return entry.WithField(StackTraceKey, strings.Join(info, "\n"))
 }
 
 // Add a single field to the Entry.
