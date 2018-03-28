@@ -7,8 +7,10 @@ import (
 
 func Example_basic() {
 	var log = logrus.New()
+	var textFormatter = new(logrus.TextFormatter)
+
 	log.Formatter = new(logrus.JSONFormatter)
-	log.Formatter = new(logrus.TextFormatter)                     //default
+	log.Formatter = textFormatter                                 //default
 	log.Formatter.(*logrus.TextFormatter).DisableTimestamp = true // remove timestamp from test output
 	log.Level = logrus.DebugLevel
 	log.Out = os.Stdout
@@ -19,6 +21,11 @@ func Example_basic() {
 	// } else {
 	// 	log.Info("Failed to log to file, using default stderr")
 	// }
+
+	// set different colors
+	textFormatter.SetLevelColor(logrus.DebugLevel, 36)
+	textFormatter.SetLevelColor(logrus.InfoLevel, 37)
+	textFormatter.SetLevelColor(logrus.WarnLevel, 45)
 
 	defer func() {
 		err := recover()

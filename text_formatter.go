@@ -9,17 +9,30 @@ import (
 	"time"
 )
 
+// Basic text colors
+//
+// See "http://misc.flogisoft.com/bash/tip_colors_and_formatting#colors" for more information about terminal formatting
 const (
-	nocolor = 0
-	red     = 31
-	green   = 32
-	yellow  = 33
-	blue    = 36
-	gray    = 37
+	noColor = uint8(0)
+	red     = uint8(31)
+	green   = uint8(32)
+	yellow  = uint8(33)
+	blue    = uint8(34)
+	magenta = uint8(35)
+	cyan    = uint8(36)
+	gray    = uint8(37)
 )
 
 var (
-	baseTimestamp time.Time
+	baseTimestamp   time.Time
+	defaultColorMap = colorMap{
+		DebugLevel: gray,
+		InfoLevel:  cyan,
+		WarnLevel:  yellow,
+		ErrorLevel: red,
+		FatalLevel: red,
+		PanicLevel: red,
+	}
 )
 
 func init() {
@@ -53,13 +66,22 @@ type TextFormatter struct {
 	// QuoteEmptyFields will wrap empty fields in quotes if true
 	QuoteEmptyFields bool
 
+	// ColorMap can be set to override the default color map
+	colorMap colorMap
+
 	// Whether the logger's out is to a terminal
 	isTerminal bool
 
 	sync.Once
 }
 
+// ColorMap maps levels to colors
+type colorMap map[Level]uint8
+
 func (f *TextFormatter) init(entry *Entry) {
+	if f.colorMap == nil {
+		f.colorMap = defaultColorMap
+	}
 	if entry.Logger != nil {
 		f.isTerminal = checkIfTerminal(entry.Logger.Out)
 	}
@@ -111,19 +133,16 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestampFormat string) {
-	var levelColor int
-	switch entry.Level {
-	case DebugLevel:
-		levelColor = gray
-	case WarnLevel:
-		levelColor = yellow
-	case ErrorLevel, FatalLevel, PanicLevel:
-		levelColor = red
-	default:
-		levelColor = blue
+// SetLevelColor sets a color to a log level in the ColorMap
+func (f *TextFormatter) SetLevelColor(l Level, c uint8) {
+	if f.colorMap == nil {
+		f.colorMap = defaultColorMap
 	}
+	f.colorMap[l] = c
+}
 
+func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestampFormat string) {
+	levelColor := f.getLevelColor(entry.Level)
 	levelText := strings.ToUpper(entry.Level.String())[0:4]
 
 	if f.DisableTimestamp {
@@ -138,6 +157,13 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 		fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=", levelColor, k)
 		f.appendValue(b, v)
 	}
+}
+
+func (f *TextFormatter) getLevelColor(l Level) uint8 {
+	if val, ok := f.colorMap[l]; ok {
+		return val
+	}
+	return gray
 }
 
 func (f *TextFormatter) needsQuoting(text string) bool {

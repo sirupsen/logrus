@@ -137,5 +137,14 @@ func TestDisableTimestampWithColoredOutput(t *testing.T) {
 	}
 }
 
+func TestSetLevelColor(t *testing.T) {
+	tf := &TextFormatter{}
+
+	tf.SetLevelColor(PanicLevel, magenta)
+	if tf.colorMap[PanicLevel] != magenta {
+		t.Error("Expected magenta color setting for panic level")
+	}
+}
+
 // TODO add tests for sorting etc., this requires a parser for the text
 // formatter output.
