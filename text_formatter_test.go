@@ -128,6 +128,44 @@ func TestTimestampFormat(t *testing.T) {
 	checkTimeStr("")
 }
 
+func TestDisableLevelTruncation(t *testing.T) {
+	entry := &Entry{
+		Time:    time.Now(),
+		Message: "testing",
+	}
+	keys := []string{}
+	timestampFormat := "Mon Jan 2 15:04:05 -0700 MST 2006"
+	checkDisableTruncation := func(disabled bool, level Level) {
+		tf := &TextFormatter{DisableLevelTruncation: disabled}
+		var b bytes.Buffer
+		entry.Level = level
+		tf.printColored(&b, entry, keys, timestampFormat)
+		logLine := (&b).String()
+		if disabled {
+			expected := strings.ToUpper(level.String())
+			if !strings.Contains(logLine, expected) {
+				t.Errorf("level string expected to be %s when truncation disabled", expected)
+			}
+		} else {
+			expected := strings.ToUpper(level.String())
+			if len(level.String()) > 4 {
+				if strings.Contains(logLine, expected) {
+					t.Errorf("level string %s expected to be truncated to %s when truncation is enabled", expected, expected[0:4])
+				}
+			} else {
+				if !strings.Contains(logLine, expected) {
+					t.Errorf("level string expected to be %s when truncation is enabled and level string is below truncation threshold", expected)
+				}
+			}
+		}
+	}
+
+	checkDisableTruncation(true, DebugLevel)
+	checkDisableTruncation(true, InfoLevel)
+	checkDisableTruncation(false, ErrorLevel)
+	checkDisableTruncation(false, InfoLevel)
+}
+
 func TestDisableTimestampWithColoredOutput(t *testing.T) {
 	tf := &TextFormatter{DisableTimestamp: true, ForceColors: true}
 

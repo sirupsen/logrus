@@ -51,6 +51,10 @@ type TextFormatter struct {
 	// be desired.
 	DisableSorting bool
 
+
+	// Disables the truncation of the level text to 4 characters.
+	DisableLevelTruncation bool
+
 	// QuoteEmptyFields will wrap empty fields in quotes if true
 	QuoteEmptyFields bool
 
@@ -125,7 +129,10 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 		levelColor = blue
 	}
 
-	levelText := strings.ToUpper(entry.Level.String())[0:4]
+	levelText := strings.ToUpper(entry.Level.String())
+	if !f.DisableLevelTruncation {
+		levelText = levelText[0:4]
+	}
 
 	if f.DisableTimestamp {
 		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)

@@ -372,6 +372,8 @@ The built-in logging formatters are:
     field to `true`.  To force no colored output even if there is a TTY  set the
     `DisableColors` field to `true`. For Windows, see
     [github.com/mattn/go-colorable](https://github.com/mattn/go-colorable).
+  * When colors are enabled, levels are truncated to 4 characters by default. To disable
+    truncation set the `DisableLevelTruncation` field to `true`.
   * All options are listed in the [generated docs](https://godoc.org/github.com/sirupsen/logrus#TextFormatter).
 * `logrus.JSONFormatter`. Logs fields as JSON.
   * All options are listed in the [generated docs](https://godoc.org/github.com/sirupsen/logrus#JSONFormatter).
