@@ -48,7 +48,7 @@ type Entry struct {
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
-		// Default is three fields, give a little extra room
+		// Default is five fields, give a little extra room
 		Data: make(Fields, 5),
 	}
 }
