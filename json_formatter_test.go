@@ -3,6 +3,7 @@ package logrus
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -103,6 +104,60 @@ func TestFieldClashWithLevel(t *testing.T) {
 
 	if entry["fields.level"] != "something" {
 		t.Fatal("fields.level not set to original level field")
+	}
+}
+
+func TestFieldClashWithRemappedFields(t *testing.T) {
+	formatter := &JSONFormatter{
+		FieldMap: FieldMap{
+			FieldKeyTime:  "@timestamp",
+			FieldKeyLevel: "@level",
+			FieldKeyMsg:   "@message",
+		},
+	}
+
+	b, err := formatter.Format(WithFields(Fields{
+		"@timestamp": "@timestamp",
+		"@level":     "@level",
+		"@message":   "@message",
+		"timestamp":  "timestamp",
+		"level":      "level",
+		"msg":        "msg",
+	}))
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	entry := make(map[string]interface{})
+	err = json.Unmarshal(b, &entry)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	for _, field := range []string{"timestamp", "level", "msg"} {
+		if entry[field] != field {
+			t.Errorf("Expected field %v to be untouched; got %v", field, entry[field])
+		}
+
+		remappedKey := fmt.Sprintf("fields.%s", field)
+		if remapped, ok := entry[remappedKey]; ok {
+			t.Errorf("Expected %s to be empty; got %v", remappedKey, remapped)
+		}
+	}
+
+	for _, field := range []string{"@timestamp", "@level", "@message"} {
+		if entry[field] == field {
+			t.Errorf("Expected field %v to be mapped to an Entry value", field)
+		}
+
+		remappedKey := fmt.Sprintf("fields.%s", field)
+		if remapped, ok := entry[remappedKey]; ok {
+			if remapped != field {
+				t.Errorf("Expected field %v to be copied to %s; got %v", field, remappedKey, remapped)
+			}
+		} else {
+			t.Errorf("Expected field %v to be copied to %s; was absent", field, remappedKey)
+		}
 	}
 }
 

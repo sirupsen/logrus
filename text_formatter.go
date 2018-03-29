@@ -20,6 +20,7 @@ const (
 
 var (
 	baseTimestamp time.Time
+	emptyFieldMap FieldMap
 )
 
 func init() {
@@ -82,7 +83,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		b = &bytes.Buffer{}
 	}
 
-	prefixFieldClashes(entry.Data)
+	prefixFieldClashes(entry.Data, emptyFieldMap)
 
 	f.Do(func() { f.init(entry) })
 
