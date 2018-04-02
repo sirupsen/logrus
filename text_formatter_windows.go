@@ -1,4 +1,4 @@
-// +build !appengine,!gopherjs
+// +build !appengine,!gopherjs,windows
 
 package logrus
 
