@@ -68,7 +68,7 @@ func (f *TextFormatter) init(entry *Entry) {
 		f.isTerminal = checkIfTerminal(entry.Logger.Out)
 
 		if f.isTerminal {
-			f.initTerminal(entry)
+			initTerminal(entry.Logger.Out)
 		}
 	}
 }

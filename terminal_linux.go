@@ -7,11 +7,15 @@
 
 package logrus
 
-import "golang.org/x/sys/unix"
+import (
+	"io"
+
+	"golang.org/x/sys/unix"
+)
 
 const ioctlReadTermios = unix.TCGETS
 
 type Termios unix.Termios
 
-func (f *TextFormatter) initTerminal(entry *Entry) {
+func initTerminal(w io.Writer) {
 }

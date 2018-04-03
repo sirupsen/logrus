@@ -3,17 +3,16 @@
 package logrus
 
 import (
+	"io"
 	"os"
 	"syscall"
 
 	sequences "github.com/konsorten/go-windows-terminal-sequences"
 )
 
-func (f *TextFormatter) initTerminal(entry *Entry) {
-	switch v := entry.Logger.Out.(type) {
+func initTerminal(w io.Writer) {
+	switch v := w.(type) {
 	case *os.File:
-		handle := syscall.Handle(v.Fd())
-
-		sequences.EnableVirtualTerminalProcessing(handle, true)
+		sequences.EnableVirtualTerminalProcessing(syscall.Handle(v.Fd()), true)
 	}
 }
