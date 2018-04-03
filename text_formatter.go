@@ -51,7 +51,6 @@ type TextFormatter struct {
 	// be desired.
 	DisableSorting bool
 
-
 	// Disables the truncation of the level text to 4 characters.
 	DisableLevelTruncation bool
 
@@ -68,7 +67,9 @@ func (f *TextFormatter) init(entry *Entry) {
 	if entry.Logger != nil {
 		f.isTerminal = checkIfTerminal(entry.Logger.Out)
 
-		f.initTerminal(entry)
+		if f.isTerminal {
+			f.initTerminal(entry)
+		}
 	}
 }
 
