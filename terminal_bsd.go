@@ -8,3 +8,6 @@ import "golang.org/x/sys/unix"
 const ioctlReadTermios = unix.TIOCGETA
 
 type Termios unix.Termios
+
+func (f *TextFormatter) initTerminal(entry *Entry) {
+}
