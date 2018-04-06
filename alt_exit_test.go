@@ -19,7 +19,7 @@ func TestRegister(t *testing.T) {
 }
 
 func TestHandler(t *testing.T) {
-	tempDir, err := ioutil.TempDir("", "test_handler")
+	tempDir, err := ioutil.TempDir(".", "test_handler")
 	if err != nil {
 		log.Fatalf("can't create temp dir. %q", err)
 	}
