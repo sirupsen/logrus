@@ -286,6 +286,7 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Rollrus](https://github.com/heroku/rollrus) | Hook for sending errors to rollbar |
 | [Scribe](https://github.com/sagar8192/logrus-scribe-hook) | Hook for logging to [Scribe](https://github.com/facebookarchive/scribe)|
 | [Sentry](https://github.com/evalphobia/logrus_sentry) | Send errors to the Sentry error logging and aggregation service. |
+| [Seq](https://github.com/nullseed/logruseq) | Hook for logging to [Seq](https://getseq.net/) |
 | [Slackrus](https://github.com/johntdyer/slackrus) | Hook for Slack chat. |
 | [Stackdriver](https://github.com/knq/sdhook) | Hook for logging to [Google Stackdriver](https://cloud.google.com/logging/) |
 | [Sumorus](https://github.com/doublefree/sumorus) | Hook for logging to [SumoLogic](https://www.sumologic.com/)|
