@@ -37,15 +37,7 @@ func TestEntryPanicln(t *testing.T) {
 
 	defer func() {
 		p := recover()
-		assert.NotNil(t, p)
-
-		switch pVal := p.(type) {
-		case *Entry:
-			assert.Equal(t, "kaboom", pVal.Message)
-			assert.Equal(t, errBoom, pVal.Data["err"])
-		default:
-			t.Fatalf("want type *Entry, got %T: %#v", pVal, pVal)
-		}
+		assert.Equal(t, "kaboom", p)
 	}()
 
 	logger := New()
@@ -59,15 +51,7 @@ func TestEntryPanicf(t *testing.T) {
 
 	defer func() {
 		p := recover()
-		assert.NotNil(t, p)
-
-		switch pVal := p.(type) {
-		case *Entry:
-			assert.Equal(t, "kaboom true", pVal.Message)
-			assert.Equal(t, errBoom, pVal.Data["err"])
-		default:
-			t.Fatalf("want type *Entry, got %T: %#v", pVal, pVal)
-		}
+		assert.Equal(t, "kaboom true", p)
 	}()
 
 	logger := New()
