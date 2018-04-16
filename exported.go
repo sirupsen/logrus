@@ -107,7 +107,7 @@ func Panic(args ...interface{}) {
 	std.Panic(args...)
 }
 
-// Fatal logs a message at level Fatal on the standard logger.
+// Fatal logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
 func Fatal(args ...interface{}) {
 	std.Fatal(args...)
 }
@@ -147,7 +147,7 @@ func Panicf(format string, args ...interface{}) {
 	std.Panicf(format, args...)
 }
 
-// Fatalf logs a message at level Fatal on the standard logger.
+// Fatalf logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
 func Fatalf(format string, args ...interface{}) {
 	std.Fatalf(format, args...)
 }
@@ -187,7 +187,7 @@ func Panicln(args ...interface{}) {
 	std.Panicln(args...)
 }
 
-// Fatalln logs a message at level Fatal on the standard logger.
+// Fatalln logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
 func Fatalln(args ...interface{}) {
 	std.Fatalln(args...)
 }
