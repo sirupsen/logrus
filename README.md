@@ -275,6 +275,7 @@ Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/v
 | [Mail](https://github.com/zbindenren/logrus_mail) | Hook for sending exceptions via mail |
 | [Mattermost](https://github.com/shuLhan/mattermost-integration/tree/master/hooks/logrus) | Hook for logging to [Mattermost](https://mattermost.com/) |
 | [Mongodb](https://github.com/weekface/mgorus) | Hook for logging to mongodb |
+| [MySQL](https://github.com/LyricTian/logrus-mysql-hook) | Hook for logging to mysql |
 | [NATS-Hook](https://github.com/rybit/nats_logrus_hook) | Hook for logging to [NATS](https://nats.io) |
 | [Octokit](https://github.com/dorajistyle/logrus-octokit-hook) | Hook for logging to github via octokit |
 | [Papertrail](https://github.com/polds/logrus-papertrail-hook) | Send errors to the [Papertrail](https://papertrailapp.com) hosted logging service via UDP. |
