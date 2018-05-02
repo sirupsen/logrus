@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 )
@@ -71,9 +72,11 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
 
-	serialized, err := json.Marshal(data)
-	if err != nil {
+	buf := new(bytes.Buffer)
+	encoder := json.NewEncoder(buf)
+	encoder.SetEscapeHTML(false)
+	if err := encoder.Encode(data); err != nil {
 		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
 	}
-	return append(serialized, '\n'), nil
+	return buf.Bytes(), nil
 }
