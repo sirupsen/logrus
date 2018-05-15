@@ -51,10 +51,10 @@ func TestLoggingWithHooksRace(t *testing.T) {
 		}()
 	}
 
+	wg.Wait()
+
 	assert.Equal(logrus.InfoLevel, hook.LastEntry().Level)
 	assert.Equal("info", hook.LastEntry().Message)
-
-	wg.Wait()
 
 	entries := hook.AllEntries()
 	assert.Equal(100, len(entries))
