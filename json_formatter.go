@@ -75,5 +75,5 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
 	}
-	return append(serialized, '\n'), nil
+	return append(serialized, EndOfLine...), nil
 }

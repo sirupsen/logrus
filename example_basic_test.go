@@ -5,6 +5,10 @@ import (
 	"os"
 )
 
+func init() {
+	logrus.EndOfLine = "\n"
+}
+
 func Example_basic() {
 	var log = logrus.New()
 	log.Formatter = new(logrus.JSONFormatter)
