@@ -88,7 +88,7 @@ func (logger *Logger) releaseEntry(entry *Entry) {
 }
 
 // Adds a field to the log entry, note that it doesn't log until you call
-// Debug, Print, Info, Warn, Fatal or Panic. It only creates a log entry.
+// Debug, Print, Info, Warn, Error, Fatal or Panic. It only creates a log entry.
 // If you want multiple fields, use `WithFields`.
 func (logger *Logger) WithField(key string, value interface{}) *Entry {
 	entry := logger.newEntry()
