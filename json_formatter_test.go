@@ -252,3 +252,22 @@ func TestJSONEnableTimestamp(t *testing.T) {
 		t.Error("Timestamp not present", s)
 	}
 }
+
+func TestJSONEnableIntLogLevels(t *testing.T) {
+	formatter := &JSONFormatter{EnableIntLogLevels: true}
+	entry := &Entry{Level: DebugLevel}
+
+	b, err := formatter.Format(entry)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+	entryJSON := make(map[string]interface{})
+	err = json.Unmarshal(b, &entryJSON)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	if entryJSON["level"] != float64(DebugLevel) {
+		t.Fatal("level not set to original level field")
+	}
+}

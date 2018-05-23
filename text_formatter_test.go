@@ -175,5 +175,17 @@ func TestDisableTimestampWithColoredOutput(t *testing.T) {
 	}
 }
 
+func TestEnableIntLogLevels(t *testing.T) {
+	expected := "time=\"0001-01-01T00:00:00Z\" level=5"
+
+	tf := &TextFormatter{EnableIntLogLevels: true}
+	entry := &Entry{Level: DebugLevel}
+
+	b, _ := tf.Format(entry)
+	if !strings.Contains(string(b), expected) {
+		t.Errorf("expected: '%s' got: '%s'\n", expected, string(b))
+	}
+}
+
 // TODO add tests for sorting etc., this requires a parser for the text
 // formatter output.
