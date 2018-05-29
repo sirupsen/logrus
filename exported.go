@@ -41,6 +41,30 @@ func GetLevel() Level {
 	return std.level()
 }
 
+func IsDebugEnabled() bool {
+	return std.IsDebugEnabled()
+}
+
+func IsInfoEnabled() bool {
+	return std.IsInfoEnabled()
+}
+
+func IsWarnEnabled() bool {
+	return std.IsWarnEnabled()
+}
+
+func IsErrorEnabled() bool {
+	return std.IsErrorEnabled()
+}
+
+func IsFatalEnabled() bool {
+	return std.IsFatalEnabled()
+}
+
+func IsPanicEnabled() bool {
+	return std.IsPanicEnabled()
+}
+
 // AddHook adds a hook to the standard logger hooks.
 func AddHook(hook Hook) {
 	std.mu.Lock()

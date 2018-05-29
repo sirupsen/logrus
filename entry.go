@@ -139,7 +139,7 @@ func (entry *Entry) write() {
 }
 
 func (entry *Entry) Debug(args ...interface{}) {
-	if entry.Logger.level() >= DebugLevel {
+	if entry.IsDebugEnabled() {
 		entry.log(DebugLevel, fmt.Sprint(args...))
 	}
 }
@@ -149,13 +149,13 @@ func (entry *Entry) Print(args ...interface{}) {
 }
 
 func (entry *Entry) Info(args ...interface{}) {
-	if entry.Logger.level() >= InfoLevel {
+	if entry.IsInfoEnabled() {
 		entry.log(InfoLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Warn(args ...interface{}) {
-	if entry.Logger.level() >= WarnLevel {
+	if entry.IsWarnEnabled() {
 		entry.log(WarnLevel, fmt.Sprint(args...))
 	}
 }
@@ -165,20 +165,20 @@ func (entry *Entry) Warning(args ...interface{}) {
 }
 
 func (entry *Entry) Error(args ...interface{}) {
-	if entry.Logger.level() >= ErrorLevel {
+	if entry.IsErrorEnabled() {
 		entry.log(ErrorLevel, fmt.Sprint(args...))
 	}
 }
 
 func (entry *Entry) Fatal(args ...interface{}) {
-	if entry.Logger.level() >= FatalLevel {
+	if entry.IsFatalEnabled() {
 		entry.log(FatalLevel, fmt.Sprint(args...))
 	}
 	Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
-	if entry.Logger.level() >= PanicLevel {
+	if entry.IsPanicEnabled() {
 		entry.log(PanicLevel, fmt.Sprint(args...))
 	}
 	panic(fmt.Sprint(args...))
@@ -187,13 +187,13 @@ func (entry *Entry) Panic(args ...interface{}) {
 // Entry Printf family functions
 
 func (entry *Entry) Debugf(format string, args ...interface{}) {
-	if entry.Logger.level() >= DebugLevel {
+	if entry.IsDebugEnabled() {
 		entry.Debug(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Infof(format string, args ...interface{}) {
-	if entry.Logger.level() >= InfoLevel {
+	if entry.IsInfoEnabled() {
 		entry.Info(fmt.Sprintf(format, args...))
 	}
 }
@@ -203,7 +203,7 @@ func (entry *Entry) Printf(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Warnf(format string, args ...interface{}) {
-	if entry.Logger.level() >= WarnLevel {
+	if entry.IsWarnEnabled() {
 		entry.Warn(fmt.Sprintf(format, args...))
 	}
 }
@@ -213,20 +213,20 @@ func (entry *Entry) Warningf(format string, args ...interface{}) {
 }
 
 func (entry *Entry) Errorf(format string, args ...interface{}) {
-	if entry.Logger.level() >= ErrorLevel {
+	if entry.IsErrorEnabled() {
 		entry.Error(fmt.Sprintf(format, args...))
 	}
 }
 
 func (entry *Entry) Fatalf(format string, args ...interface{}) {
-	if entry.Logger.level() >= FatalLevel {
+	if entry.IsFatalEnabled() {
 		entry.Fatal(fmt.Sprintf(format, args...))
 	}
 	Exit(1)
 }
 
 func (entry *Entry) Panicf(format string, args ...interface{}) {
-	if entry.Logger.level() >= PanicLevel {
+	if entry.IsPanicEnabled() {
 		entry.Panic(fmt.Sprintf(format, args...))
 	}
 }
@@ -234,13 +234,13 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 // Entry Println family functions
 
 func (entry *Entry) Debugln(args ...interface{}) {
-	if entry.Logger.level() >= DebugLevel {
+	if entry.IsDebugEnabled() {
 		entry.Debug(entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Infoln(args ...interface{}) {
-	if entry.Logger.level() >= InfoLevel {
+	if entry.IsInfoEnabled() {
 		entry.Info(entry.sprintlnn(args...))
 	}
 }
@@ -250,7 +250,7 @@ func (entry *Entry) Println(args ...interface{}) {
 }
 
 func (entry *Entry) Warnln(args ...interface{}) {
-	if entry.Logger.level() >= WarnLevel {
+	if entry.IsWarnEnabled() {
 		entry.Warn(entry.sprintlnn(args...))
 	}
 }
@@ -260,22 +260,46 @@ func (entry *Entry) Warningln(args ...interface{}) {
 }
 
 func (entry *Entry) Errorln(args ...interface{}) {
-	if entry.Logger.level() >= ErrorLevel {
+	if entry.IsErrorEnabled() {
 		entry.Error(entry.sprintlnn(args...))
 	}
 }
 
 func (entry *Entry) Fatalln(args ...interface{}) {
-	if entry.Logger.level() >= FatalLevel {
+	if entry.IsFatalEnabled() {
 		entry.Fatal(entry.sprintlnn(args...))
 	}
 	Exit(1)
 }
 
 func (entry *Entry) Panicln(args ...interface{}) {
-	if entry.Logger.level() >= PanicLevel {
+	if entry.IsPanicEnabled() {
 		entry.Panic(entry.sprintlnn(args...))
 	}
+}
+
+func (entry *Entry) IsDebugEnabled() bool {
+	return entry.Logger.IsDebugEnabled()
+}
+
+func (entry *Entry) IsInfoEnabled() bool {
+	return entry.Logger.IsInfoEnabled()
+}
+
+func (entry *Entry) IsWarnEnabled() bool {
+	return entry.Logger.IsWarnEnabled()
+}
+
+func (entry *Entry) IsErrorEnabled() bool {
+	return entry.Logger.IsErrorEnabled()
+}
+
+func (entry *Entry) IsFatalEnabled() bool {
+	return entry.Logger.IsFatalEnabled()
+}
+
+func (entry *Entry) IsPanicEnabled() bool {
+	return entry.Logger.IsPanicEnabled()
 }
 
 // Sprintlnn => Sprint no newline. This is to get the behavior of how
