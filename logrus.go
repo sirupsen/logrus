@@ -17,6 +17,8 @@ func (level Level) String() string {
 	switch level {
 	case DebugLevel:
 		return "debug"
+	case SuccessLevel:
+		return "success"
 	case InfoLevel:
 		return "info"
 	case WarnLevel:
@@ -45,6 +47,8 @@ func ParseLevel(lvl string) (Level, error) {
 		return WarnLevel, nil
 	case "info":
 		return InfoLevel, nil
+	case "success":
+		return SuccessLevel, nil
 	case "debug":
 		return DebugLevel, nil
 	}
@@ -60,6 +64,7 @@ var AllLevels = []Level{
 	ErrorLevel,
 	WarnLevel,
 	InfoLevel,
+	SuccessLevel,
 	DebugLevel,
 }
 
@@ -77,6 +82,9 @@ const (
 	ErrorLevel
 	// WarnLevel level. Non-critical entries that deserve eyes.
 	WarnLevel
+	// SuccessLevel level. Used to denote certain operations are complete.
+	// Useful for a CLI application to indicate an action completed successfully.
+	SuccessLevel
 	// InfoLevel level. General operational entries about what's going on inside the
 	// application.
 	InfoLevel
@@ -115,6 +123,7 @@ type FieldLogger interface {
 	WithError(err error) *Entry
 
 	Debugf(format string, args ...interface{})
+	Successf(format string, args ...interface{})
 	Infof(format string, args ...interface{})
 	Printf(format string, args ...interface{})
 	Warnf(format string, args ...interface{})
@@ -124,6 +133,7 @@ type FieldLogger interface {
 	Panicf(format string, args ...interface{})
 
 	Debug(args ...interface{})
+	Success(args ...interface{})
 	Info(args ...interface{})
 	Print(args ...interface{})
 	Warn(args ...interface{})
@@ -133,6 +143,7 @@ type FieldLogger interface {
 	Panic(args ...interface{})
 
 	Debugln(args ...interface{})
+	Successln(args ...interface{})
 	Infoln(args ...interface{})
 	Println(args ...interface{})
 	Warnln(args ...interface{})

@@ -34,11 +34,11 @@ type Entry struct {
 	// Time at which the log entry was created
 	Time time.Time
 
-	// Level the log entry was logged at: Debug, Info, Warn, Error, Fatal or Panic
+	// Level the log entry was logged at: Debug, Success, Info, Warn, Error, Fatal or Panic
 	// This field will be set on entry firing and the value will be equal to the one in Logger struct field.
 	Level Level
 
-	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
+	// Message passed to Debug, Success, Info, Warn, Error, Fatal or Panic
 	Message string
 
 	// When formatter is called in entry.log(), an Buffer may be set to entry
@@ -148,6 +148,12 @@ func (entry *Entry) Print(args ...interface{}) {
 	entry.Info(args...)
 }
 
+func (entry *Entry) Success(args ...interface{}) {
+	if entry.Logger.level() >= SuccessLevel {
+		entry.log(SuccessLevel, fmt.Sprint(args...))
+	}
+}
+
 func (entry *Entry) Info(args ...interface{}) {
 	if entry.Logger.level() >= InfoLevel {
 		entry.log(InfoLevel, fmt.Sprint(args...))
@@ -189,6 +195,12 @@ func (entry *Entry) Panic(args ...interface{}) {
 func (entry *Entry) Debugf(format string, args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
 		entry.Debug(fmt.Sprintf(format, args...))
+	}
+}
+
+func (entry *Entry) Successf(format string, args ...interface{}) {
+	if entry.Logger.level() >= SuccessLevel {
+		entry.Success(fmt.Sprintf(format, args...))
 	}
 }
 
@@ -236,6 +248,12 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 func (entry *Entry) Debugln(args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
 		entry.Debug(entry.sprintlnn(args...))
+	}
+}
+
+func (entry *Entry) Successln(args ...interface{}) {
+	if entry.Logger.level() >= SuccessLevel {
+		entry.Success(entry.sprintlnn(args...))
 	}
 }
 

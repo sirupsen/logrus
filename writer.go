@@ -28,6 +28,8 @@ func (entry *Entry) WriterLevel(level Level) *io.PipeWriter {
 		printFunc = entry.Debug
 	case InfoLevel:
 		printFunc = entry.Info
+	case SuccessLevel:
+		printFunc = entry.Success
 	case WarnLevel:
 		printFunc = entry.Warn
 	case ErrorLevel:

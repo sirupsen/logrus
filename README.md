@@ -52,6 +52,7 @@ attached, the output is compatible with the
 ```text
 time="2015-03-26T01:27:38-04:00" level=debug msg="Started observing beach" animal=walrus number=8
 time="2015-03-26T01:27:38-04:00" level=info msg="A group of walrus emerges from the ocean" animal=walrus size=10
+time="2015-03-26T01:27:38-04:00" level=success msg="Group emerged" animal=walrus
 time="2015-03-26T01:27:38-04:00" level=warning msg="The group's number increased tremendously!" number=122 omg=true
 time="2015-03-26T01:27:38-04:00" level=debug msg="Temperature changes" temperature=-4
 time="2015-03-26T01:27:38-04:00" level=panic msg="It's over 9000!" animal=orca size=9009
@@ -113,6 +114,10 @@ func main() {
     "animal": "walrus",
     "size":   10,
   }).Info("A group of walrus emerges from the ocean")
+
+  log.WithFields(logrus.Fields{
+    "animal": "walrus",
+  }).Success("Group emerged")
 
   log.WithFields(log.Fields{
     "omg":    true,
