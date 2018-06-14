@@ -252,3 +252,35 @@ func TestJSONEnableTimestamp(t *testing.T) {
 		t.Error("Timestamp not present", s)
 	}
 }
+
+func TestJSONMsgEnableNewline(t *testing.T) {
+	formatter := &JSONFormatter{
+		DisableNewline: false,
+	}
+
+	b, err := formatter.Format(&Entry{Message: "oh hai"})
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	c := b[len(b)-1]
+	if c != byte('\n') {
+		t.Fatal("Expected formatted entry to include a trailing newline")
+	}
+}
+
+func TestJSONMsgDisableNewline(t *testing.T) {
+	formatter := &JSONFormatter{
+		DisableNewline: true,
+	}
+
+	b, err := formatter.Format(&Entry{Message: "oh hai"})
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	c := b[len(b)-1]
+	if c == byte('\n') {
+		t.Fatal("Expected formatted entry to not include a trailing newline")
+	}
+}
