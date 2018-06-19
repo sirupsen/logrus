@@ -3,14 +3,10 @@ package logrus
 import (
 	"bytes"
 	"fmt"
-	"io"
-	"os"
 	"sort"
 	"strings"
 	"sync"
 	"time"
-
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -24,6 +20,7 @@ const (
 
 var (
 	baseTimestamp time.Time
+	emptyFieldMap FieldMap
 )
 
 func init() {
@@ -54,6 +51,10 @@ type TextFormatter struct {
 	// be desired.
 	DisableSorting bool
 
+
+	// Disables the truncation of the level text to 4 characters.
+	DisableLevelTruncation bool
+
 	// QuoteEmptyFields will wrap empty fields in quotes if true
 	QuoteEmptyFields bool
 
@@ -74,16 +75,7 @@ type TextFormatter struct {
 
 func (f *TextFormatter) init(entry *Entry) {
 	if entry.Logger != nil {
-		f.isTerminal = f.checkIfTerminal(entry.Logger.Out)
-	}
-}
-
-func (f *TextFormatter) checkIfTerminal(w io.Writer) bool {
-	switch v := w.(type) {
-	case *os.File:
-		return terminal.IsTerminal(int(v.Fd()))
-	default:
-		return false
+		f.isTerminal = checkIfTerminal(entry.Logger.Out)
 	}
 }
 
@@ -104,7 +96,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		b = &bytes.Buffer{}
 	}
 
-	prefixFieldClashes(entry.Data)
+	prefixFieldClashes(entry.Data, emptyFieldMap)
 
 	f.Do(func() { f.init(entry) })
 
@@ -146,7 +138,10 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 		levelColor = blue
 	}
 
-	levelText := strings.ToUpper(entry.Level.String())[0:4]
+	levelText := strings.ToUpper(entry.Level.String())
+	if !f.DisableLevelTruncation {
+		levelText = levelText[0:4]
+	}
 
 	if f.DisableTimestamp {
 		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
