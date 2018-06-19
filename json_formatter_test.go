@@ -161,6 +161,48 @@ func TestFieldClashWithRemappedFields(t *testing.T) {
 	}
 }
 
+func TestFieldsInNestedDictionary(t *testing.T) {
+	formatter := &JSONFormatter{
+		DataKey: "args",
+	}
+
+	logEntry := WithFields(Fields{
+		"level":      "level",
+		"test":		  "test",
+	})
+	logEntry.Level = InfoLevel
+
+	b, err := formatter.Format(logEntry)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	entry := make(map[string]interface{})
+	err = json.Unmarshal(b, &entry)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	args := entry["args"].(map[string]interface{})
+
+	for _, field := range []string{"test", "level"} {
+		if value, present := args[field]; !present || value != field {
+			t.Errorf("Expected field %v to be present under 'args'; untouched", field)
+		}
+	}
+
+	for _, field := range []string{"test", "fields.level"} {
+		if _, present := entry[field]; present {
+			t.Errorf("Expected field %v not to be present at top level", field)
+		}
+	}
+
+	// with nested object, "level" shouldn't clash
+	if entry["level"] != "info" {
+		t.Errorf("Expected 'level' field to contain 'info'")
+	}
+}
+
 func TestJSONEntryEndsWithNewline(t *testing.T) {
 	formatter := &JSONFormatter{}
 
