@@ -10,12 +10,13 @@ import (
 )
 
 const (
-	nocolor = 0
-	red     = 31
-	green   = 32
-	yellow  = 33
-	blue    = 36
-	gray    = 37
+	nocolor   = 0
+	red       = 31
+	green     = 32
+	yellow    = 33
+	blue      = 36
+	gray      = 37
+	lightgray = 38
 )
 
 var (
@@ -50,7 +51,6 @@ type TextFormatter struct {
 	// that log extremely frequently and don't use the JSON formatter this may not
 	// be desired.
 	DisableSorting bool
-
 
 	// Disables the truncation of the level text to 4 characters.
 	DisableLevelTruncation bool
@@ -119,6 +119,8 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestampFormat string) {
 	var levelColor int
 	switch entry.Level {
+	case VerboseLevel:
+		levelColor = lightgray
 	case DebugLevel:
 		levelColor = gray
 	case WarnLevel:

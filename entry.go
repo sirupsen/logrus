@@ -138,8 +138,14 @@ func (entry *Entry) write() {
 	}
 }
 
+func (entry *Entry) Verbose(args ...interface{}) {
+	if entry.Logger.level() >= VerboseLevel {
+		entry.log(VerboseLevel, fmt.Sprint(args...))
+	}
+}
+
 func (entry *Entry) Debug(args ...interface{}) {
-	if entry.Logger.level() >= DebugLevel {
+	if entry.Logger.level() >= VerboseLevel {
 		entry.log(DebugLevel, fmt.Sprint(args...))
 	}
 }
@@ -185,6 +191,12 @@ func (entry *Entry) Panic(args ...interface{}) {
 }
 
 // Entry Printf family functions
+
+func (entry *Entry) Verbosef(format string, args ...interface{}) {
+	if entry.Logger.level() >= VerboseLevel {
+		entry.Verbose(fmt.Sprintf(format, args...))
+	}
+}
 
 func (entry *Entry) Debugf(format string, args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
@@ -232,6 +244,11 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 }
 
 // Entry Println family functions
+func (entry *Entry) Verboseln(args ...interface{}) {
+	if entry.Logger.level() >= VerboseLevel {
+		entry.Verbose(entry.sprintlnn(args...))
+	}
+}
 
 func (entry *Entry) Debugln(args ...interface{}) {
 	if entry.Logger.level() >= DebugLevel {
