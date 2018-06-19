@@ -145,7 +145,7 @@ func (entry *Entry) Verbose(args ...interface{}) {
 }
 
 func (entry *Entry) Debug(args ...interface{}) {
-	if entry.Logger.level() >= VerboseLevel {
+	if entry.Logger.level() >= DebugLevel {
 		entry.log(DebugLevel, fmt.Sprint(args...))
 	}
 }
