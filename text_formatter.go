@@ -51,7 +51,6 @@ type TextFormatter struct {
 	// be desired.
 	DisableSorting bool
 
-
 	// Disables the truncation of the level text to 4 characters.
 	DisableLevelTruncation bool
 
@@ -81,7 +80,8 @@ func (f *TextFormatter) init(entry *Entry) {
 
 // Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
-	var b *bytes.Buffer
+	prefixFieldClashes(entry.Data, f.FieldMap)
+
 	keys := make([]string, 0, len(entry.Data))
 	for k := range entry.Data {
 		keys = append(keys, k)
@@ -90,13 +90,13 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	if !f.DisableSorting {
 		sort.Strings(keys)
 	}
+
+	var b *bytes.Buffer
 	if entry.Buffer != nil {
 		b = entry.Buffer
 	} else {
 		b = &bytes.Buffer{}
 	}
-
-	prefixFieldClashes(entry.Data, emptyFieldMap)
 
 	f.Do(func() { f.init(entry) })
 

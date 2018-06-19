@@ -191,6 +191,12 @@ func TestTextFormatterFieldMap(t *testing.T) {
 		Message: "oh hi",
 		Level:   WarnLevel,
 		Time:    time.Date(1981, time.February, 24, 4, 28, 3, 100, time.UTC),
+		Data: Fields{
+			"field1":     "f1",
+			"message":    "messagefield",
+			"somelevel":  "levelfield",
+			"timeywimey": "timeywimeyfield",
+		},
 	}
 
 	b, err := formatter.Format(entry)
@@ -199,7 +205,13 @@ func TestTextFormatterFieldMap(t *testing.T) {
 	}
 
 	assert.Equal(t,
-		`timeywimey="1981-02-24T04:28:03Z" somelevel=warning message="oh hi"`+"\n",
+		`timeywimey="1981-02-24T04:28:03Z" `+
+			`somelevel=warning `+
+			`message="oh hi" `+
+			`field1=f1 `+
+			`fields.message=messagefield `+
+			`fields.somelevel=levelfield `+
+			`fields.timeywimey=timeywimeyfield`+"\n",
 		string(b),
 		"Formatted doesn't respect correct FieldMap")
 }
