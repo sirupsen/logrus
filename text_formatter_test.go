@@ -213,7 +213,7 @@ func TestTextFormatterFieldMap(t *testing.T) {
 			`fields.somelevel=levelfield `+
 			`fields.timeywimey=timeywimeyfield`+"\n",
 		string(b),
-		"Formatted doesn't respect correct FieldMap")
+		"Formatted output doesn't respect FieldMap")
 }
 
 // TODO add tests for sorting etc., this requires a parser for the text
