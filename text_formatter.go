@@ -51,7 +51,6 @@ type TextFormatter struct {
 	// be desired.
 	DisableSorting bool
 
-
 	// Disables the truncation of the level text to 4 characters.
 	DisableLevelTruncation bool
 
@@ -60,6 +59,15 @@ type TextFormatter struct {
 
 	// Whether the logger's out is to a terminal
 	isTerminal bool
+
+	// FieldMap allows users to customize the names of keys for default fields.
+	// As an example:
+	// formatter := &TextFormatter{
+	//     FieldMap: FieldMap{
+	//         FieldKeyTime:  "@timestamp",
+	//         FieldKeyLevel: "@level",
+	//         FieldKeyMsg:   "@message"}}
+	FieldMap FieldMap
 
 	sync.Once
 }
@@ -72,7 +80,8 @@ func (f *TextFormatter) init(entry *Entry) {
 
 // Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
-	var b *bytes.Buffer
+	prefixFieldClashes(entry.Data, f.FieldMap)
+
 	keys := make([]string, 0, len(entry.Data))
 	for k := range entry.Data {
 		keys = append(keys, k)
@@ -81,13 +90,13 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	if !f.DisableSorting {
 		sort.Strings(keys)
 	}
+
+	var b *bytes.Buffer
 	if entry.Buffer != nil {
 		b = entry.Buffer
 	} else {
 		b = &bytes.Buffer{}
 	}
-
-	prefixFieldClashes(entry.Data, emptyFieldMap)
 
 	f.Do(func() { f.init(entry) })
 
@@ -101,11 +110,11 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		f.printColored(b, entry, keys, timestampFormat)
 	} else {
 		if !f.DisableTimestamp {
-			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
+			f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyTime), entry.Time.Format(timestampFormat))
 		}
-		f.appendKeyValue(b, "level", entry.Level.String())
+		f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyLevel), entry.Level.String())
 		if entry.Message != "" {
-			f.appendKeyValue(b, "msg", entry.Message)
+			f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyMsg), entry.Message)
 		}
 		for _, key := range keys {
 			f.appendKeyValue(b, key, entry.Data[key])
