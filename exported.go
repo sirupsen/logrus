@@ -15,9 +15,7 @@ func StandardLogger() *Logger {
 
 // SetOutput sets the standard logger output.
 func SetOutput(out io.Writer) {
-	std.mu.Lock()
-	defer std.mu.Unlock()
-	std.Out = out
+	std.SetOutput(out)
 }
 
 // SetFormatter sets the standard logger formatter.
