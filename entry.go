@@ -90,7 +90,16 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 // race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
 	var buffer *bytes.Buffer
-	entry.Time = time.Now()
+
+	// Default to now, but allow users to override if they want.
+	//
+	// We don't have to worry about polluting future calls to Entry#log()
+	// with this assignment because this function is declared with a
+	// non-pointer receiver.
+	if entry.Time.IsZero() {
+		entry.Time = time.Now()
+	}
+
 	entry.Level = level
 	entry.Message = msg
 
