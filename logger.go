@@ -112,10 +112,10 @@ func (logger *Logger) WithError(err error) *Entry {
 	return entry.WithError(err)
 }
 
-func (logger *Logger) Verbosef(format string, args ...interface{}) {
-	if logger.level() >= VerboseLevel {
+func (logger *Logger) Tracef(format string, args ...interface{}) {
+	if logger.level() >= TraceLevel {
 		entry := logger.newEntry()
-		entry.Verbosef(format, args...)
+		entry.Tracef(format, args...)
 		logger.releaseEntry(entry)
 	}
 }
@@ -183,10 +183,10 @@ func (logger *Logger) Panicf(format string, args ...interface{}) {
 	}
 }
 
-func (logger *Logger) Verbose(args ...interface{}) {
-	if logger.level() >= VerboseLevel {
+func (logger *Logger) Trace(args ...interface{}) {
+	if logger.level() >= TraceLevel {
 		entry := logger.newEntry()
-		entry.Verbose(args...)
+		entry.Trace(args...)
 		logger.releaseEntry(entry)
 	}
 }
@@ -254,10 +254,10 @@ func (logger *Logger) Panic(args ...interface{}) {
 	}
 }
 
-func (logger *Logger) Verboseln(args ...interface{}) {
-	if logger.level() >= VerboseLevel {
+func (logger *Logger) Traceln(args ...interface{}) {
+	if logger.level() >= TraceLevel {
 		entry := logger.newEntry()
-		entry.Verboseln(args...)
+		entry.Traceln(args...)
 		logger.releaseEntry(entry)
 	}
 }

@@ -72,9 +72,9 @@ func WithFields(fields Fields) *Entry {
 	return std.WithFields(fields)
 }
 
-// Verbose logs a message at level Verbose on the standard logger.
-func Verbose(args ...interface{}) {
-	std.Verbose(args...)
+// Trace logs a message at level Trace on the standard logger.
+func Trace(args ...interface{}) {
+	std.Trace(args...)
 }
 
 // Debug logs a message at level Debug on the standard logger.
@@ -117,9 +117,9 @@ func Fatal(args ...interface{}) {
 	std.Fatal(args...)
 }
 
-// Verbosef logs a message at level Verbose on the standard logger.
-func Verbosef(format string, args ...interface{}) {
-	std.Verbosef(format, args...)
+// Tracef logs a message at level Trace on the standard logger.
+func Tracef(format string, args ...interface{}) {
+	std.Tracef(format, args...)
 }
 
 // Debugf logs a message at level Debug on the standard logger.
@@ -162,9 +162,9 @@ func Fatalf(format string, args ...interface{}) {
 	std.Fatalf(format, args...)
 }
 
-// Verboseln logs a message at level Verbose on the standard logger.
-func Verboseln(args ...interface{}) {
-	std.Verboseln(args...)
+// Traceln logs a message at level Trace on the standard logger.
+func Traceln(args ...interface{}) {
+	std.Traceln(args...)
 }
 
 // Debugln logs a message at level Debug on the standard logger.

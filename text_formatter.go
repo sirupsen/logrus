@@ -119,7 +119,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, timestampFormat string) {
 	var levelColor int
 	switch entry.Level {
-	case VerboseLevel:
+	case TraceLevel:
 		levelColor = lightgray
 	case DebugLevel:
 		levelColor = gray

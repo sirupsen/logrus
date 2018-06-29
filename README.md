@@ -249,7 +249,7 @@ A list of currently known of service hook can be found in this wiki [page](https
 Logrus has seven logging levels: Verbose, Debug, Info, Warning, Error, Fatal and Panic.
 
 ```go
-log.Verbose("Verbose debugging information.")
+log.Trace("Trace information.")
 log.Debug("Useful debugging information.")
 log.Info("Something noteworthy happened!")
 log.Warn("You should probably take a look at this.")

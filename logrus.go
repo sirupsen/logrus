@@ -15,8 +15,8 @@ type Level uint32
 // Convert the Level to a string. E.g. PanicLevel becomes "panic".
 func (level Level) String() string {
 	switch level {
-	case VerboseLevel:
-		return "verbose"
+	case TraceLevel:
+		return "trace"
 	case DebugLevel:
 		return "debug"
 	case InfoLevel:
@@ -49,8 +49,8 @@ func ParseLevel(lvl string) (Level, error) {
 		return InfoLevel, nil
 	case "debug":
 		return DebugLevel, nil
-	case "verbose":
-		return VerboseLevel, nil
+	case "trace":
+		return TraceLevel, nil
 	}
 
 	var l Level
@@ -65,7 +65,7 @@ var AllLevels = []Level{
 	WarnLevel,
 	InfoLevel,
 	DebugLevel,
-	VerboseLevel,
+	TraceLevel,
 }
 
 // These are the different logging levels. You can set the logging level to log
@@ -87,8 +87,8 @@ const (
 	InfoLevel
 	// DebugLevel level. Usually only enabled when debugging. Very verbose logging.
 	DebugLevel
-	// VerboseLevel level. Verry verbose debug logging. Only use with care.
-	VerboseLevel
+	// TraceLevel level. Usually only used for tracing. Use with care.
+	TraceLevel
 )
 
 // Won't compile if StdLogger can't be realized by a log.Logger
@@ -121,7 +121,7 @@ type FieldLogger interface {
 	WithFields(fields Fields) *Entry
 	WithError(err error) *Entry
 
-	Verbosef(format string, args ...interface{})
+	Tracef(format string, args ...interface{})
 	Debugf(format string, args ...interface{})
 	Infof(format string, args ...interface{})
 	Printf(format string, args ...interface{})
@@ -131,7 +131,7 @@ type FieldLogger interface {
 	Fatalf(format string, args ...interface{})
 	Panicf(format string, args ...interface{})
 
-	Verbose(args ...interface{})
+	Trace(args ...interface{})
 	Debug(args ...interface{})
 	Info(args ...interface{})
 	Print(args ...interface{})
@@ -141,7 +141,7 @@ type FieldLogger interface {
 	Fatal(args ...interface{})
 	Panic(args ...interface{})
 
-	Verboseln(args ...interface{})
+	Traceln(args ...interface{})
 	Debugln(args ...interface{})
 	Infoln(args ...interface{})
 	Println(args ...interface{})
