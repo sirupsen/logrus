@@ -3,10 +3,44 @@ package logrus
 import (
 	"bytes"
 	"fmt"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestEntryWithCaller(t *testing.T) {
+	assert := assert.New(t)
+
+	defer func() {
+		CallerKey = "caller"
+	}()
+
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	entry := NewEntry(logger)
+
+	calldepth := 1
+	_, file, line, ok := runtime.Caller(calldepth)
+	if !ok {
+		file = "???"
+		line = 0
+	}
+	expected := fmt.Sprintf("%s:%d", file, line)
+	assert.Equal(expected, entry.WithCaller(calldepth + 1).Data["caller"])
+
+	calldepth = 1000
+	_, file, line, ok = runtime.Caller(calldepth)
+	if !ok {
+		file = "???"
+		line = 0
+	}
+	expected = fmt.Sprintf("%s:%d", file, line)
+	assert.Equal(expected, entry.WithCaller(calldepth + 1).Data["caller"])
+
+	CallerKey = "caller_info"
+	assert.Equal(expected, entry.WithCaller(calldepth + 1).Data["caller_info"])
+}
 
 func TestEntryWithError(t *testing.T) {
 

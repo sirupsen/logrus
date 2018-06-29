@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -19,7 +20,10 @@ func init() {
 }
 
 // Defines the key when adding errors using WithError.
-var ErrorKey = "error"
+var (
+	ErrorKey  = "error"
+	CallerKey = "caller"
+)
 
 // An entry is the final or intermediate Logrus logging entry. It contains all
 // the fields passed with WithField{,s}. It's finally logged when Debug, Info,
@@ -62,6 +66,16 @@ func (entry *Entry) String() (string, error) {
 	}
 	str := string(serialized)
 	return str, nil
+}
+
+// Add caller info as single field (using the key defined in CallerKey) to the Entry.
+func (entry *Entry) WithCaller(skip int) *Entry {
+	_, file, line, ok := runtime.Caller(skip)
+	if !ok {
+		file = "???"
+		line = 0
+	}
+	return entry.WithField(CallerKey, fmt.Sprintf("%s:%d", file, line))
 }
 
 // Add an error as single field (using the key defined in ErrorKey) to the Entry.
