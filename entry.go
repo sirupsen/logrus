@@ -83,7 +83,12 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data}
+	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time}
+}
+
+// Overrides the time of the Entry.
+func (entry *Entry) WithTime(t time.Time) *Entry {
+	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: t}
 }
 
 // This function is not declared with a pointer value because otherwise
