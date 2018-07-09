@@ -20,12 +20,14 @@ const (
 
 var (
 	baseTimestamp time.Time
+	emptyFieldMap FieldMap
 )
 
 func init() {
 	baseTimestamp = time.Now()
 }
 
+// TextFormatter formats logs into text
 type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
 	ForceColors bool
@@ -49,23 +51,37 @@ type TextFormatter struct {
 	// be desired.
 	DisableSorting bool
 
+	// Disables the truncation of the level text to 4 characters.
+	DisableLevelTruncation bool
+
 	// QuoteEmptyFields will wrap empty fields in quotes if true
 	QuoteEmptyFields bool
 
 	// Whether the logger's out is to a terminal
 	isTerminal bool
 
+	// FieldMap allows users to customize the names of keys for default fields.
+	// As an example:
+	// formatter := &TextFormatter{
+	//     FieldMap: FieldMap{
+	//         FieldKeyTime:  "@timestamp",
+	//         FieldKeyLevel: "@level",
+	//         FieldKeyMsg:   "@message"}}
+	FieldMap FieldMap
+
 	sync.Once
 }
 
 func (f *TextFormatter) init(entry *Entry) {
 	if entry.Logger != nil {
-		f.isTerminal = IsTerminal(entry.Logger.Out)
+		f.isTerminal = checkIfTerminal(entry.Logger.Out)
 	}
 }
 
+// Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
-	var b *bytes.Buffer
+	prefixFieldClashes(entry.Data, f.FieldMap)
+
 	keys := make([]string, 0, len(entry.Data))
 	for k := range entry.Data {
 		keys = append(keys, k)
@@ -74,13 +90,13 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	if !f.DisableSorting {
 		sort.Strings(keys)
 	}
+
+	var b *bytes.Buffer
 	if entry.Buffer != nil {
 		b = entry.Buffer
 	} else {
 		b = &bytes.Buffer{}
 	}
-
-	prefixFieldClashes(entry.Data)
 
 	f.Do(func() { f.init(entry) })
 
@@ -88,17 +104,17 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
-		timestampFormat = DefaultTimestampFormat
+		timestampFormat = defaultTimestampFormat
 	}
 	if isColored {
 		f.printColored(b, entry, keys, timestampFormat)
 	} else {
 		if !f.DisableTimestamp {
-			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
+			f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyTime), entry.Time.Format(timestampFormat))
 		}
-		f.appendKeyValue(b, "level", entry.Level.String())
+		f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyLevel), entry.Level.String())
 		if entry.Message != "" {
-			f.appendKeyValue(b, "msg", entry.Message)
+			f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyMsg), entry.Message)
 		}
 		for _, key := range keys {
 			f.appendKeyValue(b, key, entry.Data[key])
@@ -122,7 +138,10 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 		levelColor = blue
 	}
 
-	levelText := strings.ToUpper(entry.Level.String())[0:4]
+	levelText := strings.ToUpper(entry.Level.String())
+	if !f.DisableLevelTruncation {
+		levelText = levelText[0:4]
+	}
 
 	if f.DisableTimestamp {
 		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
@@ -154,11 +173,12 @@ func (f *TextFormatter) needsQuoting(text string) bool {
 }
 
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interface{}) {
-
+	if b.Len() > 0 {
+		b.WriteByte(' ')
+	}
 	b.WriteString(key)
 	b.WriteByte('=')
 	f.appendValue(b, value)
-	b.WriteByte(' ')
 }
 
 func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {

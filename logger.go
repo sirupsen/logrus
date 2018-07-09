@@ -25,7 +25,7 @@ type Logger struct {
 	Formatter Formatter
 	// The logging level the logger should log at. This is typically (and defaults
 	// to) `logrus.Info`, which allows Info(), Warn(), Error() and Fatal() to be
-	// logged. `logrus.Debug` is useful in
+	// logged.
 	Level Level
 	// Used to sync writing to the log. Locking is enabled by Default
 	mu MutexWrap
@@ -88,7 +88,7 @@ func (logger *Logger) releaseEntry(entry *Entry) {
 }
 
 // Adds a field to the log entry, note that it doesn't log until you call
-// Debug, Print, Info, Warn, Fatal or Panic. It only creates a log entry.
+// Debug, Print, Info, Warn, Error, Fatal or Panic. It only creates a log entry.
 // If you want multiple fields, use `WithFields`.
 func (logger *Logger) WithField(key string, value interface{}) *Entry {
 	entry := logger.newEntry()
@@ -316,11 +316,23 @@ func (logger *Logger) SetLevel(level Level) {
 	atomic.StoreUint32((*uint32)(&logger.Level), uint32(level))
 }
 
-// export mu lock and unlock @bigpigeon
+
 func (logger *Logger) Lock() {
 	logger.mu.Lock()
 }
 
 func (logger *Logger) Unlock() {
 	logger.mu.Unlock()
+}
+
+func (logger *Logger) SetOutput(out io.Writer) {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	logger.Out = out
+}
+
+func (logger *Logger) AddHook(hook Hook) {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	logger.Hooks.Add(hook)
 }
