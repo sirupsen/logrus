@@ -355,7 +355,7 @@ func (logger *Logger) Exit(code int) {
 func (logger *Logger) Log(level Level, msg string) {
 	if logger.IsLevelEnabled(level) {
 		entry := logger.newEntry()
-		entry.log(level, msg)
+		entry.Log(level, msg)
 		logger.releaseEntry(entry)
 	}
 }
