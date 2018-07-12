@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -207,6 +208,65 @@ func TestDefaultFieldsAreNotPrefixed(t *testing.T) {
 			}
 		}
 	})
+}
+
+func TestWithTimeShouldOverrideTime(t *testing.T) {
+	now := time.Now().Add(24 * time.Hour)
+
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.WithTime(now).Info("foobar")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["time"], now.Format(defaultTimestampFormat))
+	})
+}
+
+func TestWithTimeShouldNotOverrideFields(t *testing.T) {
+	now := time.Now().Add(24 * time.Hour)
+
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.WithField("herp", "derp").WithTime(now).Info("blah")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["time"], now.Format(defaultTimestampFormat))
+		assert.Equal(t, fields["herp"], "derp")
+	})
+}
+
+func TestWithFieldShouldNotOverrideTime(t *testing.T) {
+	now := time.Now().Add(24 * time.Hour)
+
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.WithTime(now).WithField("herp", "derp").Info("blah")
+	}, func(fields Fields) {
+		assert.Equal(t, fields["time"], now.Format(defaultTimestampFormat))
+		assert.Equal(t, fields["herp"], "derp")
+	})
+}
+
+func TestTimeOverrideMultipleLogs(t *testing.T) {
+	var buffer bytes.Buffer
+	var firstFields, secondFields Fields
+
+	logger := New()
+	logger.Out = &buffer
+	formatter := new(JSONFormatter)
+	formatter.TimestampFormat = time.StampMilli
+	logger.Formatter = formatter
+
+	llog := logger.WithField("herp", "derp")
+	llog.Info("foo")
+
+	err := json.Unmarshal(buffer.Bytes(), &firstFields)
+	assert.NoError(t, err, "should have decoded first message")
+
+	buffer.Reset()
+
+	time.Sleep(10 * time.Millisecond)
+	llog.Info("bar")
+
+	err = json.Unmarshal(buffer.Bytes(), &secondFields)
+	assert.NoError(t, err, "should have decoded second message")
+
+	assert.NotEqual(t, firstFields["time"], secondFields["time"], "timestamps should not be equal")
 }
 
 func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
