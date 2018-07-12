@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log/syslog"
 	"os"
-
-	"github.com/sirupsen/logrus"
 )
 
 // SyslogHook to send logs via syslog.
