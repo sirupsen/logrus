@@ -5,6 +5,7 @@ import (
 	"os"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 type Logger struct {
@@ -110,6 +111,13 @@ func (logger *Logger) WithError(err error) *Entry {
 	entry := logger.newEntry()
 	defer logger.releaseEntry(entry)
 	return entry.WithError(err)
+}
+
+// Overrides the time of the log entry.
+func (logger *Logger) WithTime(t time.Time) *Entry {
+	entry := logger.newEntry()
+	defer logger.releaseEntry(entry)
+	return entry.WithTime(t)
 }
 
 func (logger *Logger) Debugf(format string, args ...interface{}) {
