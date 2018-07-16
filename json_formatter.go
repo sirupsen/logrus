@@ -17,7 +17,7 @@ const (
 	FieldKeyTime  = "time"
 )
 
-func (f FieldMap) resolve(key fieldKey) string {
+func (f FieldMap) Resolve(key fieldKey) string {
 	if k, ok := f[key]; ok {
 		return k
 	}
@@ -66,10 +66,10 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	}
 
 	if !f.DisableTimestamp {
-		data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
+		data[f.FieldMap.Resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
 	}
-	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
-	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
+	data[f.FieldMap.Resolve(FieldKeyMsg)] = entry.Message
+	data[f.FieldMap.Resolve(FieldKeyLevel)] = entry.Level.String()
 
 	serialized, err := json.Marshal(data)
 	if err != nil {

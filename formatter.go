@@ -31,17 +31,17 @@ type Formatter interface {
 // It's not exported because it's still using Data in an opinionated way. It's to
 // avoid code duplication between the two default formatters.
 func prefixFieldClashes(data Fields, fieldMap FieldMap) {
-	timeKey := fieldMap.resolve(FieldKeyTime)
+	timeKey := fieldMap.Resolve(FieldKeyTime)
 	if t, ok := data[timeKey]; ok {
 		data["fields."+timeKey] = t
 	}
 
-	msgKey := fieldMap.resolve(FieldKeyMsg)
+	msgKey := fieldMap.Resolve(FieldKeyMsg)
 	if m, ok := data[msgKey]; ok {
 		data["fields."+msgKey] = m
 	}
 
-	levelKey := fieldMap.resolve(FieldKeyLevel)
+	levelKey := fieldMap.Resolve(FieldKeyLevel)
 	if l, ok := data[levelKey]; ok {
 		data["fields."+levelKey] = l
 	}
