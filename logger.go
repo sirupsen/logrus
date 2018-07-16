@@ -28,6 +28,9 @@ type Logger struct {
 	// to) `logrus.Info`, which allows Info(), Warn(), Error() and Fatal() to be
 	// logged.
 	Level Level
+	// The output might contains credential or confidential data, to avoid any
+	// leaks you may define you own redactor to obfuscate the output
+	Redactor RedactorFun
 	// Used to sync writing to the log. Locking is enabled by Default
 	mu MutexWrap
 	// Reusable empty entry
@@ -73,6 +76,7 @@ func New() *Logger {
 		Formatter: new(TextFormatter),
 		Hooks:     make(LevelHooks),
 		Level:     InfoLevel,
+		Redactor:  defaultRedactor,
 	}
 }
 
@@ -334,4 +338,9 @@ func (logger *Logger) AddHook(hook Hook) {
 	logger.mu.Lock()
 	defer logger.mu.Unlock()
 	logger.Hooks.Add(hook)
+
+}
+
+func (logger *Logger) SetRedactor(redactor RedactorFun) {
+	logger.Redactor = redactor
 }
