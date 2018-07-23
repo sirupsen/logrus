@@ -137,9 +137,9 @@ func (entry *Entry) fireHooks() {
 }
 
 func (entry *Entry) write() {
-	serialized, err := entry.Logger.Formatter.Format(entry)
 	entry.Logger.mu.Lock()
 	defer entry.Logger.mu.Unlock()
+	serialized, err := entry.Logger.Formatter.Format(entry)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v\n", err)
 	} else {
