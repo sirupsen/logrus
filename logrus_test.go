@@ -403,6 +403,24 @@ func TestLoggingRace(t *testing.T) {
 	wg.Wait()
 }
 
+func TestLoggingRaceWithHooksOnEntry(t *testing.T) {
+	logger := New()
+	hook := new(ModifyHook)
+	logger.AddHook(hook)
+	entry := logger.WithField("context", "clue")
+
+	var wg sync.WaitGroup
+	wg.Add(100)
+
+	for i := 0; i < 100; i++ {
+		go func() {
+			entry.Info("info")
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}
+
 // Compile test
 func TestLogrusInterface(t *testing.T) {
 	var buffer bytes.Buffer
