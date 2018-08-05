@@ -6,6 +6,6 @@ import (
 	"io"
 )
 
-func (f *TextFormatter) checkIfTerminal(w io.Writer) bool {
+func checkIfTerminal(w io.Writer) bool {
 	return false
 }
