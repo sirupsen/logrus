@@ -198,6 +198,7 @@ func TestNewlineBehavior(t *testing.T) {
 	if !bytes.Contains(b, []byte("test message\n")) {
 		t.Error("Double newline at end of Entry.Message did not result in a single newline after formatting")
 	}
+}
 
 func TestTextFormatterFieldMap(t *testing.T) {
 	formatter := &TextFormatter{
