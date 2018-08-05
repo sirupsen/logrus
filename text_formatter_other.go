@@ -1,3 +1,0 @@
-// +build !js
-
-package logrus
