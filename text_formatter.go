@@ -37,7 +37,7 @@ type TextFormatter struct {
 	DisableColors bool
 
 	// Override coloring based on CLICOLOR and CLICOLOR_FORCE. - https://bixense.com/clicolors/
-	OverrideColors bool
+	EnvironmentOverrideColors bool
 
 	// Disable timestamp logging. useful when output is redirected to logging
 	// system that already adds timestamps.
@@ -85,12 +85,12 @@ func (f *TextFormatter) init(entry *Entry) {
 func (f *TextFormatter) isColored() bool {
 	isColored := f.ForceColors || f.isTerminal
 
-	if f.OverrideColors {
+	if f.EnvironmentOverrideColors {
 		if force, ok := os.LookupEnv("CLICOLOR_FORCE"); ok && force != "0" {
 			isColored = true
-		}
-
-		if os.Getenv("CLICOLOR") == "0" {
+		} else if ok && force == "0" {
+			isColored = false
+		} else if os.Getenv("CLICOLOR") == "0" {
 			isColored = false
 		}
 	}
