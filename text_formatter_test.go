@@ -357,21 +357,9 @@ func TestTextFormatterIsColored(t *testing.T) {
 			clicolorForceIsSet: false,
 			clicolorVal:        "0",
 		},
-		// Output not on terminal with clicolor set to "1"
-		{
-			name:               "testcase12",
-			expectedResult:     false,
-			isTerminal:         false,
-			disableColor:       false,
-			forceColor:         false,
-			envColor:           true,
-			clicolorIsSet:      true,
-			clicolorForceIsSet: false,
-			clicolorVal:        "1",
-		},
 		// Output not on terminal with clicolor_force set to "1"
 		{
-			name:               "testcase13",
+			name:               "testcase12",
 			expectedResult:     true,
 			isTerminal:         false,
 			disableColor:       false,
@@ -383,7 +371,7 @@ func TestTextFormatterIsColored(t *testing.T) {
 		},
 		// Output not on terminal with clicolor_force set to "0"
 		{
-			name:               "testcase14",
+			name:               "testcase13",
 			expectedResult:     false,
 			isTerminal:         false,
 			disableColor:       false,
@@ -407,7 +395,12 @@ func TestTextFormatterIsColored(t *testing.T) {
 		},
 	}
 
-	defer os.Clearenv()
+	cleanenv := func() {
+		os.Unsetenv("CLICOLOR")
+		os.Unsetenv("CLICOLOR_FORCE")
+	}
+
+	defer cleanenv()
 
 	for _, val := range params {
 		t.Run("textformatter_"+val.name, func(subT *testing.T) {
@@ -417,7 +410,7 @@ func TestTextFormatterIsColored(t *testing.T) {
 				ForceColors:               val.forceColor,
 				EnvironmentOverrideColors: val.envColor,
 			}
-			os.Clearenv()
+			cleanenv()
 			if val.clicolorIsSet {
 				os.Setenv("CLICOLOR", val.clicolorVal)
 			}
