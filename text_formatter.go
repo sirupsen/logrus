@@ -3,7 +3,9 @@ package logrus
 import (
 	"bytes"
 	"fmt"
+	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -34,6 +36,9 @@ type TextFormatter struct {
 
 	// Force disabling colors.
 	DisableColors bool
+
+	// Enable file name and line number, false by default
+	EnableFiles bool
 
 	// Disable timestamp logging. useful when output is redirected to logging
 	// system that already adds timestamps.
@@ -113,6 +118,9 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 			f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyTime), entry.Time.Format(timestampFormat))
 		}
 		f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyLevel), entry.Level.String())
+		if f.EnableFiles {
+			f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyFile), filepath.Base(entry.File)+":"+strconv.Itoa(entry.Line))
+		}
 		if entry.Message != "" {
 			f.appendKeyValue(b, f.FieldMap.resolve(FieldKeyMsg), entry.Message)
 		}
@@ -144,11 +152,23 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	}
 
 	if f.DisableTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
+		if !f.EnableFiles {
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
+		} else {
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %v:%d %-44s ", levelColor, levelText, filepath.Base(entry.File), entry.Line, entry.Message)
+		}
 	} else if !f.FullTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Message)
+		if !f.EnableFiles {
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Message)
+		} else {
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %v:%d %-44s ", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), filepath.Base(entry.File), entry.Line, entry.Message)
+		}
 	} else {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
+		if !f.EnableFiles {
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
+		} else {
+			fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %v:%d %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), filepath.Base(entry.File), entry.Line, entry.Message)
+		}
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
