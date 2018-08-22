@@ -336,3 +336,9 @@ func (logger *Logger) AddHook(hook Hook) {
 	defer logger.mu.Unlock()
 	logger.Hooks.Add(hook)
 }
+
+func (logger *Logger) ReplaceHooks(hooks LevelHooks) {
+	logger.mu.Lock()
+	logger.Hooks = hooks
+	logger.mu.Unlock()
+}
