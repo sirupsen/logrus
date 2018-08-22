@@ -421,6 +421,22 @@ func TestLoggingRaceWithHooksOnEntry(t *testing.T) {
 	wg.Wait()
 }
 
+func TestHooksReplace(t *testing.T) {
+	old, cur := &TestHook{}, &TestHook{}
+
+	logger := New()
+	logger.AddHook(old)
+
+	hooks := make(LevelHooks)
+	hooks.Add(cur)
+	logger.ReplaceHooks(hooks)
+
+	logger.Info("test")
+
+	assert.Equal(t, old.Fired, false)
+	assert.Equal(t, cur.Fired, true)
+}
+
 // Compile test
 func TestLogrusInterface(t *testing.T) {
 	var buffer bytes.Buffer
