@@ -143,6 +143,7 @@ func (entry *Entry) write() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v\n", err)
 	} else {
+		serialized = entry.Logger.Redactor(serialized)
 		_, err = entry.Logger.Out.Write(serialized)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
