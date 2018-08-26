@@ -34,28 +34,9 @@ func GetLevel() Level {
 	return std.GetLevel()
 }
 
-func IsDebugEnabled() bool {
-	return std.IsDebugEnabled()
-}
-
-func IsInfoEnabled() bool {
-	return std.IsInfoEnabled()
-}
-
-func IsWarnEnabled() bool {
-	return std.IsWarnEnabled()
-}
-
-func IsErrorEnabled() bool {
-	return std.IsErrorEnabled()
-}
-
-func IsFatalEnabled() bool {
-	return std.IsFatalEnabled()
-}
-
-func IsPanicEnabled() bool {
-	return std.IsPanicEnabled()
+// IsLevelEnabled checks if the log level of the standard logger is greater than the level param
+func IsLevelEnabled(level Level) bool {
+	return std.IsLevelEnabled(level)
 }
 
 // AddHook adds a hook to the standard logger hooks.
