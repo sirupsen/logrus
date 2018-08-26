@@ -337,8 +337,11 @@ func (logger *Logger) AddHook(hook Hook) {
 	logger.Hooks.Add(hook)
 }
 
-func (logger *Logger) ReplaceHooks(hooks LevelHooks) {
+// ReplaceHooks replaces the logger hooks and returns the old ones
+func (logger *Logger) ReplaceHooks(hooks LevelHooks) LevelHooks {
 	logger.mu.Lock()
+	oldHooks := logger.Hooks
 	logger.Hooks = hooks
 	logger.mu.Unlock()
+	return oldHooks
 }
