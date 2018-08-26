@@ -178,6 +178,29 @@ func TestDisableTimestampWithColoredOutput(t *testing.T) {
 	}
 }
 
+func TestNewlineBehavior(t *testing.T) {
+	tf := &TextFormatter{ForceColors: true}
+
+	// Ensure a single new line is removed as per stdlib log
+	e := NewEntry(StandardLogger())
+	e.Message = "test message\n"
+	b, _ := tf.Format(e)
+	if bytes.Contains(b, []byte("test message\n")) {
+		t.Error("first newline at end of Entry.Message resulted in unexpected 2 newlines in output. Expected newline to be removed.")
+	}
+
+	// Ensure a double new line is reduced to a single new line
+	e = NewEntry(StandardLogger())
+	e.Message = "test message\n\n"
+	b, _ = tf.Format(e)
+	if bytes.Contains(b, []byte("test message\n\n")) {
+		t.Error("Double newline at end of Entry.Message resulted in unexpected 2 newlines in output. Expected single newline")
+	}
+	if !bytes.Contains(b, []byte("test message\n")) {
+		t.Error("Double newline at end of Entry.Message did not result in a single newline after formatting")
+	}
+}
+
 func TestTextFormatterFieldMap(t *testing.T) {
 	formatter := &TextFormatter{
 		DisableColors: true,
