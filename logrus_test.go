@@ -3,6 +3,7 @@ package logrus
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"strconv"
 	"strings"
 	"sync"
@@ -419,6 +420,27 @@ func TestLoggingRaceWithHooksOnEntry(t *testing.T) {
 		}()
 	}
 	wg.Wait()
+}
+
+func TestReplaceHooks(t *testing.T) {
+	old, cur := &TestHook{}, &TestHook{}
+
+	logger := New()
+	logger.SetOutput(ioutil.Discard)
+	logger.AddHook(old)
+
+	hooks := make(LevelHooks)
+	hooks.Add(cur)
+	replaced := logger.ReplaceHooks(hooks)
+
+	logger.Info("test")
+
+	assert.Equal(t, old.Fired, false)
+	assert.Equal(t, cur.Fired, true)
+
+	logger.ReplaceHooks(replaced)
+	logger.Info("test")
+	assert.Equal(t, old.Fired, true)
 }
 
 // Compile test
