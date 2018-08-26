@@ -351,3 +351,12 @@ func (logger *Logger) SetOutput(output io.Writer) {
 	defer logger.mu.Unlock()
 	logger.Out = output
 }
+
+// ReplaceHooks replaces the logger hooks and returns the old ones
+func (logger *Logger) ReplaceHooks(hooks LevelHooks) LevelHooks {
+	logger.mu.Lock()
+	oldHooks := logger.Hooks
+	logger.Hooks = hooks
+	logger.mu.Unlock()
+	return oldHooks
+}
