@@ -83,14 +83,28 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range fields {
 		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data}
+	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time}
+}
+
+// Overrides the time of the Entry.
+func (entry *Entry) WithTime(t time.Time) *Entry {
+	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: t}
 }
 
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
 	var buffer *bytes.Buffer
-	entry.Time = time.Now()
+
+	// Default to now, but allow users to override if they want.
+	//
+	// We don't have to worry about polluting future calls to Entry#log()
+	// with this assignment because this function is declared with a
+	// non-pointer receiver.
+	if entry.Time.IsZero() {
+		entry.Time = time.Now()
+	}
+
 	entry.Level = level
 	entry.Message = msg
 
@@ -113,21 +127,19 @@ func (entry Entry) log(level Level, msg string) {
 	}
 }
 
-// This function is not declared with a pointer value because otherwise
-// race conditions will occur when using multiple goroutines
-func (entry Entry) fireHooks() {
+func (entry *Entry) fireHooks() {
 	entry.Logger.mu.Lock()
 	defer entry.Logger.mu.Unlock()
-	err := entry.Logger.Hooks.Fire(entry.Level, &entry)
+	err := entry.Logger.Hooks.Fire(entry.Level, entry)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
 	}
 }
 
 func (entry *Entry) write() {
-	serialized, err := entry.Logger.Formatter.Format(entry)
 	entry.Logger.mu.Lock()
 	defer entry.Logger.mu.Unlock()
+	serialized, err := entry.Logger.Formatter.Format(entry)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v\n", err)
 	} else {
