@@ -87,8 +87,7 @@ const (
 	InfoLevel
 	// DebugLevel level. Usually only enabled when debugging. Very verbose logging.
 	DebugLevel
-	// TraceLevel level. Usually only enabled when debugging. Very verbose logging.
-	// Usually reserved for message traces.
+	// TraceLevel level. Designates finer-grained informational events than the Debug.
 	TraceLevel
 )
 
