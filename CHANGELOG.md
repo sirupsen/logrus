@@ -1,3 +1,13 @@
+# 1.0.5
+
+* Fix hooks race (#707)
+* Fix panic deadlock (#695)
+
+# 1.0.4
+
+* Fix race when adding hooks (#612)
+* Fix terminal check in AppEngine (#635)
+
 # 1.0.3
 
 * Replace example files with testable examples

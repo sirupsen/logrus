@@ -1,9 +1,13 @@
 package logrus
 
 import (
+	"bytes"
+	"encoding/json"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type TestHook struct {
@@ -84,6 +88,46 @@ func TestCanFireMultipleHooks(t *testing.T) {
 	})
 }
 
+type SingleLevelModifyHook struct {
+	ModifyHook
+}
+
+func (h *SingleLevelModifyHook) Levels() []Level {
+	return []Level{InfoLevel}
+}
+
+func TestHookEntryIsPristine(t *testing.T) {
+	l := New()
+	b := &bytes.Buffer{}
+	l.Formatter = &JSONFormatter{}
+	l.Out = b
+	l.AddHook(&SingleLevelModifyHook{})
+
+	l.Error("error message")
+	data := map[string]string{}
+	err := json.Unmarshal(b.Bytes(), &data)
+	require.NoError(t, err)
+	_, ok := data["wow"]
+	require.False(t, ok)
+	b.Reset()
+
+	l.Info("error message")
+	data = map[string]string{}
+	err = json.Unmarshal(b.Bytes(), &data)
+	require.NoError(t, err)
+	_, ok = data["wow"]
+	require.True(t, ok)
+	b.Reset()
+
+	l.Error("error message")
+	data = map[string]string{}
+	err = json.Unmarshal(b.Bytes(), &data)
+	require.NoError(t, err)
+	_, ok = data["wow"]
+	require.False(t, ok)
+	b.Reset()
+}
+
 type ErrorHook struct {
 	Fired bool
 }
@@ -118,5 +162,26 @@ func TestErrorHookShouldFireOnError(t *testing.T) {
 		log.Error("test")
 	}, func(fields Fields) {
 		assert.Equal(t, hook.Fired, true)
+	})
+}
+
+func TestAddHookRace(t *testing.T) {
+	var wg sync.WaitGroup
+	wg.Add(2)
+	hook := new(ErrorHook)
+	LogAndAssertJSON(t, func(log *Logger) {
+		go func() {
+			defer wg.Done()
+			log.AddHook(hook)
+		}()
+		go func() {
+			defer wg.Done()
+			log.Error("test")
+		}()
+		wg.Wait()
+	}, func(fields Fields) {
+		// the line may have been logged
+		// before the hook was added, so we can't
+		// actually assert on the hook
 	})
 }
