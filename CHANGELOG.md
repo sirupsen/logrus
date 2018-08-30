@@ -1,3 +1,15 @@
+# 1.0.6
+
+This new release introduces:
+  * a new api WithTime which allows to easily force the time of the log entry
+    which is mostly useful for logger wrapper
+  * a fix reverting the immutability of the entry given as parameter to the hooks
+    a new configuration field of the json formatter in order to put all the fields
+    in a nested dictionnary
+  * a new SetOutput method in the Logger
+  * a new configuration of the textformatter to configure the name of the default keys
+  * a new configuration of the text formatter to disable the level truncation
+
 # 1.0.5
 
 * Fix hooks race (#707)
