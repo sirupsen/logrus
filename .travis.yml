@@ -1,7 +1,7 @@
 language: go
 go:
-  - 1.9.x
   - 1.10.x
+  - 1.11.x
 env:
   - GOMAXPROCS=4 GORACE=halt_on_error=1
 install:
