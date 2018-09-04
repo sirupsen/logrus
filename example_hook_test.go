@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// An example on how to use a hook
 func Example_hook() {
 	var log = logrus.New()
 	log.Formatter = new(logrus.TextFormatter)                     // default
