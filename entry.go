@@ -186,7 +186,6 @@ func (entry *Entry) Fatal(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(FatalLevel) {
 		entry.log(FatalLevel, fmt.Sprint(args...))
 	}
-	Exit(1)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
