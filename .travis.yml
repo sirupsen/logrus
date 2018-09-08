@@ -21,6 +21,7 @@ matrix:
       env: GO111MODULE=off
       install:
         - go get github.com/stretchr/testify/assert
+        - go get golang.org/x/crypto/ssh/terminal
         - go get golang.org/x/sys/unix
         - go get golang.org/x/sys/windows
       script:
