@@ -6,11 +6,21 @@ matrix:
     - go: 1.10.x
       install:
         - go get github.com/stretchr/testify/assert
-        - go get gopkg.in/gemnasium/logrus-airbrake-hook.v2
         - go get golang.org/x/sys/unix
         - go get golang.org/x/sys/windows
+      script:
+        - go test -race -v ./...
     - go: 1.11.x
+      env: GO11MODULE=on
       install:
         - go mod download
-script:
-  - go test -race -v ./...
+      script:
+        - go test -race -v ./...
+    - go: 1.11.x
+      env: GO11MODULE=off
+      install:
+        - go get github.com/stretchr/testify/assert
+        - go get golang.org/x/sys/unix
+        - go get golang.org/x/sys/windows
+      script:
+        - go test -race -v ./...
