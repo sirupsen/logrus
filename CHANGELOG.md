@@ -1,3 +1,21 @@
+# 1.1.0
+This new release introduces:
+  * several fixes:
+    * a fix for a race condition on entry formatting
+    * proper cleanup of previously used entries before putting them back in the pool
+    * the extra new line at the end of message in text formatter has been removed
+  * a new global public API to check if a level is activated: IsLevelEnabled
+  * the following methods have been added to the Logger object
+    * IsLevelEnabled
+    * SetFormatter
+    * SetOutput
+    * ReplaceHooks
+  * introduction of go module
+  * an indent configuration for the json formatter
+  * output colour support for windows
+  * the field sort function is now configurable for text formatter
+  * the CLICOLOR and CLICOLOR\_FORCE environment variable support in text formater
+
 # 1.0.6
 
 This new release introduces:
