@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -40,6 +44,10 @@ type Entry struct {
 
 	// Message passed to Debug, Info, Warn, Error, Fatal or Panic
 	Message string
+
+	// Caller passed to Debug, Info, Warn, Error, Fatal or Panic.
+	// To indicates where the log call came from and formats it for output.
+	Caller string
 
 	// When formatter is called in entry.log(), a Buffer may be set to entry
 	Buffer *bytes.Buffer
@@ -107,6 +115,7 @@ func (entry Entry) log(level Level, msg string) {
 
 	entry.Level = level
 	entry.Message = msg
+	entry.Caller = context()
 
 	entry.fireHooks()
 
@@ -297,4 +306,13 @@ func (entry *Entry) Panicln(args ...interface{}) {
 func (entry *Entry) sprintlnn(args ...interface{}) string {
 	msg := fmt.Sprintln(args...)
 	return msg[:len(msg)-1]
+}
+
+// Captures where the log call came from and formats it for output.
+func context() string {
+	if _, file, line, ok := runtime.Caller(4); ok {
+		return strings.Join([]string{filepath.Base(file), strconv.Itoa(line)}, ":")
+	}
+
+	return "unavailable"
 }

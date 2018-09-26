@@ -62,10 +62,10 @@ func Example_basic() {
 	}).Panic("It's over 9000!")
 
 	// Output:
-	// level=debug msg="Started observing beach" animal=walrus number=8
-	// level=info msg="A group of walrus emerges from the ocean" animal=walrus size=10
-	// level=warning msg="The group's number increased tremendously!" number=122 omg=true
-	// level=debug msg="Temperature changes" temperature=-4
-	// level=panic msg="It's over 9000!" animal=orca size=9009
-	// level=error msg="The ice breaks!" err_animal=orca err_level=panic err_message="It's over 9000!" err_size=9009 number=100 omg=true
+	// level=debug msg="Started observing beach" caller="example.go:121" animal=walrus number=8
+	// level=info msg="A group of walrus emerges from the ocean" caller="example.go:121" animal=walrus size=10
+	// level=warning msg="The group's number increased tremendously!" caller="example.go:121" number=122 omg=true
+	// level=debug msg="Temperature changes" caller="example.go:121" temperature=-4
+	// level=panic msg="It's over 9000!" caller="example.go:121" animal=orca size=9009
+	// level=error msg="The ice breaks!" caller="asm_amd64.s:522" err_animal=orca err_level=panic err_message="It's over 9000!" err_size=9009 number=100 omg=true
 }
