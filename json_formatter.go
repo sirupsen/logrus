@@ -13,9 +13,10 @@ type FieldMap map[fieldKey]string
 
 // Default key names for the default fields
 const (
-	FieldKeyMsg   = "msg"
-	FieldKeyLevel = "level"
-	FieldKeyTime  = "time"
+	FieldKeyMsg    = "msg"
+	FieldKeyCaller = "caller"
+	FieldKeyLevel  = "level"
+	FieldKeyTime   = "time"
 )
 
 func (f FieldMap) resolve(key fieldKey) string {
@@ -83,6 +84,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
 	}
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
+	data[f.FieldMap.resolve(FieldKeyCaller)] = entry.Caller
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
 
 	var b *bytes.Buffer
