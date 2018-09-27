@@ -2,7 +2,7 @@
 
 __Note: This repo forked from [sirupsen/logrus](https://github.com/sirupsen/logrus), And add some features as below:__ 
 
-- Add [`Caller`](https://github.com/barryz/logrus/pull/1) field for entry to capture  capture where the log call came from and formats it for output.
+- Add [`Caller`](https://github.com/barryz/logrus/pull/1) field for entry to capture where the log call came from and formats it for output.
 
 - Change import path prefix to `github.com/barryz/logrus...`
 

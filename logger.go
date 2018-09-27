@@ -133,6 +133,7 @@ func (logger *Logger) getCallerOffset() int {
 // while getting file name and line number.
 func (logger *Logger) SetCallerOffset(offset int) {
 	logger.originCallerOffset = int32(offset)
+	logger.resetCallerOffset()
 }
 
 // Adds a field to the log entry, note that it doesn't log until you call
