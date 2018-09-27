@@ -32,6 +32,12 @@ type Logger struct {
 	mu MutexWrap
 	// Reusable empty entry
 	entryPool sync.Pool
+
+	// callerOffset offset that used for entry to get the caller invocation.
+	callerOffset int32
+
+	// original caller offset for initialize, default value is the zero value.
+	originCallerOffset int32
 }
 
 type MutexWrap struct {
@@ -76,6 +82,20 @@ func New() *Logger {
 	}
 }
 
+// newExportedStdLogger creates a new standard logger with initial caller offset.
+// This function only used for the standard logger where in exported.go.
+func newExportedStdLogger() *Logger {
+	l := &Logger{
+		Out:       os.Stderr,
+		Formatter: new(TextFormatter),
+		Hooks:     make(LevelHooks),
+		Level:     InfoLevel,
+	}
+	l.originCallerOffset = 1
+	l.setCallerOffset(1)
+	return l
+}
+
 func (logger *Logger) newEntry() *Entry {
 	entry, ok := logger.entryPool.Get().(*Entry)
 	if ok {
@@ -89,12 +109,39 @@ func (logger *Logger) releaseEntry(entry *Entry) {
 	logger.entryPool.Put(entry)
 }
 
+func (logger *Logger) incrCallerOffset() {
+	atomic.AddInt32(&logger.callerOffset, 1)
+}
+
+func (logger *Logger) decrCallerOffset() {
+	atomic.AddInt32(&logger.callerOffset, -1)
+}
+
+func (logger *Logger) setCallerOffset(offset int32) {
+	atomic.StoreInt32(&logger.callerOffset, offset)
+}
+
+func (logger *Logger) resetCallerOffset() {
+	atomic.StoreInt32(&logger.callerOffset, logger.originCallerOffset)
+}
+
+func (logger *Logger) getCallerOffset() int {
+	return int(atomic.LoadInt32(&logger.callerOffset))
+}
+
+// SetCallerOffset sets the offset used in runtime.Caller(skipFrameCount + offset)
+// while getting file name and line number.
+func (logger *Logger) SetCallerOffset(offset int) {
+	logger.originCallerOffset = int32(offset)
+}
+
 // Adds a field to the log entry, note that it doesn't log until you call
 // Debug, Print, Info, Warn, Error, Fatal or Panic. It only creates a log entry.
 // If you want multiple fields, use `WithFields`.
 func (logger *Logger) WithField(key string, value interface{}) *Entry {
 	entry := logger.newEntry()
 	defer logger.releaseEntry(entry)
+	logger.decrCallerOffset()
 	return entry.WithField(key, value)
 }
 
@@ -103,6 +150,7 @@ func (logger *Logger) WithField(key string, value interface{}) *Entry {
 func (logger *Logger) WithFields(fields Fields) *Entry {
 	entry := logger.newEntry()
 	defer logger.releaseEntry(entry)
+	logger.decrCallerOffset()
 	return entry.WithFields(fields)
 }
 
@@ -111,6 +159,7 @@ func (logger *Logger) WithFields(fields Fields) *Entry {
 func (logger *Logger) WithError(err error) *Entry {
 	entry := logger.newEntry()
 	defer logger.releaseEntry(entry)
+	logger.decrCallerOffset()
 	return entry.WithError(err)
 }
 
@@ -118,6 +167,7 @@ func (logger *Logger) WithError(err error) *Entry {
 func (logger *Logger) WithTime(t time.Time) *Entry {
 	entry := logger.newEntry()
 	defer logger.releaseEntry(entry)
+	logger.decrCallerOffset()
 	return entry.WithTime(t)
 }
 

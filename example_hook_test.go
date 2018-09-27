@@ -37,7 +37,7 @@ func Example_hook() {
 	}).Error("The ice breaks!")
 
 	// Output:
-	// level=info msg="A group of walrus emerges from the ocean" caller="example.go:121" animal=walrus size=10
-	// level=warning msg="The group's number increased tremendously!" caller="example.go:121" number=122 omg=true
-	// level=error msg="The ice breaks!" caller="example.go:121" number=100 omg=true
+	// level=info msg="A group of walrus emerges from the ocean" animal=walrus size=10
+	// level=warning msg="The group's number increased tremendously!" caller="example_hook_test.go:32" number=122 omg=true
+	// level=error msg="The ice breaks!" caller="example_hook_test.go:37" number=100 omg=true
 }
