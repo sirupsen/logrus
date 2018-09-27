@@ -7,7 +7,7 @@ import (
 
 var (
 	// std is the name of the standard logger in stdlib `log`
-	std = New()
+	std = newExportedStdLogger()
 )
 
 func StandardLogger() *Logger {
@@ -46,6 +46,7 @@ func AddHook(hook Hook) {
 
 // WithError creates an entry from the standard logger and adds an error to it, using the value defined in ErrorKey as key.
 func WithError(err error) *Entry {
+	std.decrCallerOffset()
 	return std.WithField(ErrorKey, err)
 }
 
@@ -55,6 +56,7 @@ func WithError(err error) *Entry {
 // Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal
 // or Panic on the Entry it returns.
 func WithField(key string, value interface{}) *Entry {
+	std.decrCallerOffset()
 	return std.WithField(key, value)
 }
 
@@ -65,6 +67,7 @@ func WithField(key string, value interface{}) *Entry {
 // Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal
 // or Panic on the Entry it returns.
 func WithFields(fields Fields) *Entry {
+	std.decrCallerOffset()
 	return std.WithFields(fields)
 }
 
@@ -74,6 +77,7 @@ func WithFields(fields Fields) *Entry {
 // Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal
 // or Panic on the Entry it returns.
 func WithTime(t time.Time) *Entry {
+	std.decrCallerOffset()
 	return std.WithTime(t)
 }
 
