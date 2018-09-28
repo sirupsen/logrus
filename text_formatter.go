@@ -204,11 +204,11 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	entry.Caller = strings.TrimSuffix(entry.Caller, "\n")
 
 	if f.DisableTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s %-44s", levelColor, levelText, entry.Message, entry.Caller)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s", levelColor, levelText, entry.Caller, entry.Message)
 	} else if !f.FullTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s %-44s", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Message, entry.Caller)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d][%s] %-44s", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Caller, entry.Message)
 	} else {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s %-44s", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message, entry.Caller)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s][%s] %-44s", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Caller, entry.Message)
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
