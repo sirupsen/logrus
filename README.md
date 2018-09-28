@@ -1,5 +1,13 @@
 # Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>&nbsp;[![Build Status](https://travis-ci.org/sirupsen/logrus.svg?branch=master)](https://travis-ci.org/sirupsen/logrus)&nbsp;[![GoDoc](https://godoc.org/github.com/sirupsen/logrus?status.svg)](https://godoc.org/github.com/sirupsen/logrus)
 
+__Note: This repo forked from [sirupsen/logrus](https://github.com/sirupsen/logrus), And add some features as below:__ 
+
+- Add [`Caller`](https://github.com/barryz/logrus/pull/1) field for entry to capture where the log call came from and formats it for output.
+
+- Change import path prefix to `github.com/barryz/logrus...`
+
+--- 
+
 Logrus is a structured logger for Go (golang), completely API compatible with
 the standard library logger.
 

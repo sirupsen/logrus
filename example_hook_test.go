@@ -6,8 +6,8 @@ import (
 	"log/syslog"
 	"os"
 
-	"github.com/sirupsen/logrus"
-	slhooks "github.com/sirupsen/logrus/hooks/syslog"
+	"github.com/barryz/logrus"
+	slhooks "github.com/barryz/logrus/hooks/syslog"
 )
 
 // An example on how to use a hook
@@ -38,6 +38,6 @@ func Example_hook() {
 
 	// Output:
 	// level=info msg="A group of walrus emerges from the ocean" animal=walrus size=10
-	// level=warning msg="The group's number increased tremendously!" number=122 omg=true
-	// level=error msg="The ice breaks!" number=100 omg=true
+	// level=warning msg="The group's number increased tremendously!" caller="example_hook_test.go:32" number=122 omg=true
+	// level=error msg="The ice breaks!" caller="example_hook_test.go:37" number=100 omg=true
 }

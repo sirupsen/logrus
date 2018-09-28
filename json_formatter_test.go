@@ -167,8 +167,8 @@ func TestFieldsInNestedDictionary(t *testing.T) {
 	}
 
 	logEntry := WithFields(Fields{
-		"level":      "level",
-		"test":		  "test",
+		"level": "level",
+		"test":  "test",
 	})
 	logEntry.Level = InfoLevel
 

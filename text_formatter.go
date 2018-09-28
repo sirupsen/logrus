@@ -122,6 +122,9 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	if entry.Message != "" {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyMsg))
 	}
+	if entry.Caller != "" {
+		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyCaller))
+	}
 
 	if !f.DisableSorting {
 		if f.SortingFunc == nil {
@@ -164,6 +167,8 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 				value = entry.Level.String()
 			case f.FieldMap.resolve(FieldKeyMsg):
 				value = entry.Message
+			case f.FieldMap.resolve(FieldKeyCaller):
+				value = entry.Caller
 			default:
 				value = entry.Data[key]
 			}
@@ -196,13 +201,14 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	// Remove a single newline if it already exists in the message to keep
 	// the behavior of logrus text_formatter the same as the stdlib log package
 	entry.Message = strings.TrimSuffix(entry.Message, "\n")
+	entry.Caller = strings.TrimSuffix(entry.Caller, "\n")
 
 	if f.DisableTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s", levelColor, levelText, entry.Caller, entry.Message)
 	} else if !f.FullTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Message)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d][%s] %-44s", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Caller, entry.Message)
 	} else {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s][%s] %-44s", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Caller, entry.Message)
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
