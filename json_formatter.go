@@ -11,13 +11,6 @@ type fieldKey string
 // FieldMap allows customization of the key names for default fields.
 type FieldMap map[fieldKey]string
 
-// Default key names for the default fields
-const (
-	FieldKeyMsg   = "msg"
-	FieldKeyLevel = "level"
-	FieldKeyTime  = "time"
-)
-
 func (f FieldMap) resolve(key fieldKey) string {
 	if k, ok := f[key]; ok {
 		return k
@@ -79,6 +72,9 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		timestampFormat = defaultTimestampFormat
 	}
 
+	if entry.err != "" {
+		data[f.FieldMap.resolve(FieldKeyLogrusError)] = entry.err
+	}
 	if !f.DisableTimestamp {
 		data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
 	}
