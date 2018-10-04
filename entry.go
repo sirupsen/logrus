@@ -43,9 +43,6 @@ type Entry struct {
 
 	// When formatter is called in entry.log(), a Buffer may be set to entry
 	Buffer *bytes.Buffer
-
-	// err may contain a field formatting error
-	err string
 }
 
 func NewEntry(logger *Logger) *Entry {

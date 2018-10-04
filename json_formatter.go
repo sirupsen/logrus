@@ -46,6 +46,8 @@ type JSONFormatter struct {
 	PrettyPrint bool
 }
 
+var funcNotSupported = "func type not supported"
+
 // Format renders a single log entry
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data := make(Fields, len(entry.Data)+3)
@@ -57,11 +59,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 			data[k] = v.Error()
 		default:
 			if t := reflect.TypeOf(v); t != nil && t.Kind() == reflect.Func {
-				msg := fmt.Sprintf("can not add field %q", k)
-				if entry.err != "" {
-					msg = entry.err + ", " + msg
-				}
-				entry.err = msg
+				data[k] = funcNotSupported
 			} else {
 				data[k] = v
 			}
@@ -79,10 +77,6 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
 		timestampFormat = defaultTimestampFormat
-	}
-
-	if entry.err != "" {
-		data[f.FieldMap.resolve(FieldKeyLogrusError)] = entry.err
 	}
 	if !f.DisableTimestamp {
 		data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)

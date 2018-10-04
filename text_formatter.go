@@ -122,9 +122,6 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	if entry.Message != "" {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyMsg))
 	}
-	if entry.err != "" {
-		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyLogrusError))
-	}
 
 	if !f.DisableSorting {
 		if f.SortingFunc == nil {
@@ -167,8 +164,6 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 				value = entry.Level.String()
 			case f.FieldMap.resolve(FieldKeyMsg):
 				value = entry.Message
-			case f.FieldMap.resolve(FieldKeyLogrusError):
-				value = entry.err
 			default:
 				value = entry.Data[key]
 			}
