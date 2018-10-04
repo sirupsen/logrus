@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"reflect"
 	"sync"
 	"time"
 )
@@ -84,18 +83,10 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range entry.Data {
 		data[k] = v
 	}
-	var field_err string
 	for k, v := range fields {
-		if t := reflect.TypeOf(v); t != nil && t.Kind() == reflect.Func {
-			field_err = fmt.Sprintf("can not add field %q", k)
-			if entry.err != "" {
-				field_err = entry.err + ", " + field_err
-			}
-		} else {
-			data[k] = v
-		}
+		data[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, err: field_err}
+	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time}
 }
 
 // Overrides the time of the Entry.

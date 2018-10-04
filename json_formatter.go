@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"reflect"
 )
 
 type fieldKey string
@@ -55,7 +56,15 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 			// https://github.com/sirupsen/logrus/issues/137
 			data[k] = v.Error()
 		default:
-			data[k] = v
+			if t := reflect.TypeOf(v); t != nil && t.Kind() == reflect.Func {
+				msg := fmt.Sprintf("can not add field %q", k)
+				if entry.err != "" {
+					msg = entry.err + ", " + msg
+				}
+				entry.err = msg
+			} else {
+				data[k] = v
+			}
 		}
 	}
 
