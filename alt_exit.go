@@ -45,6 +45,8 @@ func runHandlers() {
 	}
 }
 
+type exitFunc func(int)
+
 // Exit runs all the Logrus atexit handlers and then terminates the program using os.Exit(code)
 func Exit(code int) {
 	runHandlers()

@@ -71,3 +71,14 @@ func TestLoggingWithHooksRace(t *testing.T) {
 	entries := hook.AllEntries()
 	assert.Equal(100, len(entries))
 }
+
+func TestFatalWithPanic(t *testing.T) {
+	assert := assert.New(t)
+
+	logger, hook := NewNullLogger(FatalPanics)
+
+	assert.Nil(hook.LastEntry())
+	assert.Equal(0, len(hook.Entries))
+
+	assert.Panics(func() { logger.Fatal("something went wrong") })
+}
