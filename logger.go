@@ -32,6 +32,8 @@ type Logger struct {
 	mu MutexWrap
 	// Reusable empty entry
 	entryPool sync.Pool
+	// Function to exit the application, defaults to `Exit()`
+	Exit exitFunc
 }
 
 type MutexWrap struct {
@@ -73,6 +75,7 @@ func New() *Logger {
 		Formatter: new(TextFormatter),
 		Hooks:     make(LevelHooks),
 		Level:     InfoLevel,
+		Exit:      Exit,
 	}
 }
 
@@ -173,7 +176,7 @@ func (logger *Logger) Fatalf(format string, args ...interface{}) {
 		entry.Fatalf(format, args...)
 		logger.releaseEntry(entry)
 	}
-	Exit(1)
+	logger.Exit(1)
 }
 
 func (logger *Logger) Panicf(format string, args ...interface{}) {
@@ -236,7 +239,7 @@ func (logger *Logger) Fatal(args ...interface{}) {
 		entry.Fatal(args...)
 		logger.releaseEntry(entry)
 	}
-	Exit(1)
+	logger.Exit(1)
 }
 
 func (logger *Logger) Panic(args ...interface{}) {
@@ -299,7 +302,7 @@ func (logger *Logger) Fatalln(args ...interface{}) {
 		entry.Fatalln(args...)
 		logger.releaseEntry(entry)
 	}
-	Exit(1)
+	logger.Exit(1)
 }
 
 func (logger *Logger) Panicln(args ...interface{}) {
