@@ -36,6 +36,8 @@ type Logger struct {
 	ExitFunc exitFunc
 }
 
+type exitFunc func(int)
+
 type MutexWrap struct {
 	lock     sync.Mutex
 	disabled bool
@@ -75,7 +77,7 @@ func New() *Logger {
 		Formatter: new(TextFormatter),
 		Hooks:     make(LevelHooks),
 		Level:     InfoLevel,
-		ExitFunc:  osExit,
+		ExitFunc:  os.Exit,
 	}
 }
 
@@ -316,7 +318,7 @@ func (logger *Logger) Panicln(args ...interface{}) {
 func (logger *Logger) Exit(code int) {
 	runHandlers()
 	if logger.ExitFunc == nil {
-		logger.ExitFunc = osExit
+		logger.ExitFunc = os.Exit
 	}
 	logger.ExitFunc(code)
 }
