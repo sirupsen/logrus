@@ -39,23 +39,11 @@ func NewLocal(logger *logrus.Logger) *Hook {
 
 }
 
-type TestOption func(logger *logrus.Logger)
-
-func FatalPanics(logger *logrus.Logger) {
-	logger.Exit = func(code int) {
-		panic(code)
-	}
-}
-
 // NewNullLogger creates a discarding logger and installs the test hook.
-func NewNullLogger(options ...TestOption) (*logrus.Logger, *Hook) {
+func NewNullLogger() (*logrus.Logger, *Hook) {
 
 	logger := logrus.New()
 	logger.Out = ioutil.Discard
-
-	for _, option := range options {
-		option(logger)
-	}
 
 	return logger, NewLocal(logger)
 

@@ -32,8 +32,8 @@ type Logger struct {
 	mu MutexWrap
 	// Reusable empty entry
 	entryPool sync.Pool
-	// Function to exit the application, defaults to `Exit()`
-	Exit exitFunc
+	// Function to exit the application, defaults to `osExit()`
+	ExitFunc exitFunc
 }
 
 type MutexWrap struct {
@@ -75,7 +75,7 @@ func New() *Logger {
 		Formatter: new(TextFormatter),
 		Hooks:     make(LevelHooks),
 		Level:     InfoLevel,
-		Exit:      Exit,
+		ExitFunc:  osExit,
 	}
 }
 
@@ -311,6 +311,14 @@ func (logger *Logger) Panicln(args ...interface{}) {
 		entry.Panicln(args...)
 		logger.releaseEntry(entry)
 	}
+}
+
+func (logger *Logger) Exit(code int) {
+	runHandlers()
+	if logger.ExitFunc == nil {
+		logger.ExitFunc = osExit
+	}
+	logger.ExitFunc(code)
 }
 
 //When file is opened with appending mode, it's safe to
