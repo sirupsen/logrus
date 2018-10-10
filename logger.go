@@ -32,7 +32,7 @@ type Logger struct {
 	mu MutexWrap
 	// Reusable empty entry
 	entryPool sync.Pool
-	// Function to exit the application, defaults to `osExit()`
+	// Function to exit the application, defaults to `os.Exit()`
 	ExitFunc exitFunc
 }
 
