@@ -24,8 +24,7 @@ func (h *GlobalHook) Fire(e *logrus.Entry) error {
 func Example() {
 	l := logrus.New()
 	l.Out = os.Stdout
-	l.Formatter = &logrus.TextFormatter{DisableTimestamp: true}
-	l.Formatter.(*logrus.TextFormatter).DisableTimestamp = true
+	l.Formatter = &logrus.TextFormatter{DisableTimestamp: true, DisableColors: true}
 	l.AddHook(&GlobalHook{})
 	mystring = "first value"
 	l.Info("first log")
