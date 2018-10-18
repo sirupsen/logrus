@@ -121,7 +121,6 @@ type FieldLogger interface {
 	WithFields(fields Fields) *Entry
 	WithError(err error) *Entry
 
-	Tracef(format string, args ...interface{})
 	Debugf(format string, args ...interface{})
 	Infof(format string, args ...interface{})
 	Printf(format string, args ...interface{})
@@ -131,7 +130,6 @@ type FieldLogger interface {
 	Fatalf(format string, args ...interface{})
 	Panicf(format string, args ...interface{})
 
-	Trace(args ...interface{})
 	Debug(args ...interface{})
 	Info(args ...interface{})
 	Print(args ...interface{})
@@ -141,7 +139,6 @@ type FieldLogger interface {
 	Fatal(args ...interface{})
 	Panic(args ...interface{})
 
-	Traceln(args ...interface{})
 	Debugln(args ...interface{})
 	Infoln(args ...interface{})
 	Println(args ...interface{})
@@ -157,4 +154,13 @@ type FieldLogger interface {
 	// IsErrorEnabled() bool
 	// IsFatalEnabled() bool
 	// IsPanicEnabled() bool
+}
+
+// Ext1FieldLogger (the first extension to FieldLogger) is superfluous, it is
+// here for consistancy. Do not use. Use Logger or Entry instead.
+type Ext1FieldLogger interface {
+	FieldLogger
+	Tracef(format string, args ...interface{})
+	Trace(args ...interface{})
+	Traceln(args ...interface{})
 }

@@ -453,9 +453,12 @@ func TestReplaceHooks(t *testing.T) {
 }
 
 // Compile test
-func TestLogrusInterface(t *testing.T) {
+func TestLogrusInterfaces(t *testing.T) {
 	var buffer bytes.Buffer
-	fn := func(l FieldLogger) {
+	// This verifies FieldLogger and Ext1FieldLogger work as designed.
+	// Please don't use them. Use Logger and Entry directly.
+	fn := func(xl Ext1FieldLogger) {
+		var l FieldLogger = xl
 		b := l.WithField("key", "value")
 		b.Debug("Test")
 	}
