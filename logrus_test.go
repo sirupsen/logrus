@@ -303,6 +303,7 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 }
 
 func TestConvertLevelToString(t *testing.T) {
+	assert.Equal(t, "trace", TraceLevel.String())
 	assert.Equal(t, "debug", DebugLevel.String())
 	assert.Equal(t, "info", InfoLevel.String())
 	assert.Equal(t, "warning", WarnLevel.String())
@@ -367,6 +368,14 @@ func TestParseLevel(t *testing.T) {
 	l, err = ParseLevel("DEBUG")
 	assert.Nil(t, err)
 	assert.Equal(t, DebugLevel, l)
+
+	l, err = ParseLevel("trace")
+	assert.Nil(t, err)
+	assert.Equal(t, TraceLevel, l)
+
+	l, err = ParseLevel("TRACE")
+	assert.Nil(t, err)
+	assert.Equal(t, TraceLevel, l)
 
 	l, err = ParseLevel("invalid")
 	assert.Equal(t, "not a valid logrus Level: \"invalid\"", err.Error())
@@ -444,9 +453,12 @@ func TestReplaceHooks(t *testing.T) {
 }
 
 // Compile test
-func TestLogrusInterface(t *testing.T) {
+func TestLogrusInterfaces(t *testing.T) {
 	var buffer bytes.Buffer
-	fn := func(l FieldLogger) {
+	// This verifies FieldLogger and Ext1FieldLogger work as designed.
+	// Please don't use them. Use Logger and Entry directly.
+	fn := func(xl Ext1FieldLogger) {
+		var l FieldLogger = xl
 		b := l.WithField("key", "value")
 		b.Debug("Test")
 	}
@@ -494,6 +506,7 @@ func TestLogLevelEnabled(t *testing.T) {
 	assert.Equal(t, false, log.IsLevelEnabled(WarnLevel))
 	assert.Equal(t, false, log.IsLevelEnabled(InfoLevel))
 	assert.Equal(t, false, log.IsLevelEnabled(DebugLevel))
+	assert.Equal(t, false, log.IsLevelEnabled(TraceLevel))
 
 	log.SetLevel(FatalLevel)
 	assert.Equal(t, true, log.IsLevelEnabled(PanicLevel))
@@ -502,6 +515,7 @@ func TestLogLevelEnabled(t *testing.T) {
 	assert.Equal(t, false, log.IsLevelEnabled(WarnLevel))
 	assert.Equal(t, false, log.IsLevelEnabled(InfoLevel))
 	assert.Equal(t, false, log.IsLevelEnabled(DebugLevel))
+	assert.Equal(t, false, log.IsLevelEnabled(TraceLevel))
 
 	log.SetLevel(ErrorLevel)
 	assert.Equal(t, true, log.IsLevelEnabled(PanicLevel))
@@ -510,6 +524,7 @@ func TestLogLevelEnabled(t *testing.T) {
 	assert.Equal(t, false, log.IsLevelEnabled(WarnLevel))
 	assert.Equal(t, false, log.IsLevelEnabled(InfoLevel))
 	assert.Equal(t, false, log.IsLevelEnabled(DebugLevel))
+	assert.Equal(t, false, log.IsLevelEnabled(TraceLevel))
 
 	log.SetLevel(WarnLevel)
 	assert.Equal(t, true, log.IsLevelEnabled(PanicLevel))
@@ -518,6 +533,7 @@ func TestLogLevelEnabled(t *testing.T) {
 	assert.Equal(t, true, log.IsLevelEnabled(WarnLevel))
 	assert.Equal(t, false, log.IsLevelEnabled(InfoLevel))
 	assert.Equal(t, false, log.IsLevelEnabled(DebugLevel))
+	assert.Equal(t, false, log.IsLevelEnabled(TraceLevel))
 
 	log.SetLevel(InfoLevel)
 	assert.Equal(t, true, log.IsLevelEnabled(PanicLevel))
@@ -526,6 +542,7 @@ func TestLogLevelEnabled(t *testing.T) {
 	assert.Equal(t, true, log.IsLevelEnabled(WarnLevel))
 	assert.Equal(t, true, log.IsLevelEnabled(InfoLevel))
 	assert.Equal(t, false, log.IsLevelEnabled(DebugLevel))
+	assert.Equal(t, false, log.IsLevelEnabled(TraceLevel))
 
 	log.SetLevel(DebugLevel)
 	assert.Equal(t, true, log.IsLevelEnabled(PanicLevel))
@@ -534,4 +551,14 @@ func TestLogLevelEnabled(t *testing.T) {
 	assert.Equal(t, true, log.IsLevelEnabled(WarnLevel))
 	assert.Equal(t, true, log.IsLevelEnabled(InfoLevel))
 	assert.Equal(t, true, log.IsLevelEnabled(DebugLevel))
+	assert.Equal(t, false, log.IsLevelEnabled(TraceLevel))
+
+	log.SetLevel(TraceLevel)
+	assert.Equal(t, true, log.IsLevelEnabled(PanicLevel))
+	assert.Equal(t, true, log.IsLevelEnabled(FatalLevel))
+	assert.Equal(t, true, log.IsLevelEnabled(ErrorLevel))
+	assert.Equal(t, true, log.IsLevelEnabled(WarnLevel))
+	assert.Equal(t, true, log.IsLevelEnabled(InfoLevel))
+	assert.Equal(t, true, log.IsLevelEnabled(DebugLevel))
+	assert.Equal(t, true, log.IsLevelEnabled(TraceLevel))
 }
