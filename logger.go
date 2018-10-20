@@ -126,6 +126,14 @@ func (logger *Logger) WithTime(t time.Time) *Entry {
 	return entry.WithTime(t)
 }
 
+func (logger *Logger) Tracef(format string, args ...interface{}) {
+	if logger.IsLevelEnabled(TraceLevel) {
+		entry := logger.newEntry()
+		entry.Tracef(format, args...)
+		logger.releaseEntry(entry)
+	}
+}
+
 func (logger *Logger) Debugf(format string, args ...interface{}) {
 	if logger.IsLevelEnabled(DebugLevel) {
 		entry := logger.newEntry()
@@ -189,6 +197,14 @@ func (logger *Logger) Panicf(format string, args ...interface{}) {
 	}
 }
 
+func (logger *Logger) Trace(args ...interface{}) {
+	if logger.IsLevelEnabled(TraceLevel) {
+		entry := logger.newEntry()
+		entry.Trace(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
 func (logger *Logger) Debug(args ...interface{}) {
 	if logger.IsLevelEnabled(DebugLevel) {
 		entry := logger.newEntry()
@@ -248,6 +264,14 @@ func (logger *Logger) Panic(args ...interface{}) {
 	if logger.IsLevelEnabled(PanicLevel) {
 		entry := logger.newEntry()
 		entry.Panic(args...)
+		logger.releaseEntry(entry)
+	}
+}
+
+func (logger *Logger) Traceln(args ...interface{}) {
+	if logger.IsLevelEnabled(TraceLevel) {
+		entry := logger.newEntry()
+		entry.Traceln(args...)
 		logger.releaseEntry(entry)
 	}
 }
