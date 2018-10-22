@@ -62,3 +62,15 @@ func Exit(code int) {
 func RegisterExitHandler(handler func()) {
 	handlers = append(handlers, handler)
 }
+
+// DeferExitHandler adds a Logrus Exit handler, call logrus.Exit to invoke
+// all handlers. The handlers will also be invoked when any Fatal log entry is
+// made.
+//
+// This method is useful when a caller wishes to use logrus to log a fatal
+// message but also needs to gracefully shutdown. An example usecase could be
+// closing database connections, or sending a alert that the application is
+// closing.
+func DeferExitHandler(handler func()) {
+	handlers = append([]func(){handler}, handlers...)
+}

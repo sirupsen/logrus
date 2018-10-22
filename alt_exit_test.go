@@ -18,6 +18,14 @@ func TestRegister(t *testing.T) {
 	}
 }
 
+func TestDefer(t *testing.T) {
+	current := len(handlers)
+	DeferExitHandler(func() {})
+	if len(handlers) != current+1 {
+		t.Fatalf("expected %d handlers, got %d", current+1, len(handlers))
+	}
+}
+
 func TestHandler(t *testing.T) {
 	tempDir, err := ioutil.TempDir("", "test_handler")
 	if err != nil {
