@@ -8,7 +8,6 @@ const (
 	FieldKeyMsg            = "msg"
 	FieldKeyLevel          = "level"
 	FieldKeyTime           = "time"
-	FieldKeyLogrusError    = "logrus_error"
 )
 
 // The Formatter interface is used to implement a custom Formatter. It takes an
@@ -54,11 +53,5 @@ func prefixFieldClashes(data Fields, fieldMap FieldMap) {
 	if l, ok := data[levelKey]; ok {
 		data["fields."+levelKey] = l
 		delete(data, levelKey)
-	}
-
-	logrusErrKey := fieldMap.resolve(FieldKeyLogrusError)
-	if l, ok := data[logrusErrKey]; ok {
-		data["fields."+logrusErrKey] = l
-		delete(data, logrusErrKey)
 	}
 }

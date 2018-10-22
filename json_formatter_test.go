@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestErrorNotLost(t *testing.T) {
@@ -167,8 +169,8 @@ func TestFieldsInNestedDictionary(t *testing.T) {
 	}
 
 	logEntry := WithFields(Fields{
-		"level":      "level",
-		"test":		  "test",
+		"level": "level",
+		"test":  "test",
 	})
 	logEntry.Level = InfoLevel
 
@@ -293,4 +295,19 @@ func TestJSONEnableTimestamp(t *testing.T) {
 	if !strings.Contains(s, FieldKeyTime) {
 		t.Error("Timestamp not present", s)
 	}
+}
+
+func TestJSONFuncValue(t *testing.T) {
+	formatter := &JSONFormatter{}
+	b, err := formatter.Format(WithFields(Fields{
+		"func": func() {},
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	entry := make(map[string]interface{})
+	if err := json.Unmarshal(b, &entry); err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+	require.Equal(t, funcNotSupported, entry["func"])
 }

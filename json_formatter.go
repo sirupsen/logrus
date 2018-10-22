@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"reflect"
 )
 
 type fieldKey string
@@ -45,17 +46,25 @@ type JSONFormatter struct {
 	PrettyPrint bool
 }
 
+var funcNotSupported = "func type not supported"
+
 // Format renders a single log entry
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data := make(Fields, len(entry.Data)+3)
 	for k, v := range entry.Data {
 		switch v := v.(type) {
+		case string, uint, uint8, uint16, uint32, uint64, int, int8, int16, int32, int64, bool:
+			data[k] = v
 		case error:
 			// Otherwise errors are ignored by `encoding/json`
 			// https://github.com/sirupsen/logrus/issues/137
 			data[k] = v.Error()
 		default:
-			data[k] = v
+			if t := reflect.TypeOf(v); t != nil && t.Kind() == reflect.Func {
+				data[k] = funcNotSupported
+			} else {
+				data[k] = v
+			}
 		}
 	}
 
@@ -70,10 +79,6 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
 		timestampFormat = defaultTimestampFormat
-	}
-
-	if entry.err != "" {
-		data[f.FieldMap.resolve(FieldKeyLogrusError)] = entry.err
 	}
 	if !f.DisableTimestamp {
 		data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
