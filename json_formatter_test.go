@@ -3,6 +3,7 @@ package logrus
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -103,6 +104,102 @@ func TestFieldClashWithLevel(t *testing.T) {
 
 	if entry["fields.level"] != "something" {
 		t.Fatal("fields.level not set to original level field")
+	}
+}
+
+func TestFieldClashWithRemappedFields(t *testing.T) {
+	formatter := &JSONFormatter{
+		FieldMap: FieldMap{
+			FieldKeyTime:  "@timestamp",
+			FieldKeyLevel: "@level",
+			FieldKeyMsg:   "@message",
+		},
+	}
+
+	b, err := formatter.Format(WithFields(Fields{
+		"@timestamp": "@timestamp",
+		"@level":     "@level",
+		"@message":   "@message",
+		"timestamp":  "timestamp",
+		"level":      "level",
+		"msg":        "msg",
+	}))
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	entry := make(map[string]interface{})
+	err = json.Unmarshal(b, &entry)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	for _, field := range []string{"timestamp", "level", "msg"} {
+		if entry[field] != field {
+			t.Errorf("Expected field %v to be untouched; got %v", field, entry[field])
+		}
+
+		remappedKey := fmt.Sprintf("fields.%s", field)
+		if remapped, ok := entry[remappedKey]; ok {
+			t.Errorf("Expected %s to be empty; got %v", remappedKey, remapped)
+		}
+	}
+
+	for _, field := range []string{"@timestamp", "@level", "@message"} {
+		if entry[field] == field {
+			t.Errorf("Expected field %v to be mapped to an Entry value", field)
+		}
+
+		remappedKey := fmt.Sprintf("fields.%s", field)
+		if remapped, ok := entry[remappedKey]; ok {
+			if remapped != field {
+				t.Errorf("Expected field %v to be copied to %s; got %v", field, remappedKey, remapped)
+			}
+		} else {
+			t.Errorf("Expected field %v to be copied to %s; was absent", field, remappedKey)
+		}
+	}
+}
+
+func TestFieldsInNestedDictionary(t *testing.T) {
+	formatter := &JSONFormatter{
+		DataKey: "args",
+	}
+
+	logEntry := WithFields(Fields{
+		"level":      "level",
+		"test":		  "test",
+	})
+	logEntry.Level = InfoLevel
+
+	b, err := formatter.Format(logEntry)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	entry := make(map[string]interface{})
+	err = json.Unmarshal(b, &entry)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	args := entry["args"].(map[string]interface{})
+
+	for _, field := range []string{"test", "level"} {
+		if value, present := args[field]; !present || value != field {
+			t.Errorf("Expected field %v to be present under 'args'; untouched", field)
+		}
+	}
+
+	for _, field := range []string{"test", "fields.level"} {
+		if _, present := entry[field]; present {
+			t.Errorf("Expected field %v not to be present at top level", field)
+		}
+	}
+
+	// with nested object, "level" shouldn't clash
+	if entry["level"] != "info" {
+		t.Errorf("Expected 'level' field to contain 'info'")
 	}
 }
 
