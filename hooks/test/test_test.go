@@ -1,8 +1,10 @@
 package test
 
 import (
+	"math/rand"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -38,24 +40,46 @@ func TestAllHooks(t *testing.T) {
 }
 
 func TestLoggingWithHooksRace(t *testing.T) {
+
+	rand.Seed(time.Now().Unix())
+	unlocker := rand.Int() % 100
+
 	assert := assert.New(t)
 	logger, hook := NewNullLogger()
 
-	var wg sync.WaitGroup
-	wg.Add(100)
+	var wgOne, wgAll sync.WaitGroup
+	wgOne.Add(1)
+	wgAll.Add(100)
 
 	for i := 0; i < 100; i++ {
-		go func() {
+		go func(i int) {
 			logger.Info("info")
-			wg.Done()
-		}()
+			wgAll.Done()
+			if i == unlocker {
+				wgOne.Done()
+			}
+		}(i)
 	}
+
+	wgOne.Wait()
 
 	assert.Equal(logrus.InfoLevel, hook.LastEntry().Level)
 	assert.Equal("info", hook.LastEntry().Message)
 
-	wg.Wait()
+	wgAll.Wait()
 
 	entries := hook.AllEntries()
 	assert.Equal(100, len(entries))
+}
+
+func TestFatalWithAlternateExit(t *testing.T) {
+	assert := assert.New(t)
+
+	logger, hook := NewNullLogger()
+	logger.ExitFunc = func(code int) {}
+
+	logger.Fatal("something went very wrong")
+	assert.Equal(logrus.FatalLevel, hook.LastEntry().Level)
+	assert.Equal("something went very wrong", hook.LastEntry().Message)
+	assert.Equal(1, len(hook.Entries))
 }

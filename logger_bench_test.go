@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -56,6 +57,29 @@ func doLoggerBenchmarkNoLock(b *testing.B, out *os.File, formatter Formatter, fi
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			entry.Info("aaa")
+		}
+	})
+}
+
+func BenchmarkLoggerJSONFormatter(b *testing.B) {
+	doLoggerBenchmarkWithFormatter(b, &JSONFormatter{})
+}
+
+func BenchmarkLoggerTextFormatter(b *testing.B) {
+	doLoggerBenchmarkWithFormatter(b, &TextFormatter{})
+}
+
+func doLoggerBenchmarkWithFormatter(b *testing.B, f Formatter) {
+	b.SetParallelism(100)
+	log := New()
+	log.Formatter = f
+	log.Out = ioutil.Discard
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			log.
+				WithField("foo1", "bar1").
+				WithField("foo2", "bar2").
+				Info("this is a dummy log")
 		}
 	})
 }
