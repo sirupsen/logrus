@@ -10,14 +10,20 @@ matrix:
         - go get golang.org/x/crypto/ssh/terminal
         - go get golang.org/x/sys/unix
         - go get golang.org/x/sys/windows
+        - go get -u github.com/mgechev/revive
       script:
         - go test -race -v ./...
+        - go vet
+        - sh -c 'export PATH=$PATH:$(go env GOPATH)/bin:$(go env GOROOT)/bin ; revive  -config revive.toml ./...'
     - go: 1.11.x
       env: GO111MODULE=on
       install:
         - go mod download
+        - go get -u github.com/mgechev/revive
       script:
         - go test -race -v ./...
+        - go vet
+        - sh -c 'export PATH=$PATH:$(go env GOPATH)/bin:$(go env GOROOT)/bin ; revive  -config revive.toml ./...'
     - go: 1.11.x
       env: GO111MODULE=off
       install:
@@ -25,22 +31,31 @@ matrix:
         - go get golang.org/x/crypto/ssh/terminal
         - go get golang.org/x/sys/unix
         - go get golang.org/x/sys/windows
+        - go get -u github.com/mgechev/revive
       script:
         - go test -race -v ./...
+        - go vet
+        - sh -c 'export PATH=$PATH:$(go env GOPATH)/bin:$(go env GOROOT)/bin ; revive  -config revive.toml ./...'
     - go: 1.10.x
       install:
         - go get github.com/stretchr/testify/assert
         - go get golang.org/x/crypto/ssh/terminal
         - go get golang.org/x/sys/unix
         - go get golang.org/x/sys/windows
+        - go get -u github.com/mgechev/revive
       script:
         - go test -race -v -tags appengine ./...
+        - go vet
+        - sh -c 'export PATH=$PATH:$(go env GOPATH)/bin:$(go env GOROOT)/bin ; revive  -config revive.toml ./...'
     - go: 1.11.x
       env: GO111MODULE=on
       install:
         - go mod download
+        - go get -u github.com/mgechev/revive
       script:
         - go test -race -v -tags appengine ./...
+        - go vet
+        - sh -c 'export PATH=$PATH:$(go env GOPATH)/bin:$(go env GOROOT)/bin ; revive  -config revive.toml ./...'
     - go: 1.11.x
       env: GO111MODULE=off
       install:
@@ -48,5 +63,8 @@ matrix:
         - go get golang.org/x/crypto/ssh/terminal
         - go get golang.org/x/sys/unix
         - go get golang.org/x/sys/windows
+        - go get -u github.com/mgechev/revive
       script:
         - go test -race -v -tags appengine ./...
+        - go vet
+        - sh -c 'export PATH=$PATH:$(go env GOPATH)/bin:$(go env GOROOT)/bin ; revive  -config revive.toml ./...'

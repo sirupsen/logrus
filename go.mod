@@ -8,4 +8,5 @@ require (
 	github.com/stretchr/testify v1.2.2
 	golang.org/x/crypto v0.0.0-20180904163835-0709b304e793
 	golang.org/x/sys v0.0.0-20180905080454-ebe1bf3edb33
+	// github.com/mgechev/revive v0.0.0-20181019121859-3c177e28241b
 )

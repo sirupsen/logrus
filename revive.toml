@@ -1,0 +1,78 @@
+# When set to false, ignores files with "GENERATED" header, similar to golint
+ignoreGeneratedHeader = false
+
+# Sets the default severity to "warning"
+severity = "warning"
+
+# Sets the default failure confidence. This means that linting errors
+# with less than 0.8 confidence will be ignored.
+confidence = 0.8
+
+# Sets the error code for failures with severity "error"
+errorCode = 2
+
+# Sets the error code for failures with severity "warning"
+warningCode = 1
+
+# Settings for the `blank-imports` rule to "error".
+[rule.blank-imports]
+
+# Settings for the `context-as-argument` rule to "error".
+[rule.context-as-argument]
+
+# Settings for the `context-keys-type` rule to "error".
+[rule.context-keys-type]
+
+# Settings for the `dot-imports` rule to "error".
+[rule.dot-imports]
+
+# Settings for the `error-return` rule to "error".
+[rule.error-return]
+
+# Settings for the `error-strings` rule to "error".
+[rule.error-strings]
+
+# Settings for the `error-naming` rule to "error".
+[rule.error-naming]
+
+# Settings for the `exported` rule to "error".
+[rule.exported]
+
+# Settings for the `if-return` rule to "error".
+[rule.if-return]
+
+# Settings for the `increment-decrement` rule to "error".
+[rule.increment-decrement]
+
+# Settings for the `var-naming` rule to "error".
+[rule.var-naming]
+
+# Settings for the `var-declaration` rule to "error".
+[rule.var-declaration]
+
+# Sets the severity of the `package-comments` rule to "error".
+[rule.package-comments]
+#   severity = "error"
+
+# Settings for the `range` rule to "error".
+[rule.range]
+
+# Settings for the `receiver-naming` rule to "error".
+[rule.receiver-naming]
+
+# Settings for the `time-naming` rule to "error".
+[rule.time-naming]
+
+# Settings for the `unexported-return` rule to "error".
+[rule.unexported-return]
+
+# Settings for the `indent-error-flow` rule to "error".
+[rule.indent-error-flow]
+
+# Settings for the `errorf` rule to "error".
+[rule.errorf]
+
+# Configuration of the `cyclomatic` rule. Here we specify that
+# the rule should fail if it detects code with higher complexity than 10.
+# [rule.cyclomatic]
+#   arguments = [10]
