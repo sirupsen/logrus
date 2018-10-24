@@ -40,10 +40,40 @@ func init() {
 	minimumCallerDepth = 1
 }
 
-// Defines the key when adding errors using WithError.
+// ErrorKey defines the key when adding errors using WithError.
 var ErrorKey = "error"
 
-// An entry is the final or intermediate Logrus logging entry. It contains all
+// errorSlice is an implementation of error that holds multiple errors.
+// Consider switching to github.com/pkg/errors in the future.
+type errorSlice []error
+
+// Error returns the errors as a string, makeing *errorSlice an implementation
+// of error
+func (arrOfErrs *errorSlice) Error() string {
+	strBuilder := strings.Builder{}
+	for i, eachErr := range *arrOfErrs {
+		if i > 0 {
+			strBuilder.WriteString(", ")
+		}
+		strBuilder.WriteString(eachErr.Error())
+	}
+	return strBuilder.String()
+}
+
+// appendError appends newErr to existingErrorSlice
+func appendError(existingErrorSlice *errorSlice, newErr error) *errorSlice {
+	var result errorSlice
+	if existingErrorSlice == nil {
+		// Same default size as Entry.Data from NewEntry()
+		result = make(errorSlice, 0, 5)
+	} else {
+		result = *existingErrorSlice
+	}
+	result = append(result, newErr)
+	return &result
+}
+
+// Entry is the final or intermediate Logrus logging entry. It contains all
 // the fields passed with WithField{,s}. It's finally logged when Trace, Debug,
 // Info, Warn, Error, Fatal or Panic is called on it. These objects can be
 // reused and passed around as much as you wish to avoid field duplication.
@@ -73,6 +103,7 @@ type Entry struct {
 	err string
 }
 
+// NewEntry returns a new Entry.
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
@@ -92,17 +123,17 @@ func (entry *Entry) String() (string, error) {
 	return str, nil
 }
 
-// Add an error as single field (using the key defined in ErrorKey) to the Entry.
+// WithError adds an error as single field (using the key defined in ErrorKey) to the Entry.
 func (entry *Entry) WithError(err error) *Entry {
 	return entry.WithField(ErrorKey, err)
 }
 
-// Add a single field to the Entry.
+// WithField adds a single field to the Entry.
 func (entry *Entry) WithField(key string, value interface{}) *Entry {
 	return entry.WithFields(Fields{key: value})
 }
 
-// Add a map of fields to the Entry.
+// WithFields adds a map of fields to the Entry.
 func (entry *Entry) WithFields(fields Fields) *Entry {
 	data := make(Fields, len(entry.Data)+len(fields))
 	for k, v := range entry.Data {
@@ -133,7 +164,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, err: fieldErr}
 }
 
-// Overrides the time of the Entry.
+// WithTime overrides the time of the Entry.
 func (entry *Entry) WithTime(t time.Time) *Entry {
 	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: t, err: entry.err}
 }
@@ -183,6 +214,7 @@ func getCaller() *runtime.Frame {
 	return nil
 }
 
+// HasCaller reports if the given log entry has caller data
 func (entry Entry) HasCaller() (has bool) {
 	return entry.Logger != nil &&
 		entry.Logger.ReportCaller &&
@@ -251,44 +283,52 @@ func (entry *Entry) write() {
 	}
 }
 
+// Trace logs a trace message.
 func (entry *Entry) Trace(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(TraceLevel) {
 		entry.log(TraceLevel, fmt.Sprint(args...))
 	}
 }
 
+// Debug logs a debug message.
 func (entry *Entry) Debug(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(DebugLevel) {
 		entry.log(DebugLevel, fmt.Sprint(args...))
 	}
 }
 
+// Print logs an info message.
 func (entry *Entry) Print(args ...interface{}) {
 	entry.Info(args...)
 }
 
+// Info logs an info message.
 func (entry *Entry) Info(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(InfoLevel) {
 		entry.log(InfoLevel, fmt.Sprint(args...))
 	}
 }
 
+// Warn logs a warning message.
 func (entry *Entry) Warn(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(WarnLevel) {
 		entry.log(WarnLevel, fmt.Sprint(args...))
 	}
 }
 
+// Warning logs a warning message.
 func (entry *Entry) Warning(args ...interface{}) {
 	entry.Warn(args...)
 }
 
+// Error logs an error message.
 func (entry *Entry) Error(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(ErrorLevel) {
 		entry.log(ErrorLevel, fmt.Sprint(args...))
 	}
 }
 
+// Fatal logs a fatal error message, then exits.
 func (entry *Entry) Fatal(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(FatalLevel) {
 		entry.log(FatalLevel, fmt.Sprint(args...))
@@ -296,6 +336,7 @@ func (entry *Entry) Fatal(args ...interface{}) {
 	entry.Logger.Exit(1)
 }
 
+// Panic logs a panic message, then panics the *Entry.
 func (entry *Entry) Panic(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(PanicLevel) {
 		entry.log(PanicLevel, fmt.Sprint(args...))
@@ -305,44 +346,52 @@ func (entry *Entry) Panic(args ...interface{}) {
 
 // Entry Printf family functions
 
+// Tracef logs a trace message.
 func (entry *Entry) Tracef(format string, args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(TraceLevel) {
 		entry.Trace(fmt.Sprintf(format, args...))
 	}
 }
 
+// Debugf logs a debug message.
 func (entry *Entry) Debugf(format string, args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(DebugLevel) {
 		entry.Debug(fmt.Sprintf(format, args...))
 	}
 }
 
+// Infof logs an info message.
 func (entry *Entry) Infof(format string, args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(InfoLevel) {
 		entry.Info(fmt.Sprintf(format, args...))
 	}
 }
 
+// Printf logs an info message.
 func (entry *Entry) Printf(format string, args ...interface{}) {
 	entry.Infof(format, args...)
 }
 
+// Warnf logs a warning message.
 func (entry *Entry) Warnf(format string, args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(WarnLevel) {
 		entry.Warn(fmt.Sprintf(format, args...))
 	}
 }
 
+// Warningf logs a warning message.
 func (entry *Entry) Warningf(format string, args ...interface{}) {
 	entry.Warnf(format, args...)
 }
 
+// Errorf logs an error message.
 func (entry *Entry) Errorf(format string, args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(ErrorLevel) {
 		entry.Error(fmt.Sprintf(format, args...))
 	}
 }
 
+// Fatalf logs a fatal error message, then exits.
 func (entry *Entry) Fatalf(format string, args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(FatalLevel) {
 		entry.Fatal(fmt.Sprintf(format, args...))
@@ -350,6 +399,7 @@ func (entry *Entry) Fatalf(format string, args ...interface{}) {
 	entry.Logger.Exit(1)
 }
 
+// Panicf logs a panic message, then panics the *Entry.
 func (entry *Entry) Panicf(format string, args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(PanicLevel) {
 		entry.Panic(fmt.Sprintf(format, args...))
@@ -358,44 +408,52 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 
 // Entry Println family functions
 
+// Traceln logs a trace message.
 func (entry *Entry) Traceln(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(TraceLevel) {
 		entry.Trace(entry.sprintlnn(args...))
 	}
 }
 
+// Debugln logs a debug message.
 func (entry *Entry) Debugln(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(DebugLevel) {
 		entry.Debug(entry.sprintlnn(args...))
 	}
 }
 
+// Infoln logs an info message.
 func (entry *Entry) Infoln(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(InfoLevel) {
 		entry.Info(entry.sprintlnn(args...))
 	}
 }
 
+// Println logs an info message.
 func (entry *Entry) Println(args ...interface{}) {
 	entry.Infoln(args...)
 }
 
+// Warnln logs a warning message.
 func (entry *Entry) Warnln(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(WarnLevel) {
 		entry.Warn(entry.sprintlnn(args...))
 	}
 }
 
+// Warningln logs a warning message.
 func (entry *Entry) Warningln(args ...interface{}) {
 	entry.Warnln(args...)
 }
 
+// Errorln logs an error message.
 func (entry *Entry) Errorln(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(ErrorLevel) {
 		entry.Error(entry.sprintlnn(args...))
 	}
 }
 
+// Fatalln logs a fatal error message, then exits.
 func (entry *Entry) Fatalln(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(FatalLevel) {
 		entry.Fatal(entry.sprintlnn(args...))
@@ -403,6 +461,7 @@ func (entry *Entry) Fatalln(args ...interface{}) {
 	entry.Logger.Exit(1)
 }
 
+// Panicln logs a panic message, then panics the *Entry.
 func (entry *Entry) Panicln(args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(PanicLevel) {
 		entry.Panic(entry.sprintlnn(args...))

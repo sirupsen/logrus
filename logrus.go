@@ -16,9 +16,8 @@ type Level uint32
 func (level Level) String() string {
 	if b, err := level.MarshalText(); err == nil {
 		return string(b)
-	} else {
-		return "unknown"
 	}
+	return "unknown"
 }
 
 // ParseLevel takes a string level and returns the Logrus log level constant.
@@ -56,6 +55,7 @@ func (level *Level) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// MarshalText implements encoding.TextUnmarshaler.
 func (level Level) MarshalText() ([]byte, error) {
 	switch level {
 	case TraceLevel:
@@ -77,7 +77,7 @@ func (level Level) MarshalText() ([]byte, error) {
 	return nil, fmt.Errorf("not a valid lorus level %q", level)
 }
 
-// A constant exposing all logging levels
+// AllLevels is a constant exposing all logging levels
 var AllLevels = []Level{
 	PanicLevel,
 	FatalLevel,

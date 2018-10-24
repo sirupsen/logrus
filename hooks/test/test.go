@@ -1,4 +1,4 @@
-// The Test package is used for testing logrus. It is here for backwards
+// Package test is used for testing logrus. It is here for backwards
 // compatibility from when logrus' organization was upper-case. Please use
 // lower-case logrus and the `null` package instead of this one.
 package test
@@ -49,6 +49,7 @@ func NewNullLogger() (*logrus.Logger, *Hook) {
 
 }
 
+// Fire recieves log entry to store for testing.
 func (t *Hook) Fire(e *logrus.Entry) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -56,6 +57,7 @@ func (t *Hook) Fire(e *logrus.Entry) error {
 	return nil
 }
 
+// Levels returns a list of all logrus logging level
 func (t *Hook) Levels() []logrus.Level {
 	return logrus.AllLevels
 }

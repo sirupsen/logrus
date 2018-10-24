@@ -1,6 +1,6 @@
 package logrus
 
-// A hook to be fired when logging on the logging levels returned from
+// Hook to be fired when logging on the logging levels returned from
 // `Levels()` on your implementation of the interface. Note that this is not
 // fired in a goroutine or a channel with workers, you should handle such
 // functionality yourself if your call is non-blocking and you don't wish for
@@ -10,7 +10,8 @@ type Hook interface {
 	Fire(*Entry) error
 }
 
-// Internal type for storing the hooks on a logger instance.
+// LevelHooks is an internal type (exported for backward compatibility) for
+// storing the hooks on a logger instance.
 type LevelHooks map[Level][]Hook
 
 // Add a hook to an instance of logger. This is called with

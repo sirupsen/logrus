@@ -6,18 +6,22 @@ import (
 	"runtime"
 )
 
+// Writer provides a io.Writer interface for logging.
 func (logger *Logger) Writer() *io.PipeWriter {
 	return logger.WriterLevel(InfoLevel)
 }
 
+// WriterLevel provides a io.Writer interface for logging.
 func (logger *Logger) WriterLevel(level Level) *io.PipeWriter {
 	return NewEntry(logger).WriterLevel(level)
 }
 
+// Writer provides a io.Writer interface for logging.
 func (entry *Entry) Writer() *io.PipeWriter {
 	return entry.WriterLevel(InfoLevel)
 }
 
+// WriterLevel provides a io.Writer interface for logging.
 func (entry *Entry) WriterLevel(level Level) *io.PipeWriter {
 	reader, writer := io.Pipe()
 

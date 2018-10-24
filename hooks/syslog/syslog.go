@@ -10,14 +10,20 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+//revive:disable:exported
+
 // SyslogHook to send logs via syslog.
+// @todo golint and revive suggest this name be changed to `Hook`.
+// We should explore how to do this with minimal backward compatibility issues.
 type SyslogHook struct {
 	Writer        *syslog.Writer
 	SyslogNetwork string
 	SyslogRaddr   string
 }
 
-// Creates a hook to be added to an instance of logger. This is called with
+//revive:enable:exported
+
+// NewSyslogHook creates a hook to be added to an instance of logger. This is called with
 // `hook, err := NewSyslogHook("udp", "localhost:514", syslog.LOG_DEBUG, "")`
 // `if err == nil { log.Hooks.Add(hook) }`
 func NewSyslogHook(network, raddr string, priority syslog.Priority, tag string) (*SyslogHook, error) {
@@ -25,6 +31,7 @@ func NewSyslogHook(network, raddr string, priority syslog.Priority, tag string) 
 	return &SyslogHook{w, network, raddr}, err
 }
 
+// Fire recieves log entry to send to syslog
 func (hook *SyslogHook) Fire(entry *logrus.Entry) error {
 	line, err := entry.String()
 	if err != nil {
@@ -50,6 +57,7 @@ func (hook *SyslogHook) Fire(entry *logrus.Entry) error {
 	}
 }
 
+// Levels returns a list of all logrus logging level
 func (hook *SyslogHook) Levels() []logrus.Level {
 	return logrus.AllLevels
 }

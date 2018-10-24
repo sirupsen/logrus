@@ -10,6 +10,7 @@ var (
 	std = New()
 )
 
+// StandardLogger returns a new logger.
 func StandardLogger() *Logger {
 	return std
 }
