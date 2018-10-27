@@ -11,16 +11,23 @@ import (
 	"time"
 )
 
-var bufferPool *sync.Pool
+var (
+	bufferPool *sync.Pool
 
-// qualified package name, cached at first use
-var LogrusPackage string
+	// qualified package name, cached at first use
+	logrusPackage string
 
-// Positions in the call stack when tracing to report the calling method
-var minimumCallerDepth int
+	// Positions in the call stack when tracing to report the calling method
+	minimumCallerDepth int
 
-const maximumCallerDepth int = 25
-const knownLogrusFrames int = 4
+	// Used for caller information initialisation
+	callerInitOnce sync.Once
+)
+
+const (
+	maximumCallerDepth int = 25
+	knownLogrusFrames  int = 4
+)
 
 func init() {
 	bufferPool = &sync.Pool{
@@ -143,19 +150,20 @@ func getCaller() (method string) {
 	depth := runtime.Callers(minimumCallerDepth, pcs)
 
 	// cache this package's fully-qualified name
-	if LogrusPackage == "" {
-		LogrusPackage = getPackageName(runtime.FuncForPC(pcs[0]).Name())
+	callerInitOnce.Do(func() {
+		logrusPackage = getPackageName(runtime.FuncForPC(pcs[0]).Name())
 
 		// now that we have the cache, we can skip a minimum count of known-logrus functions
+		// XXX this is dubious, the number of frames may vary store an entry in a logger interface
 		minimumCallerDepth = knownLogrusFrames
-	}
+	})
 
 	for i := 0; i < depth; i++ {
 		fullFuncName := runtime.FuncForPC(pcs[i]).Name()
 		pkg := getPackageName(fullFuncName)
 
 		// If the caller isn't part of this package, we're done
-		if pkg != LogrusPackage {
+		if pkg != logrusPackage {
 			return fullFuncName
 		}
 	}
