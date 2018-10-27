@@ -27,9 +27,7 @@ func SetFormatter(formatter Formatter) {
 // SetReportCaller sets whether the standard logger will include the calling
 // method as a field.
 func SetReportCaller(include bool) {
-	std.mu.Lock()
-	defer std.mu.Unlock()
-	std.ReportCaller = include
+	std.SetReportCaller(include)
 }
 
 // SetLevel sets the standard logger level.
