@@ -92,7 +92,7 @@ func logSomething(t *testing.T, message string) Fields {
 	logger.ReportCaller = true
 
 	// override the filter to allow reporting of functions within the logrus package
-	LogrusPackage = "bogusForTesting"
+	logrusPackage = "bogusForTesting"
 
 	entry := logger.WithFields(Fields{
 		"foo": "bar",
@@ -104,7 +104,7 @@ func logSomething(t *testing.T, message string) Fields {
 	assert.Nil(t, err)
 
 	// now clear the override so as not to mess with other usage
-	LogrusPackage = ""
+	logrusPackage = ""
 	return fields
 }
 
