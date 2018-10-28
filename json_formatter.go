@@ -82,7 +82,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
 	if entry.HasCaller() {
-		data[f.FieldMap.resolve(FieldKeyFunc)] = entry.Caller
+		data[f.FieldMap.resolve(FieldKeyFunc)] = entry.Caller.Function
 	}
 
 	var b *bytes.Buffer

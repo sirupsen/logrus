@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -167,8 +168,8 @@ func TestFieldsInNestedDictionary(t *testing.T) {
 	}
 
 	logEntry := WithFields(Fields{
-		"level":      "level",
-		"test":		  "test",
+		"level": "level",
+		"test":  "test",
 	})
 	logEntry.Level = InfoLevel
 
@@ -291,7 +292,7 @@ func TestFieldClashWithCaller(t *testing.T) {
 	SetReportCaller(true)
 	formatter := &JSONFormatter{}
 	e := WithField("func", "howdy pardner")
-	e.Caller = "somefunc"
+	e.Caller = &runtime.Frame{Function: "somefunc"}
 	b, err := formatter.Format(e)
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)

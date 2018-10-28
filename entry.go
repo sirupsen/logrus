@@ -61,7 +61,7 @@ type Entry struct {
 	Level Level
 
 	// Calling method, with package name
-	Caller string
+	Caller *runtime.Frame
 
 	// Message passed to Trace, Debug, Info, Warn, Error, Fatal or Panic
 	Message string
@@ -144,10 +144,11 @@ func getPackageName(f string) string {
 }
 
 // getCaller retrieves the name of the first non-logrus calling function
-func getCaller() (method string) {
+func getCaller() *runtime.Frame {
 	// Restrict the lookback frames to avoid runaway lookups
 	pcs := make([]uintptr, maximumCallerDepth)
 	depth := runtime.Callers(minimumCallerDepth, pcs)
+	frames := runtime.CallersFrames(pcs[:depth])
 
 	// cache this package's fully-qualified name
 	callerInitOnce.Do(func() {
@@ -158,24 +159,23 @@ func getCaller() (method string) {
 		minimumCallerDepth = knownLogrusFrames
 	})
 
-	for i := 0; i < depth; i++ {
-		fullFuncName := runtime.FuncForPC(pcs[i]).Name()
-		pkg := getPackageName(fullFuncName)
+	for f, again := frames.Next(); again; f, again = frames.Next() {
+		pkg := getPackageName(f.Function)
 
 		// If the caller isn't part of this package, we're done
 		if pkg != logrusPackage {
-			return fullFuncName
+			return &f
 		}
 	}
 
 	// if we got here, we failed to find the caller's context
-	return ""
+	return nil
 }
 
 func (entry Entry) HasCaller() (has bool) {
 	return entry.Logger != nil &&
 		entry.Logger.ReportCaller &&
-		entry.Caller != ""
+		entry.Caller != nil
 }
 
 // This function is not declared with a pointer value because otherwise

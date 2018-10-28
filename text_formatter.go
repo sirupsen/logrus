@@ -208,7 +208,7 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	caller := ""
 
 	if entry.HasCaller() {
-		caller = fmt.Sprintf(" %s()", entry.Caller)
+		caller = fmt.Sprintf(" %s()", entry.Caller.Function)
 	}
 
 	if f.DisableTimestamp {
