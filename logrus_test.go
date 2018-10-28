@@ -1,62 +1,19 @@
-package logrus
+package logrus_test
 
 import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"strconv"
-	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	. "github.com/sirupsen/logrus"
+	. "github.com/sirupsen/logrus/internal/testutils"
 )
-
-func LogAndAssertJSON(t *testing.T, log func(*Logger), assertions func(fields Fields)) {
-	var buffer bytes.Buffer
-	var fields Fields
-
-	logger := New()
-	logger.Out = &buffer
-	logger.Formatter = new(JSONFormatter)
-
-	log(logger)
-
-	err := json.Unmarshal(buffer.Bytes(), &fields)
-	assert.Nil(t, err)
-
-	assertions(fields)
-}
-
-func LogAndAssertText(t *testing.T, log func(*Logger), assertions func(fields map[string]string)) {
-	var buffer bytes.Buffer
-
-	logger := New()
-	logger.Out = &buffer
-	logger.Formatter = &TextFormatter{
-		DisableColors: true,
-	}
-
-	log(logger)
-
-	fields := make(map[string]string)
-	for _, kv := range strings.Split(buffer.String(), " ") {
-		if !strings.Contains(kv, "=") {
-			continue
-		}
-		kvArr := strings.Split(kv, "=")
-		key := strings.TrimSpace(kvArr[0])
-		val := kvArr[1]
-		if kvArr[1][0] == '"' {
-			var err error
-			val, err = strconv.Unquote(val)
-			assert.NoError(t, err)
-		}
-		fields[key] = val
-	}
-	assertions(fields)
-}
 
 // TestReportCaller verifies that when ReportCaller is set, the 'func' field
 // is added, and when it is unset it is not set or modified
@@ -78,7 +35,8 @@ func TestReportCallerWhenConfigured(t *testing.T) {
 	}, func(fields Fields) {
 		assert.Equal(t, "testWithCaller", fields["msg"])
 		assert.Equal(t, "info", fields["level"])
-		assert.Equal(t, "testing.tRunner", fields["func"])
+		assert.Equal(t,
+			"github.com/sirupsen/logrus_test.TestReportCallerWhenConfigured.func3", fields["func"])
 	})
 }
 
@@ -91,9 +49,6 @@ func logSomething(t *testing.T, message string) Fields {
 	logger.Formatter = new(JSONFormatter)
 	logger.ReportCaller = true
 
-	// override the filter to allow reporting of functions within the logrus package
-	logrusPackage = "bogusForTesting"
-
 	entry := logger.WithFields(Fields{
 		"foo": "bar",
 	})
@@ -103,8 +58,6 @@ func logSomething(t *testing.T, message string) Fields {
 	err := json.Unmarshal(buffer.Bytes(), &fields)
 	assert.Nil(t, err)
 
-	// now clear the override so as not to mess with other usage
-	logrusPackage = ""
 	return fields
 }
 
@@ -114,7 +67,7 @@ func TestReportCallerHelperDirect(t *testing.T) {
 
 	assert.Equal(t, "direct", fields["msg"])
 	assert.Equal(t, "info", fields["level"])
-	assert.Regexp(t, "github.com/.*/logrus.logSomething", fields["func"])
+	assert.Regexp(t, "github.com/.*/logrus_test.logSomething", fields["func"])
 }
 
 // TestReportCallerHelperDirect - verify reference when logging from a function called via pointer
@@ -124,7 +77,7 @@ func TestReportCallerHelperViaPointer(t *testing.T) {
 
 	assert.Equal(t, "via pointer", fields["msg"])
 	assert.Equal(t, "info", fields["level"])
-	assert.Regexp(t, "github.com/.*/logrus.logSomething", fields["func"])
+	assert.Regexp(t, "github.com/.*/logrus_test.logSomething", fields["func"])
 }
 
 func TestPrint(t *testing.T) {
@@ -286,7 +239,7 @@ func TestWithTimeShouldOverrideTime(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.WithTime(now).Info("foobar")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["time"], now.Format(defaultTimestampFormat))
+		assert.Equal(t, fields["time"], now.Format(time.RFC3339))
 	})
 }
 
@@ -296,7 +249,7 @@ func TestWithTimeShouldNotOverrideFields(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.WithField("herp", "derp").WithTime(now).Info("blah")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["time"], now.Format(defaultTimestampFormat))
+		assert.Equal(t, fields["time"], now.Format(time.RFC3339))
 		assert.Equal(t, fields["herp"], "derp")
 	})
 }
@@ -307,7 +260,7 @@ func TestWithFieldShouldNotOverrideTime(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.WithTime(now).WithField("herp", "derp").Info("blah")
 	}, func(fields Fields) {
-		assert.Equal(t, fields["time"], now.Format(defaultTimestampFormat))
+		assert.Equal(t, fields["time"], now.Format(time.RFC3339))
 		assert.Equal(t, fields["herp"], "derp")
 	})
 }
@@ -385,11 +338,12 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	llog.Info("looks delicious")
 
 	err := json.Unmarshal(buffer.Bytes(), &fields)
-	assert.NoError(t, err, "should have decoded first message")
+	require.NoError(t, err, "should have decoded first message")
 	assert.Equal(t, len(fields), 5, "should have msg/time/level/func/context fields")
 	assert.Equal(t, "looks delicious", fields["msg"])
 	assert.Equal(t, "eating raw fish", fields["context"])
-	assert.Equal(t, "testing.tRunner", fields["func"])
+	assert.Equal(t,
+		"github.com/sirupsen/logrus_test.TestNestedLoggingReportsCorrectCaller", fields["func"])
 
 	buffer.Reset()
 
@@ -415,7 +369,8 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	assert.Equal(t, "Brown", fields["James"])
 	assert.Equal(t, "The hardest workin' man in show business", fields["msg"])
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
-	assert.Equal(t, "testing.tRunner", fields["func"])
+	assert.Equal(t,
+		"github.com/sirupsen/logrus_test.TestNestedLoggingReportsCorrectCaller", fields["func"])
 
 	logger.ReportCaller = false // return to default value
 }
