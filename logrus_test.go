@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -339,11 +340,14 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 
 	err := json.Unmarshal(buffer.Bytes(), &fields)
 	require.NoError(t, err, "should have decoded first message")
-	assert.Equal(t, len(fields), 5, "should have msg/time/level/func/context fields")
+	assert.Equal(t, 6, len(fields), "should have msg/time/level/func/context fields")
 	assert.Equal(t, "looks delicious", fields["msg"])
 	assert.Equal(t, "eating raw fish", fields["context"])
 	assert.Equal(t,
 		"github.com/sirupsen/logrus_test.TestNestedLoggingReportsCorrectCaller", fields["func"])
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+	assert.Equal(t, cwd+"/logrus_test.go:339", fields["file"])
 
 	buffer.Reset()
 
@@ -361,7 +365,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 
 	err = json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded second message")
-	assert.Equal(t, 10, len(fields), "should have all builtin fields plus foo,bar,baz,...")
+	assert.Equal(t, 11, len(fields), "should have all builtin fields plus foo,bar,baz,...")
 	assert.Equal(t, "Stubblefield", fields["Clyde"])
 	assert.Equal(t, "Starks", fields["Jab'o"])
 	assert.Equal(t, "https://www.youtube.com/watch?v=V5DTznu-9v0", fields["uri"])
@@ -371,6 +375,8 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
 	assert.Equal(t,
 		"github.com/sirupsen/logrus_test.TestNestedLoggingReportsCorrectCaller", fields["func"])
+	require.NoError(t, err)
+	assert.Equal(t, cwd+"/logrus_test.go:364", fields["file"])
 
 	logger.ReportCaller = false // return to default value
 }
