@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"sync"
 	"testing"
 	"time"
@@ -347,7 +348,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 		"github.com/sirupsen/logrus_test.TestNestedLoggingReportsCorrectCaller", fields["func"])
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
-	assert.Equal(t, cwd+"/logrus_test.go:339", fields["file"])
+	assert.Equal(t, filepath.ToSlash(cwd+"/logrus_test.go:340"), filepath.ToSlash(fields["file"].(string)))
 
 	buffer.Reset()
 
@@ -376,7 +377,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	assert.Equal(t,
 		"github.com/sirupsen/logrus_test.TestNestedLoggingReportsCorrectCaller", fields["func"])
 	require.NoError(t, err)
-	assert.Equal(t, cwd+"/logrus_test.go:364", fields["file"])
+	assert.Equal(t, filepath.ToSlash(cwd+"/logrus_test.go:365"), filepath.ToSlash(fields["file"].(string)))
 
 	logger.ReportCaller = false // return to default value
 }
