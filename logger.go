@@ -136,31 +136,58 @@ func (logger *Logger) WithTime(t time.Time) *Entry {
 	return entry.WithTime(t)
 }
 
-// Tracef logs a message at level Trace on the standard logger.
-func (logger *Logger) Tracef(format string, args ...interface{}) {
-	if logger.IsLevelEnabled(TraceLevel) {
+// LogfAtLevel logs a message at given level on the standard logger.
+func (logger *Logger) LogfAtLevel(level Level, format string, args ...interface{}) {
+	if logger.IsLevelEnabled(level) {
 		entry := logger.newEntry()
-		entry.Tracef(format, args...)
+		entry.LogfAtLevel(level, format, args...)
 		logger.releaseEntry(entry)
 	}
+	switch level {
+	case FatalLevel:
+		logger.Exit(1)
+	}
+}
+
+// LogAtLevel logs a message at given level on the standard logger.
+func (logger *Logger) LogAtLevel(level Level, args ...interface{}) {
+	if logger.IsLevelEnabled(level) {
+		entry := logger.newEntry()
+		entry.LogAtLevel(level, args...)
+		logger.releaseEntry(entry)
+	}
+	switch level {
+	case FatalLevel:
+		logger.Exit(1)
+	}
+}
+
+// LoglnAtLevel logs a message at given level on the standard logger.
+func (logger *Logger) LoglnAtLevel(level Level, args ...interface{}) {
+	if logger.IsLevelEnabled(level) {
+		entry := logger.newEntry()
+		entry.LoglnAtLevel(level, args...)
+		logger.releaseEntry(entry)
+	}
+	switch level {
+	case FatalLevel:
+		logger.Exit(1)
+	}
+}
+
+// Tracef logs a message at level Trace on the standard logger.
+func (logger *Logger) Tracef(format string, args ...interface{}) {
+	logger.LogfAtLevel(TraceLevel, format, args...)
 }
 
 // Debugf logs a message at level Debug on the standard logger.
 func (logger *Logger) Debugf(format string, args ...interface{}) {
-	if logger.IsLevelEnabled(DebugLevel) {
-		entry := logger.newEntry()
-		entry.Debugf(format, args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogfAtLevel(DebugLevel, format, args...)
 }
 
 // Infof logs a message at level Info on the standard logger.
 func (logger *Logger) Infof(format string, args ...interface{}) {
-	if logger.IsLevelEnabled(InfoLevel) {
-		entry := logger.newEntry()
-		entry.Infof(format, args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogfAtLevel(InfoLevel, format, args...)
 }
 
 // Printf logs a message at level Info on the standard logger.
@@ -172,75 +199,42 @@ func (logger *Logger) Printf(format string, args ...interface{}) {
 
 // Warnf logs a message at level Warn on the standard logger.
 func (logger *Logger) Warnf(format string, args ...interface{}) {
-	if logger.IsLevelEnabled(WarnLevel) {
-		entry := logger.newEntry()
-		entry.Warnf(format, args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogfAtLevel(WarnLevel, format, args...)
 }
 
 // Warningf logs a message at level Warn on the standard logger.
 func (logger *Logger) Warningf(format string, args ...interface{}) {
-	if logger.IsLevelEnabled(WarnLevel) {
-		entry := logger.newEntry()
-		entry.Warnf(format, args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogfAtLevel(WarnLevel, format, args...)
 }
 
 // Errorf logs a message at level Error on the standard logger.
 func (logger *Logger) Errorf(format string, args ...interface{}) {
-	if logger.IsLevelEnabled(ErrorLevel) {
-		entry := logger.newEntry()
-		entry.Errorf(format, args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogfAtLevel(ErrorLevel, format, args...)
 }
 
 // Fatalf logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
 func (logger *Logger) Fatalf(format string, args ...interface{}) {
-	if logger.IsLevelEnabled(FatalLevel) {
-		entry := logger.newEntry()
-		entry.Fatalf(format, args...)
-		logger.releaseEntry(entry)
-	}
-	logger.Exit(1)
+	logger.LogfAtLevel(FatalLevel, format, args...)
 }
 
 // Panicf logs a message at level Panic on the standard logger.
 func (logger *Logger) Panicf(format string, args ...interface{}) {
-	if logger.IsLevelEnabled(PanicLevel) {
-		entry := logger.newEntry()
-		entry.Panicf(format, args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogfAtLevel(PanicLevel, format, args...)
 }
 
 // Trace logs a message at level Trace on the standard logger.
 func (logger *Logger) Trace(args ...interface{}) {
-	if logger.IsLevelEnabled(TraceLevel) {
-		entry := logger.newEntry()
-		entry.Trace(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogAtLevel(TraceLevel, args...)
 }
 
 // Debug logs a message at level Debug on the standard logger.
 func (logger *Logger) Debug(args ...interface{}) {
-	if logger.IsLevelEnabled(DebugLevel) {
-		entry := logger.newEntry()
-		entry.Debug(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogAtLevel(DebugLevel, args...)
 }
 
 // Info logs a message at level Info on the standard logger.
 func (logger *Logger) Info(args ...interface{}) {
-	if logger.IsLevelEnabled(InfoLevel) {
-		entry := logger.newEntry()
-		entry.Info(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogAtLevel(InfoLevel, args...)
 }
 
 // Print logs a message at level Info on the standard logger.
@@ -252,75 +246,42 @@ func (logger *Logger) Print(args ...interface{}) {
 
 // Warn logs a message at level Warn on the standard logger.
 func (logger *Logger) Warn(args ...interface{}) {
-	if logger.IsLevelEnabled(WarnLevel) {
-		entry := logger.newEntry()
-		entry.Warn(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogAtLevel(WarnLevel, args...)
 }
 
 // Warning logs a message at level Warn on the standard logger.
 func (logger *Logger) Warning(args ...interface{}) {
-	if logger.IsLevelEnabled(WarnLevel) {
-		entry := logger.newEntry()
-		entry.Warn(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogAtLevel(WarnLevel, args...)
 }
 
 // Error logs a message at level Error on the standard logger.
 func (logger *Logger) Error(args ...interface{}) {
-	if logger.IsLevelEnabled(ErrorLevel) {
-		entry := logger.newEntry()
-		entry.Error(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogAtLevel(ErrorLevel, args...)
 }
 
 // Fatal logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
 func (logger *Logger) Fatal(args ...interface{}) {
-	if logger.IsLevelEnabled(FatalLevel) {
-		entry := logger.newEntry()
-		entry.Fatal(args...)
-		logger.releaseEntry(entry)
-	}
-	logger.Exit(1)
+	logger.LogAtLevel(FatalLevel, args...)
 }
 
 // Panic logs a message at level Panic on the standard logger.
 func (logger *Logger) Panic(args ...interface{}) {
-	if logger.IsLevelEnabled(PanicLevel) {
-		entry := logger.newEntry()
-		entry.Panic(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LogAtLevel(PanicLevel, args...)
 }
 
 // Traceln logs a message at level Trace on the standard logger.
 func (logger *Logger) Traceln(args ...interface{}) {
-	if logger.IsLevelEnabled(TraceLevel) {
-		entry := logger.newEntry()
-		entry.Traceln(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LoglnAtLevel(TraceLevel, args...)
 }
 
 // Debugln logs a message at level Debug on the standard logger.
 func (logger *Logger) Debugln(args ...interface{}) {
-	if logger.IsLevelEnabled(DebugLevel) {
-		entry := logger.newEntry()
-		entry.Debugln(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LoglnAtLevel(DebugLevel, args...)
 }
 
 // Infoln logs a message at level Info on the standard logger.
 func (logger *Logger) Infoln(args ...interface{}) {
-	if logger.IsLevelEnabled(InfoLevel) {
-		entry := logger.newEntry()
-		entry.Infoln(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LoglnAtLevel(InfoLevel, args...)
 }
 
 // Println logs a message at level Info on the standard logger.
@@ -332,48 +293,27 @@ func (logger *Logger) Println(args ...interface{}) {
 
 // Warnln logs a message at level Warn on the standard logger.
 func (logger *Logger) Warnln(args ...interface{}) {
-	if logger.IsLevelEnabled(WarnLevel) {
-		entry := logger.newEntry()
-		entry.Warnln(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LoglnAtLevel(WarnLevel, args...)
 }
 
 // Warningln logs a message at level Warn on the standard logger.
 func (logger *Logger) Warningln(args ...interface{}) {
-	if logger.IsLevelEnabled(WarnLevel) {
-		entry := logger.newEntry()
-		entry.Warnln(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LoglnAtLevel(WarnLevel, args...)
 }
 
 // Errorln logs a message at level Error on the standard logger.
 func (logger *Logger) Errorln(args ...interface{}) {
-	if logger.IsLevelEnabled(ErrorLevel) {
-		entry := logger.newEntry()
-		entry.Errorln(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LoglnAtLevel(ErrorLevel, args...)
 }
 
 // Fatalln logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
 func (logger *Logger) Fatalln(args ...interface{}) {
-	if logger.IsLevelEnabled(FatalLevel) {
-		entry := logger.newEntry()
-		entry.Fatalln(args...)
-		logger.releaseEntry(entry)
-	}
-	logger.Exit(1)
+	logger.LoglnAtLevel(FatalLevel, args...)
 }
 
 // Panicln logs a message at level Panic on the standard logger.
 func (logger *Logger) Panicln(args ...interface{}) {
-	if logger.IsLevelEnabled(PanicLevel) {
-		entry := logger.newEntry()
-		entry.Panicln(args...)
-		logger.releaseEntry(entry)
-	}
+	logger.LoglnAtLevel(PanicLevel, args...)
 }
 
 // Exit calls os.Exit (or logger.ExitFunc) after running handlers.

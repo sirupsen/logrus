@@ -183,4 +183,7 @@ type Ext1FieldLogger interface {
 	Tracef(format string, args ...interface{})
 	Trace(args ...interface{})
 	Traceln(args ...interface{})
+	LogAtLevel(level Level, args ...interface{})
+	LogfAtLevel(level Level, format string, args ...interface{})
+	LoglnAtLevel(level Level, args ...interface{})
 }
