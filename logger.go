@@ -24,6 +24,10 @@ type Logger struct {
 	// own that implements the `Formatter` interface, see the `README` or included
 	// formatters for examples.
 	Formatter Formatter
+
+	// Flag for whether to log caller info (off by default)
+	ReportCaller bool
+
 	// The logging level the logger should log at. This is typically (and defaults
 	// to) `logrus.Info`, which allows Info(), Warn(), Error() and Fatal() to be
 	// logged.
@@ -73,11 +77,12 @@ func (mw *MutexWrap) Disable() {
 // It's recommended to make this a global instance called `log`.
 func New() *Logger {
 	return &Logger{
-		Out:       os.Stderr,
-		Formatter: new(TextFormatter),
-		Hooks:     make(LevelHooks),
-		Level:     InfoLevel,
-		ExitFunc:  os.Exit,
+		Out:          os.Stderr,
+		Formatter:    new(TextFormatter),
+		Hooks:        make(LevelHooks),
+		Level:        InfoLevel,
+		ExitFunc:     os.Exit,
+		ReportCaller: false,
 	}
 }
 
@@ -392,6 +397,12 @@ func (logger *Logger) SetOutput(output io.Writer) {
 	logger.mu.Lock()
 	defer logger.mu.Unlock()
 	logger.Out = output
+}
+
+func (logger *Logger) SetReportCaller(reportCaller bool) {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	logger.ReportCaller = reportCaller
 }
 
 // ReplaceHooks replaces the logger hooks and returns the old ones

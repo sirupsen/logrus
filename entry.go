@@ -5,11 +5,29 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
 
-var bufferPool *sync.Pool
+var (
+	bufferPool *sync.Pool
+
+	// qualified package name, cached at first use
+	logrusPackage string
+
+	// Positions in the call stack when tracing to report the calling method
+	minimumCallerDepth int
+
+	// Used for caller information initialisation
+	callerInitOnce sync.Once
+)
+
+const (
+	maximumCallerDepth int = 25
+	knownLogrusFrames  int = 4
+)
 
 func init() {
 	bufferPool = &sync.Pool{
@@ -17,6 +35,9 @@ func init() {
 			return new(bytes.Buffer)
 		},
 	}
+
+	// start at the bottom of the stack before the package-name cache is primed
+	minimumCallerDepth = 1
 }
 
 // Defines the key when adding errors using WithError.
@@ -39,6 +60,9 @@ type Entry struct {
 	// This field will be set on entry firing and the value will be equal to the one in Logger struct field.
 	Level Level
 
+	// Calling method, with package name
+	Caller *runtime.Frame
+
 	// Message passed to Trace, Debug, Info, Warn, Error, Fatal or Panic
 	Message string
 
@@ -52,8 +76,8 @@ type Entry struct {
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
-		// Default is five fields, give a little extra room
-		Data: make(Fields, 5),
+		// Default is three fields, plus one optional.  Give a little extra room.
+		Data: make(Fields, 6),
 	}
 }
 
@@ -103,6 +127,57 @@ func (entry *Entry) WithTime(t time.Time) *Entry {
 	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: t}
 }
 
+// getPackageName reduces a fully qualified function name to the package name
+// There really ought to be to be a better way...
+func getPackageName(f string) string {
+	for {
+		lastPeriod := strings.LastIndex(f, ".")
+		lastSlash := strings.LastIndex(f, "/")
+		if lastPeriod > lastSlash {
+			f = f[:lastPeriod]
+		} else {
+			break
+		}
+	}
+
+	return f
+}
+
+// getCaller retrieves the name of the first non-logrus calling function
+func getCaller() *runtime.Frame {
+	// Restrict the lookback frames to avoid runaway lookups
+	pcs := make([]uintptr, maximumCallerDepth)
+	depth := runtime.Callers(minimumCallerDepth, pcs)
+	frames := runtime.CallersFrames(pcs[:depth])
+
+	// cache this package's fully-qualified name
+	callerInitOnce.Do(func() {
+		logrusPackage = getPackageName(runtime.FuncForPC(pcs[0]).Name())
+
+		// now that we have the cache, we can skip a minimum count of known-logrus functions
+		// XXX this is dubious, the number of frames may vary store an entry in a logger interface
+		minimumCallerDepth = knownLogrusFrames
+	})
+
+	for f, again := frames.Next(); again; f, again = frames.Next() {
+		pkg := getPackageName(f.Function)
+
+		// If the caller isn't part of this package, we're done
+		if pkg != logrusPackage {
+			return &f
+		}
+	}
+
+	// if we got here, we failed to find the caller's context
+	return nil
+}
+
+func (entry Entry) HasCaller() (has bool) {
+	return entry.Logger != nil &&
+		entry.Logger.ReportCaller &&
+		entry.Caller != nil
+}
+
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
@@ -119,6 +194,9 @@ func (entry Entry) log(level Level, msg string) {
 
 	entry.Level = level
 	entry.Message = msg
+	if entry.Logger.ReportCaller {
+		entry.Caller = getCaller()
+	}
 
 	entry.fireHooks()
 

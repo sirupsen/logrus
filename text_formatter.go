@@ -107,7 +107,7 @@ func (f *TextFormatter) isColored() bool {
 
 // Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
-	prefixFieldClashes(entry.Data, f.FieldMap)
+	prefixFieldClashes(entry.Data, f.FieldMap, entry.HasCaller())
 
 	keys := make([]string, 0, len(entry.Data))
 	for k := range entry.Data {
@@ -124,6 +124,10 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	}
 	if entry.err != "" {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyLogrusError))
+	}
+	if entry.HasCaller() {
+		fixedKeys = append(fixedKeys,
+			f.FieldMap.resolve(FieldKeyFunc), f.FieldMap.resolve(FieldKeyFile))
 	}
 
 	if !f.DisableSorting {
@@ -169,6 +173,10 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 				value = entry.Message
 			case f.FieldMap.resolve(FieldKeyLogrusError):
 				value = entry.err
+			case f.FieldMap.resolve(FieldKeyFunc):
+				value = entry.Caller.Function
+			case f.FieldMap.resolve(FieldKeyFile):
+				value = fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line)
 			default:
 				value = entry.Data[key]
 			}
@@ -202,12 +210,19 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	// the behavior of logrus text_formatter the same as the stdlib log package
 	entry.Message = strings.TrimSuffix(entry.Message, "\n")
 
+	caller := ""
+
+	if entry.HasCaller() {
+		caller = fmt.Sprintf("%s:%d %s()",
+			entry.Caller.File, entry.Caller.Line, entry.Caller.Function)
+	}
+
 	if f.DisableTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m%s %-44s ", levelColor, levelText, caller, entry.Message)
 	} else if !f.FullTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Message)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d]%s %-44s ", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), caller, entry.Message)
 	} else {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s]%s %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), caller, entry.Message)
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
