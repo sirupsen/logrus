@@ -10,6 +10,7 @@ const (
 	FieldKeyTime           = "time"
 	FieldKeyLogrusError    = "logrus_error"
 	FieldKeyFunc           = "func"
+	FieldKeyFile           = "file"
 )
 
 // The Formatter interface is used to implement a custom Formatter. It takes an
@@ -68,6 +69,10 @@ func prefixFieldClashes(data Fields, fieldMap FieldMap, reportCaller bool) {
 		funcKey := fieldMap.resolve(FieldKeyFunc)
 		if l, ok := data[funcKey]; ok {
 			data["fields."+funcKey] = l
+		}
+		fileKey := fieldMap.resolve(FieldKeyFile)
+		if l, ok := data[fileKey]; ok {
+			data["fields."+fileKey] = l
 		}
 	}
 }

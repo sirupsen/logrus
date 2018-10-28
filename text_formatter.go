@@ -126,7 +126,8 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyLogrusError))
 	}
 	if entry.HasCaller() {
-		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyFunc))
+		fixedKeys = append(fixedKeys,
+			f.FieldMap.resolve(FieldKeyFunc), f.FieldMap.resolve(FieldKeyFile))
 	}
 
 	if !f.DisableSorting {
@@ -172,6 +173,10 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 				value = entry.Message
 			case f.FieldMap.resolve(FieldKeyLogrusError):
 				value = entry.err
+			case f.FieldMap.resolve(FieldKeyFunc):
+				value = entry.Caller.Function
+			case f.FieldMap.resolve(FieldKeyFile):
+				value = fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line)
 			default:
 				value = entry.Data[key]
 			}
@@ -208,7 +213,8 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	caller := ""
 
 	if entry.HasCaller() {
-		caller = fmt.Sprintf(" %s()", entry.Caller.Function)
+		caller = fmt.Sprintf("%s:%d %s()",
+			entry.Caller.File, entry.Caller.Line, entry.Caller.Function)
 	}
 
 	if f.DisableTimestamp {
