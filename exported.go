@@ -24,6 +24,12 @@ func SetFormatter(formatter Formatter) {
 	std.SetFormatter(formatter)
 }
 
+// SetReportCaller sets whether the standard logger will include the calling
+// method as a field.
+func SetReportCaller(include bool) {
+	std.SetReportCaller(include)
+}
+
 // SetLevel sets the standard logger level.
 func SetLevel(level Level) {
 	std.SetLevel(level)
