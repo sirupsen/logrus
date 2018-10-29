@@ -2,8 +2,8 @@ package logrus
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
-	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -64,15 +64,8 @@ func TestEntryPanicln(t *testing.T) {
 // TestEntryFormattingError tests proper handling of any field formatting errors
 func TestEntryFormattingError(t *testing.T) {
 	logger := New()
-	// Turning off timestamp and color marks parsing the result easier:
-	logger.Formatter = &TextFormatter{
-		DisableTimestamp: true,
-		DisableColors:    true,
-	}
-	// Regular Expressions used later
-	keyValPartsPattern := regexp.MustCompile(`([^\s"=]*|"(?:[^\\"]|\\.)*")=([^\s"=]*|"(?:[^\\"]|\\.)*")(?:\s|$)`)
-	commaSepPattern := regexp.MustCompile(", ")
-	quotedCommaSepPattern := regexp.MustCompile(`", "`)
+	// Turning off timestamp makes comparing the result easier:
+	logger.Formatter = &JSONFormatter{DisableTimestamp: true}
 	// This allows us to have multiple distinct tests, each with a new entry.
 	// While it is really a good idea to break tests out into separate
 	// independent units, we covered all the obvious cases with one multi-part
@@ -82,9 +75,66 @@ func TestEntryFormattingError(t *testing.T) {
 		Group          Fields
 		ExpectedFields map[string][]string
 	}{
-		// This is the first (and currently only) independant test case:
+		// Fields with no errors:
 		{
-			// These are the multiple parts of the single test case:
+			{
+				Group: Fields{
+					"foo": "bar",
+				},
+				ExpectedFields: map[string][]string{
+					"foo": {"bar"},
+				},
+			},
+		},
+		// Fields with one error:
+		{
+			{
+				Group: Fields{
+					"foo": func() {},
+				},
+				ExpectedFields: map[string][]string{
+					"logrus_error": {`can not add field "foo"`},
+				},
+			},
+		},
+		// Fields with multiple errors:
+		{
+			{
+				Group: Fields{
+					"foo": func() {},
+					"bar": func() {},
+					"baz": func() {},
+				},
+				ExpectedFields: map[string][]string{
+					"logrus_error": {
+						`can not add field "foo"`,
+						`can not add field "bar"`,
+						`can not add field "baz"`,
+					},
+				},
+			},
+		},
+		// Mixed fields with and without errors:
+		{
+			{
+				Group: Fields{
+					"apple":  func() {},
+					"banana": "yellow",
+					"carrot": func() {},
+					"daisy":  "gerber",
+				},
+				ExpectedFields: map[string][]string{
+					"logrus_error": {
+						`can not add field "apple"`,
+						`can not add field "carrot"`,
+					},
+					"banana": {"yellow"},
+					"daisy":  {"gerber"},
+				},
+			},
+		},
+		// no errors followed by multiple errors:
+		{
 			{
 				Group: Fields{
 					"foo": "bar",
@@ -103,10 +153,38 @@ func TestEntryFormattingError(t *testing.T) {
 				ExpectedFields: map[string][]string{
 					"foo": {"bar"},
 					"logrus_error": {
-						`"can not add field \"Fred\""`,
-						`"can not add field \"George\""`,
-						`"can not add field \"Ron\""`,
-						`"can not add field \"Ginnie\""`,
+						`can not add field "Fred"`,
+						`can not add field "George"`,
+						`can not add field "Ron"`,
+						`can not add field "Ginnie"`,
+					},
+				},
+			},
+		},
+		// Compound example
+		{
+			{
+				Group: Fields{
+					"foo": "bar",
+				},
+				ExpectedFields: map[string][]string{
+					"foo": {"bar"},
+				},
+			},
+			{
+				Group: Fields{
+					"Fred":   func() {},
+					"George": func() {},
+					"Ron":    func() {},
+					"Ginnie": func() {},
+				},
+				ExpectedFields: map[string][]string{
+					"foo": {"bar"},
+					"logrus_error": {
+						`can not add field "Fred"`,
+						`can not add field "George"`,
+						`can not add field "Ron"`,
+						`can not add field "Ginnie"`,
 					},
 				},
 			},
@@ -117,11 +195,11 @@ func TestEntryFormattingError(t *testing.T) {
 				ExpectedFields: map[string][]string{
 					"foo": {"bar"},
 					"logrus_error": {
-						`"can not add field \"Fred\""`,
-						`"can not add field \"George\""`,
-						`"can not add field \"Ron\""`,
-						`"can not add field \"Ginnie\""`,
-						`"can not add field \"six\""`,
+						`can not add field "Fred"`,
+						`can not add field "George"`,
+						`can not add field "Ron"`,
+						`can not add field "Ginnie"`,
+						`can not add field "six"`,
 					},
 				},
 			},
@@ -133,11 +211,11 @@ func TestEntryFormattingError(t *testing.T) {
 					"foo": {"bar"},
 					"red": {"green"},
 					"logrus_error": {
-						`"can not add field \"Fred\""`,
-						`"can not add field \"George\""`,
-						`"can not add field \"Ron\""`,
-						`"can not add field \"Ginnie\""`,
-						`"can not add field \"six\""`,
+						`can not add field "Fred"`,
+						`can not add field "George"`,
+						`can not add field "Ron"`,
+						`can not add field "Ginnie"`,
+						`can not add field "six"`,
 					},
 				},
 			},
@@ -149,12 +227,12 @@ func TestEntryFormattingError(t *testing.T) {
 					"foo": {"bar"},
 					"red": {"green"},
 					"logrus_error": {
-						`"can not add field \"Fred\""`,
-						`"can not add field \"George\""`,
-						`"can not add field \"Ron\""`,
-						`"can not add field \"Ginnie\""`,
-						`"can not add field \"six\""`,
-						`"can not add field \"seven\""`,
+						`can not add field "Fred"`,
+						`can not add field "George"`,
+						`can not add field "Ron"`,
+						`can not add field "Ginnie"`,
+						`can not add field "six"`,
+						`can not add field "seven"`,
 					},
 				},
 			},
@@ -162,7 +240,7 @@ func TestEntryFormattingError(t *testing.T) {
 	} {
 		// Independant tests have a new Entry, and a new expected final state.
 		entry := NewEntry(logger)
-		finalFieldsStr := ""
+		var lastExpected map[string][]string
 		for _, fieldGroupTestPart := range independantTestCase {
 			// Set outBuffer as a new "file" to log to.
 			outBuffer := &bytes.Buffer{}
@@ -175,85 +253,28 @@ func TestEntryFormattingError(t *testing.T) {
 			// Everything below here is analizing the Entry state after
 			// WithFields() is called:
 
-			// Capture logged output:
+			// Capture and parse logged output:
 			entry.Info("baz")
-			finalFieldsStr = outBuffer.String()
+			outputMap := make(map[string]string, len(fieldGroupTestPart.ExpectedFields)+2)
+			if err := json.Unmarshal(outBuffer.Bytes(), &outputMap); err != nil {
+				assert.Fail(t, fmt.Sprintf("Failure unmarshalling logger output, %#v from output %#v", err.Error(), outBuffer.String()))
+			} else {
+				assert.True(t, len(outputMap) > 0, "Expect at least one field")
 
-			// Parse the output into key-value pairs.
-			keyValPairs := keyValPartsPattern.FindAllStringSubmatch(outBuffer.String(), -1)
-			assert.True(t, len(keyValPairs) > 0, "Expect at least one field")
-
-			// Inject level=info and msg=baz into our expected data, as they
-			// come from the Info() call above:
-			expectedFields := make(map[string][]string, len(fieldGroupTestPart.ExpectedFields)+2)
-			for _, fieldSets := range []map[string][]string{
-				map[string][]string{"level": {"info"}, "msg": {"baz"}},
-				fieldGroupTestPart.ExpectedFields,
-			} {
-				for key, strValParts := range fieldSets {
-					expectedFields[key] = strValParts
+				// Inject level=info and msg=baz into our expected data, as they
+				// come from the Info() call above:
+				expectedFields := make(map[string][]string, len(fieldGroupTestPart.ExpectedFields)+2)
+				for _, fieldSets := range []map[string][]string{
+					map[string][]string{"level": {"info"}, "msg": {"baz"}},
+					fieldGroupTestPart.ExpectedFields,
+				} {
+					for key, strValParts := range fieldSets {
+						expectedFields[key] = strValParts
+					}
 				}
-			}
+				lastExpected = expectedFields
 
-			// A map of how many times we see each expected key. At the end
-			// these should all be 1.
-			expectedKeysFound := make(map[string]int, len(expectedFields))
-			for key := range expectedFields {
-				expectedKeysFound[key] = 0
-			}
-
-			// each key - value pair
-			for _, pairMatch := range keyValPairs {
-				assert.Len(t, pairMatch, 3, "Expected Regexp to only have exactly two matching capture groups")
-
-				// Enforce no duplicate or unexpected keys
-				foundTimes, expected := expectedKeysFound[pairMatch[1]]
-				assert.Truef(
-					t,
-					expected,
-					"Expected %#v to be an expected key from output %#v",
-					pairMatch[1],
-					outBuffer.String())
-				assert.Equalf(
-					t,
-					0,
-					foundTimes,
-					"Expected %#v to only appear once from output %#v",
-					pairMatch[1],
-					outBuffer.String())
-				expectedKeysFound[pairMatch[1]]++
-
-				// If a value contains `, `, it must be in double quotes.
-				// To sidestep the issue of string termination when reordering
-				// we replace all instance of `, ` with `", "`  so we can simply
-				// sort them, glue them back together and revert all `", "`s
-				// back to `, `
-				valParts := strings.Split(commaSepPattern.ReplaceAllString(pairMatch[2], `", "`), ", ")
-				sort.Strings(valParts)
-				sort.Strings(expectedFields[pairMatch[1]])
-
-				// Glue the string slices back together for comparison.
-				assert.Equal(
-					t,
-					quotedCommaSepPattern.ReplaceAllString(strings.Join(expectedFields[pairMatch[1]], ", "), ", "),
-					quotedCommaSepPattern.ReplaceAllString(strings.Join(valParts, ", "), ", "),
-					"Expected key %#v (with value %#v) from output %#v to have same parts as %#v",
-					pairMatch[1],
-					pairMatch[2],
-					outBuffer.String(),
-					expectedFields[pairMatch[1]])
-			}
-			// Make sure no expected keys were missing (or duplicate, already
-			// checked for.)
-			for key, foundTimes := range expectedKeysFound {
-				assert.Equalf(
-					t,
-					1,
-					foundTimes,
-					"Expected key %#v to be found 1 time (not %#v times) in output %#v",
-					key,
-					foundTimes,
-					outBuffer.String())
+				AssertMapOfStringToUnorderdStringsEqual(t, ", ", expectedFields, outputMap, outBuffer.String())
 			}
 
 		}
@@ -268,13 +289,71 @@ func TestEntryFormattingError(t *testing.T) {
 		// Ensure changing the timestamp (with timestamps hidden) didn't change
 		// the output.
 		entry.Info("baz")
+		outputMap := make(map[string]string, len(lastExpected))
+		if err := json.Unmarshal(outBuffer.Bytes(), &outputMap); err != nil {
+			assert.Fail(t, fmt.Sprintf("Failure unmarshalling logger output, %#v from output %#v", err.Error(), outBuffer.String()))
+		} else {
+			assert.True(t, len(outputMap) > 0, "Expect at least one field")
+			AssertMapOfStringToUnorderdStringsEqual(t, ", ", lastExpected, outputMap, outBuffer.String())
+		}
+	}
+}
+
+func AssertMapOfStringToUnorderdStringsEqual(t *testing.T, seperator string, expected map[string][]string, actual map[string]string, output string) {
+	// A map of how many times we see each expected key. At the end
+	// these should all be 1.
+	expectedKeysFound := make(map[string]int, len(expected))
+	for key := range expected {
+		expectedKeysFound[key] = 0
+	}
+
+	// each key - value pair
+	for actualKey, actualValue := range actual {
+
+		// Enforce no duplicate or unexpected keys
+		foundTimes, wasExpected := expectedKeysFound[actualKey]
+		assert.Truef(
+			t,
+			wasExpected,
+			"Expected %#v to be an expected key from output %#v",
+			actualKey,
+			output)
 		assert.Equalf(
 			t,
-			finalFieldsStr,
-			outBuffer.String(),
-			"WithTime() not expected to modify fields or errors: %#v, previously %#v",
-			outBuffer.String(),
-			finalFieldsStr)
+			0,
+			foundTimes,
+			"Expected %#v to only appear once from output %#v",
+			actualKey,
+			output)
+		expectedKeysFound[actualKey]++
+
+		// Split the value on `seperator` so it can be sorted and reassembeled
+		valParts := strings.Split(actualValue, seperator)
+		sort.Strings(valParts)
+		sort.Strings(expected[actualKey])
+
+		// Glue the string slices back together for comparison.
+		assert.Equal(
+			t,
+			strings.Join(expected[actualKey], seperator),
+			strings.Join(valParts, seperator),
+			"Expected key %#v (with value %#v) from output %#v to have same parts as %#v",
+			actualKey,
+			actualValue,
+			output,
+			expected[actualKey])
+	}
+	// Make sure no expected keys were missing (or duplicate, already
+	// checked for.)
+	for key, foundTimes := range expectedKeysFound {
+		assert.Equalf(
+			t,
+			1,
+			foundTimes,
+			"Expected key %#v to be found 1 time (not %#v times) in output %#v",
+			key,
+			foundTimes,
+			output)
 	}
 }
 
