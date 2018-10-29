@@ -40,39 +40,21 @@ type Formatter interface {
 // It's not exported because it's still using Data in an opinionated way. It's to
 // avoid code duplication between the two default formatters.
 func prefixFieldClashes(data Fields, fieldMap FieldMap, reportCaller bool) {
-	timeKey := fieldMap.resolve(FieldKeyTime)
-	if t, ok := data[timeKey]; ok {
-		data["fields."+timeKey] = t
-		delete(data, timeKey)
+	reservedKeyNames := []fieldKey{
+		FieldKeyTime,
+		FieldKeyMsg,
+		FieldKeyLevel,
+		FieldKeyLogrusError,
 	}
-
-	msgKey := fieldMap.resolve(FieldKeyMsg)
-	if m, ok := data[msgKey]; ok {
-		data["fields."+msgKey] = m
-		delete(data, msgKey)
-	}
-
-	levelKey := fieldMap.resolve(FieldKeyLevel)
-	if l, ok := data[levelKey]; ok {
-		data["fields."+levelKey] = l
-		delete(data, levelKey)
-	}
-
-	logrusErrKey := fieldMap.resolve(FieldKeyLogrusError)
-	if l, ok := data[logrusErrKey]; ok {
-		data["fields."+logrusErrKey] = l
-		delete(data, logrusErrKey)
-	}
-
 	// If reportCaller is not set, 'func' will not conflict.
 	if reportCaller {
-		funcKey := fieldMap.resolve(FieldKeyFunc)
-		if l, ok := data[funcKey]; ok {
-			data["fields."+funcKey] = l
-		}
-		fileKey := fieldMap.resolve(FieldKeyFile)
-		if l, ok := data[fileKey]; ok {
-			data["fields."+fileKey] = l
+		reservedKeyNames = append(reservedKeyNames, FieldKeyFunc, FieldKeyFile)
+	}
+	for _, srcKeyName := range reservedKeyNames {
+		destKeyName := fieldMap.resolve(srcKeyName)
+		if itemValue, ok := data[destKeyName]; ok {
+			data["fields."+destKeyName] = itemValue
+			delete(data, destKeyName)
 		}
 	}
 }

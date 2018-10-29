@@ -280,39 +280,27 @@ func (entry *Entry) write() {
 	}
 }
 
-// LogAtLevel logs message at a given log level.
+// LogAtLevel logs a message at given level on the standard logger.
 func (entry *Entry) LogAtLevel(level Level, args ...interface{}) {
-	if entry.Logger.IsLevelEnabled(level) {
-		entry.log(level, fmt.Sprint(args...))
-	}
-	switch level {
-	case FatalLevel:
-		entry.Logger.Exit(1)
-	case PanicLevel:
-		panic(fmt.Sprint(args...))
-	}
+	entry.logAtLevelInternal(level, entry.Logger.consolidateArgs(args...))
 }
 
-// LogfAtLevel logs message at a given log level.
+// LogfAtLevel logs a message at given level on the standard logger.
 func (entry *Entry) LogfAtLevel(level Level, format string, args ...interface{}) {
-	if entry.Logger.IsLevelEnabled(level) {
-		entry.LogAtLevel(level, fmt.Sprintf(format, args...))
-	}
-	switch level {
-	case FatalLevel:
-		entry.Logger.Exit(1)
-	}
+	entry.logAtLevelInternal(level, entry.Logger.consolidateArgsf(format, args...))
 }
 
-// LoglnAtLevel logs message at a given log level.
+// LoglnAtLevel logs a message at given level on the standard logger.
 func (entry *Entry) LoglnAtLevel(level Level, args ...interface{}) {
+	entry.logAtLevelInternal(level, entry.Logger.consolidateArgsln(args...))
+}
+
+// logAtLevelInternal logs consolidated message at a given log level.
+func (entry *Entry) logAtLevelInternal(level Level, getMessage func() string) {
 	if entry.Logger.IsLevelEnabled(level) {
-		entry.LogAtLevel(level, entry.sprintlnn(args...))
+		entry.log(level, getMessage())
 	}
-	switch level {
-	case FatalLevel:
-		entry.Logger.Exit(1)
-	}
+	entry.Logger.performLoggingSideEffects(level, getMessage)
 }
 
 // Trace logs a trace message.
@@ -411,17 +399,17 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 
 // Traceln logs a trace message.
 func (entry *Entry) Traceln(args ...interface{}) {
-	entry.LoglnAtLevel(TraceLevel, entry.sprintlnn(args...))
+	entry.LoglnAtLevel(TraceLevel, args...)
 }
 
 // Debugln logs a debug message.
 func (entry *Entry) Debugln(args ...interface{}) {
-	entry.LoglnAtLevel(DebugLevel, entry.sprintlnn(args...))
+	entry.LoglnAtLevel(DebugLevel, args...)
 }
 
 // Infoln logs an info message.
 func (entry *Entry) Infoln(args ...interface{}) {
-	entry.LoglnAtLevel(InfoLevel, entry.sprintlnn(args...))
+	entry.LoglnAtLevel(InfoLevel, args...)
 }
 
 // Println logs an info message.
@@ -431,7 +419,7 @@ func (entry *Entry) Println(args ...interface{}) {
 
 // Warnln logs a warning message.
 func (entry *Entry) Warnln(args ...interface{}) {
-	entry.LoglnAtLevel(WarnLevel, entry.sprintlnn(args...))
+	entry.LoglnAtLevel(WarnLevel, args...)
 }
 
 // Warningln logs a warning message.
@@ -441,24 +429,15 @@ func (entry *Entry) Warningln(args ...interface{}) {
 
 // Errorln logs an error message.
 func (entry *Entry) Errorln(args ...interface{}) {
-	entry.LoglnAtLevel(ErrorLevel, entry.sprintlnn(args...))
+	entry.LoglnAtLevel(ErrorLevel, args...)
 }
 
 // Fatalln logs a fatal error message, then exits.
 func (entry *Entry) Fatalln(args ...interface{}) {
-	entry.LoglnAtLevel(FatalLevel, entry.sprintlnn(args...))
+	entry.LoglnAtLevel(FatalLevel, args...)
 }
 
 // Panicln logs a panic message, then panics the *Entry.
 func (entry *Entry) Panicln(args ...interface{}) {
-	entry.LoglnAtLevel(PanicLevel, entry.sprintlnn(args...))
-}
-
-// Sprintlnn => Sprint no newline. This is to get the behavior of how
-// fmt.Sprintln where spaces are always added between operands, regardless of
-// their type. Instead of vendoring the Sprintln implementation to spare a
-// string allocation, we do the simplest thing.
-func (entry *Entry) sprintlnn(args ...interface{}) string {
-	msg := fmt.Sprintln(args...)
-	return msg[:len(msg)-1]
+	entry.LoglnAtLevel(PanicLevel, args...)
 }

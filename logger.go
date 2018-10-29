@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"sync"
@@ -136,42 +137,71 @@ func (logger *Logger) WithTime(t time.Time) *Entry {
 	return entry.WithTime(t)
 }
 
+// cacheStringGetter calls getResult() only if needed, and only once.
+func cacheStringGetter(getResult func() string) func() string {
+	var pResult *string
+	return func() string {
+		if pResult == nil {
+			result := getResult()
+			pResult = &result
+		}
+		return *pResult
+	}
+}
+
+// LogAtLevel logs message at a given log level.
+func (logger *Logger) consolidateArgs(args ...interface{}) func() string {
+	return cacheStringGetter(func() string {
+		return fmt.Sprint(args...)
+	})
+}
+
+// LogAtLevel logs message at a given log level.
+func (logger *Logger) consolidateArgsf(format string, args ...interface{}) func() string {
+	return cacheStringGetter(func() string {
+		return fmt.Sprintf(format, args...)
+	})
+}
+
+// LogAtLevel logs message at a given log level.
+func (logger *Logger) consolidateArgsln(args ...interface{}) func() string {
+	return cacheStringGetter(func() string {
+		return logger.sprintlnn(args...)
+	})
+}
+
 // LogfAtLevel logs a message at given level on the standard logger.
 func (logger *Logger) LogfAtLevel(level Level, format string, args ...interface{}) {
-	if logger.IsLevelEnabled(level) {
-		entry := logger.newEntry()
-		entry.LogfAtLevel(level, format, args...)
-		logger.releaseEntry(entry)
-	}
-	switch level {
-	case FatalLevel:
-		logger.Exit(1)
-	}
+	logger.logAtLevelInternal(level, logger.consolidateArgsf(format, args...))
 }
 
 // LogAtLevel logs a message at given level on the standard logger.
 func (logger *Logger) LogAtLevel(level Level, args ...interface{}) {
-	if logger.IsLevelEnabled(level) {
-		entry := logger.newEntry()
-		entry.LogAtLevel(level, args...)
-		logger.releaseEntry(entry)
-	}
-	switch level {
-	case FatalLevel:
-		logger.Exit(1)
-	}
+	logger.logAtLevelInternal(level, logger.consolidateArgs(args...))
 }
 
 // LoglnAtLevel logs a message at given level on the standard logger.
 func (logger *Logger) LoglnAtLevel(level Level, args ...interface{}) {
+	logger.logAtLevelInternal(level, logger.consolidateArgsln(args...))
+}
+
+// LogAtLevel logs message at a given log level.
+func (logger *Logger) logAtLevelInternal(level Level, getMessage func() string) {
 	if logger.IsLevelEnabled(level) {
 		entry := logger.newEntry()
-		entry.LoglnAtLevel(level, args...)
+		entry.logAtLevelInternal(level, getMessage)
 		logger.releaseEntry(entry)
 	}
+	logger.performLoggingSideEffects(level, getMessage)
+}
+
+// performLoggingSideEffects panics or Exit()s as level requires.
+func (logger *Logger) performLoggingSideEffects(level Level, getMessage func() string) {
 	switch level {
 	case FatalLevel:
 		logger.Exit(1)
+	case PanicLevel:
+		panic(getMessage())
 	}
 }
 
@@ -314,6 +344,15 @@ func (logger *Logger) Fatalln(args ...interface{}) {
 // Panicln logs a message at level Panic on the standard logger.
 func (logger *Logger) Panicln(args ...interface{}) {
 	logger.LoglnAtLevel(PanicLevel, args...)
+}
+
+// Sprintlnn => Sprint no newline. This is to get the behavior of how
+// fmt.Sprintln where spaces are always added between operands, regardless of
+// their type. Instead of vendoring the Sprintln implementation to spare a
+// string allocation, we do the simplest thing.
+func (logger *Logger) sprintlnn(args ...interface{}) string {
+	msg := fmt.Sprintln(args...)
+	return msg[:len(msg)-1]
 }
 
 // Exit calls os.Exit (or logger.ExitFunc) after running handlers.
