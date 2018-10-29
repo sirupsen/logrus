@@ -60,17 +60,19 @@ func (arrOfErrs *errorSlice) Error() string {
 	return strBuilder.String()
 }
 
-// appendError appends newErr to existingErrorSlice
-func appendError(existingErrorSlice *errorSlice, newErr error) *errorSlice {
-	var result errorSlice
-	if existingErrorSlice == nil {
-		// Same default size as Entry.Data from NewEntry()
-		result = make(errorSlice, 0, 5)
+// appendError appends newErr to zeroOrMoreErrors error (converts to errorSlice if needed)
+func appendError(zeroOrMoreErrors error, newErr error) error {
+	var multipleErrors errorSlice
+	if newErr == nil {
+		return zeroOrMoreErrors
+	} else if zeroOrMoreErrors == nil {
+		return newErr
+	} else if pErrSlice, ok := zeroOrMoreErrors.(*errorSlice); ok {
+		multipleErrors = append(*pErrSlice, newErr)
 	} else {
-		result = *existingErrorSlice
+		multipleErrors = errorSlice{zeroOrMoreErrors, newErr}
 	}
-	result = append(result, newErr)
-	return &result
+	return &multipleErrors
 }
 
 // Entry is the final or intermediate Logrus logging entry. It contains all
@@ -99,8 +101,8 @@ type Entry struct {
 	// When formatter is called in entry.log(), a Buffer may be set to entry
 	Buffer *bytes.Buffer
 
-	// err may contain a field formatting error
-	err string
+	// fieldErrs may contain field formatting errors
+	fieldErrs error
 }
 
 // NewEntry returns a new Entry.
@@ -139,7 +141,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range entry.Data {
 		data[k] = v
 	}
-	fieldErr := entry.err
+	fieldErrs := entry.fieldErrs
 	for k, v := range fields {
 		isErrField := false
 		if t := reflect.TypeOf(v); t != nil {
@@ -151,22 +153,17 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 			}
 		}
 		if isErrField {
-			tmp := fmt.Sprintf("can not add field %q", k)
-			if fieldErr != "" {
-				fieldErr = entry.err + ", " + tmp
-			} else {
-				fieldErr = tmp
-			}
+			fieldErrs = appendError(fieldErrs, fmt.Errorf("can not add field %q", k))
 		} else {
 			data[k] = v
 		}
 	}
-	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, err: fieldErr}
+	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, fieldErrs: fieldErrs}
 }
 
 // WithTime overrides the time of the Entry.
 func (entry *Entry) WithTime(t time.Time) *Entry {
-	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: t, err: entry.err}
+	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: t, fieldErrs: entry.fieldErrs}
 }
 
 // getPackageName reduces a fully qualified function name to the package name

@@ -73,8 +73,8 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		timestampFormat = defaultTimestampFormat
 	}
 
-	if entry.err != "" {
-		data[f.FieldMap.resolve(FieldKeyLogrusError)] = entry.err
+	if entry.fieldErrs != nil {
+		data[f.FieldMap.resolve(FieldKeyLogrusError)] = entry.fieldErrs.Error()
 	}
 	if !f.DisableTimestamp {
 		data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)

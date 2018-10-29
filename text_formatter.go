@@ -126,7 +126,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	if entry.Message != "" {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyMsg))
 	}
-	if entry.err != "" {
+	if entry.fieldErrs != nil {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyLogrusError))
 	}
 	if entry.HasCaller() {
@@ -176,7 +176,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 			case key == f.FieldMap.resolve(FieldKeyMsg):
 				value = entry.Message
 			case key == f.FieldMap.resolve(FieldKeyLogrusError):
-				value = entry.err
+				value = entry.fieldErrs.Error()
 			case key == f.FieldMap.resolve(FieldKeyFunc) && entry.HasCaller():
 				value = entry.Caller.Function
 			case key == f.FieldMap.resolve(FieldKeyFile) && entry.HasCaller():
