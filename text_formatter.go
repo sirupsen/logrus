@@ -164,18 +164,18 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	} else {
 		for _, key := range fixedKeys {
 			var value interface{}
-			switch key {
-			case f.FieldMap.resolve(FieldKeyTime):
+			switch {
+			case key == f.FieldMap.resolve(FieldKeyTime):
 				value = entry.Time.Format(timestampFormat)
-			case f.FieldMap.resolve(FieldKeyLevel):
+			case key == f.FieldMap.resolve(FieldKeyLevel):
 				value = entry.Level.String()
-			case f.FieldMap.resolve(FieldKeyMsg):
+			case key == f.FieldMap.resolve(FieldKeyMsg):
 				value = entry.Message
-			case f.FieldMap.resolve(FieldKeyLogrusError):
+			case key == f.FieldMap.resolve(FieldKeyLogrusError):
 				value = entry.err
-			case f.FieldMap.resolve(FieldKeyFunc):
+			case key == f.FieldMap.resolve(FieldKeyFunc) && entry.HasCaller():
 				value = entry.Caller.Function
-			case f.FieldMap.resolve(FieldKeyFile):
+			case key == f.FieldMap.resolve(FieldKeyFile) && entry.HasCaller():
 				value = fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line)
 			default:
 				value = entry.Data[key]

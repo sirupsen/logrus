@@ -702,3 +702,15 @@ func TestLogLevelEnabled(t *testing.T) {
 	assert.Equal(t, true, log.IsLevelEnabled(DebugLevel))
 	assert.Equal(t, true, log.IsLevelEnabled(TraceLevel))
 }
+
+func TestReportCallerOnTextFormatter(t *testing.T) {
+	l := New()
+
+	l.Formatter.(*TextFormatter).ForceColors = true
+	l.Formatter.(*TextFormatter).DisableColors = false
+	l.WithFields(Fields{"func": "func", "file": "file"}).Info("test")
+
+	l.Formatter.(*TextFormatter).ForceColors = false
+	l.Formatter.(*TextFormatter).DisableColors = true
+	l.WithFields(Fields{"func": "func", "file": "file"}).Info("test")
+}
