@@ -163,7 +163,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		timestampFormat = defaultTimestampFormat
 	}
 	if f.isColored() {
-		f.printColored(b, entry, keys, nil, timestampFormat)
+		f.printColored(b, entry, keys, data, timestampFormat)
 	} else {
 		for _, key := range fixedKeys {
 			var value interface{}
