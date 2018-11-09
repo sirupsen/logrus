@@ -1,4 +1,4 @@
-package logrus
+package logrus // import "github.com/sirupsen/logrus"
 
 import (
 	"fmt"
