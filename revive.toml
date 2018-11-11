@@ -5,8 +5,8 @@ ignoreGeneratedHeader = false
 severity = "warning"
 
 # Sets the default failure confidence. This means that linting errors
-# with less than 0.8 confidence will be ignored.
-confidence = 0.8
+# with less than 0.5 confidence will be ignored.
+confidence = 0.5
 
 # Sets the error code for failures with severity "error"
 errorCode = 2
@@ -74,5 +74,6 @@ warningCode = 1
 
 # Configuration of the `cyclomatic` rule. Here we specify that
 # the rule should fail if it detects code with higher complexity than 10.
+
 # [rule.cyclomatic]
 #   arguments = [10]
