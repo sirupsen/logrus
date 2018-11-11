@@ -69,167 +69,160 @@ func TestEntryFormattingError(t *testing.T) {
 	logger.Formatter = &logrus.JSONFormatter{DisableTimestamp: true}
 	// Functions can't be serialized, so they aren't allowed as a field value.
 	badFieldValue := func() {}
-	// This allows us to have multiple distinct tests, each with a new entry.
-	// While it is really a good idea to break tests out into separate
-	// independent units, we covered all the obvious cases with one multi-part
-	// test. (Multi-part tests share an entry and test the entry state after
-	// each change.)
-	for description, independantTestCase := range map[string][]struct {
-		Group          logrus.Fields
-		ExpectedFields map[string][]string
-	}{
-		"Fields with no errors": {
-			{
-				Group: logrus.Fields{
-					"foo": "bar",
-				},
-				ExpectedFields: map[string][]string{
-					"foo": {"bar"},
-				},
-			},
-		},
-		"Fields with one error": {
-			{
-				Group: logrus.Fields{
-					"foo": badFieldValue,
-				},
-				ExpectedFields: map[string][]string{
-					"logrus_error": {`can not add field "foo"`},
-				},
-			},
-		},
-		"Fields with multiple errors": {
-			{
-				Group: logrus.Fields{
-					"foo": badFieldValue,
-					"bar": badFieldValue,
-					"baz": badFieldValue,
-				},
-				ExpectedFields: map[string][]string{
-					"logrus_error": {
-						`can not add field "foo"`,
-						`can not add field "bar"`,
-						`can not add field "baz"`,
+	// makeAssertion converts a string with comma seperated parts to an
+	// UnorderedStringParts assertion
+	makeAssertion := func(expected string) testutils.StringFieldAssertion {
+		expectedParsed := testutils.NewUnorderedStringParts(expected, ", ")
+		return testutils.StringFieldAssertion(func(actual string, key string, message string) bool {
+			if message != "" {
+				message = " " + message
+			}
+			return expectedParsed.AssertEqualString(t, actual, fmt.Sprintf(" for key %#v%s", key, message))
+		})
+	}
+	type testCaseStep struct {
+		Group                   logrus.Fields
+		ExpectedFieldValueParts map[string]testutils.StringFieldAssertion
+	}
+	type testCase struct {
+		Description string
+		Steps       []testCaseStep
+	}
+	for _, independantTestCase := range []testCase{
+		testCase{
+			Description: "Fields with no errors",
+			Steps: []testCaseStep{
+				testCaseStep{
+					Group: logrus.Fields{
+						"foo": "bar",
+					},
+					ExpectedFieldValueParts: map[string]testutils.StringFieldAssertion{
+						"foo": makeAssertion("bar"),
 					},
 				},
 			},
 		},
-		"Mixed fields with and without errors": {
-			{
-				Group: logrus.Fields{
-					"apple":  badFieldValue,
-					"banana": "yellow",
-					"carrot": badFieldValue,
-					"daisy":  "gerber",
-				},
-				ExpectedFields: map[string][]string{
-					"logrus_error": {
-						`can not add field "apple"`,
-						`can not add field "carrot"`,
+		testCase{
+			Description: "Fields with one error",
+			Steps: []testCaseStep{
+				testCaseStep{
+					Group: logrus.Fields{
+						"foo": badFieldValue,
 					},
-					"banana": {"yellow"},
-					"daisy":  {"gerber"},
-				},
-			},
-		},
-		"No errors followed by multiple errors": {
-			{
-				Group: logrus.Fields{
-					"foo": "bar",
-				},
-				ExpectedFields: map[string][]string{
-					"foo": {"bar"},
-				},
-			},
-			{
-				Group: logrus.Fields{
-					"Fred":   badFieldValue,
-					"George": badFieldValue,
-					"Ron":    badFieldValue,
-					"Ginnie": badFieldValue,
-				},
-				ExpectedFields: map[string][]string{
-					"foo": {"bar"},
-					"logrus_error": {
-						`can not add field "Fred"`,
-						`can not add field "George"`,
-						`can not add field "Ron"`,
-						`can not add field "Ginnie"`,
+					ExpectedFieldValueParts: map[string]testutils.StringFieldAssertion{
+						"logrus_error": makeAssertion(`can not add field "foo"`),
 					},
 				},
 			},
 		},
-		"Compound example": {
-			{
-				Group: logrus.Fields{
-					"foo": "bar",
-				},
-				ExpectedFields: map[string][]string{
-					"foo": {"bar"},
-				},
-			},
-			{
-				Group: logrus.Fields{
-					"Fred":   badFieldValue,
-					"George": badFieldValue,
-					"Ron":    badFieldValue,
-					"Ginnie": badFieldValue,
-				},
-				ExpectedFields: map[string][]string{
-					"foo": {"bar"},
-					"logrus_error": {
-						`can not add field "Fred"`,
-						`can not add field "George"`,
-						`can not add field "Ron"`,
-						`can not add field "Ginnie"`,
+		testCase{
+			Description: "Fields with multiple errors",
+			Steps: []testCaseStep{
+				testCaseStep{
+					Group: logrus.Fields{
+						"foo": badFieldValue,
+						"bar": badFieldValue,
+						"baz": badFieldValue,
+					},
+					ExpectedFieldValueParts: map[string]testutils.StringFieldAssertion{
+						"logrus_error": makeAssertion(`can not add field "foo", can not add field "bar", can not add field "baz"`),
 					},
 				},
 			},
-			{
-				Group: logrus.Fields{
-					"six": badFieldValue,
-				},
-				ExpectedFields: map[string][]string{
-					"foo": {"bar"},
-					"logrus_error": {
-						`can not add field "Fred"`,
-						`can not add field "George"`,
-						`can not add field "Ron"`,
-						`can not add field "Ginnie"`,
-						`can not add field "six"`,
+		},
+		testCase{
+			Description: "Mixed fields with and without errors",
+			Steps: []testCaseStep{
+				testCaseStep{
+					Group: logrus.Fields{
+						"apple":  badFieldValue,
+						"banana": "yellow",
+						"carrot": badFieldValue,
+						"daisy":  "gerber",
+					},
+					ExpectedFieldValueParts: map[string]testutils.StringFieldAssertion{
+						"logrus_error": makeAssertion(`can not add field "apple", can not add field "carrot"`),
+						"banana":       makeAssertion("yellow"),
+						"daisy":        makeAssertion("gerber"),
 					},
 				},
 			},
-			{
-				Group: logrus.Fields{
-					"red": "green",
+		},
+		testCase{
+			Description: "No errors followed by multiple errors",
+			Steps: []testCaseStep{
+				testCaseStep{
+					Group: logrus.Fields{
+						"foo": "bar",
+					},
+					ExpectedFieldValueParts: map[string]testutils.StringFieldAssertion{
+						"foo": makeAssertion("bar"),
+					},
 				},
-				ExpectedFields: map[string][]string{
-					"foo": {"bar"},
-					"red": {"green"},
-					"logrus_error": {
-						`can not add field "Fred"`,
-						`can not add field "George"`,
-						`can not add field "Ron"`,
-						`can not add field "Ginnie"`,
-						`can not add field "six"`,
+				testCaseStep{
+					Group: logrus.Fields{
+						"Fred":   badFieldValue,
+						"George": badFieldValue,
+						"Ron":    badFieldValue,
+						"Ginnie": badFieldValue,
+					},
+					ExpectedFieldValueParts: map[string]testutils.StringFieldAssertion{
+						"foo":          makeAssertion("bar"),
+						"logrus_error": makeAssertion(`can not add field "Fred", can not add field "George", can not add field "Ron", can not add field "Ginnie"`),
 					},
 				},
 			},
-			{
-				Group: logrus.Fields{
-					"seven": badFieldValue,
+		},
+		testCase{
+			Description: "Compound example",
+			Steps: []testCaseStep{
+				testCaseStep{
+					Group: logrus.Fields{
+						"foo": "bar",
+					},
+					ExpectedFieldValueParts: map[string]testutils.StringFieldAssertion{
+						"foo": makeAssertion("bar"),
+					},
 				},
-				ExpectedFields: map[string][]string{
-					"foo": {"bar"},
-					"red": {"green"},
-					"logrus_error": {
-						`can not add field "Fred"`,
-						`can not add field "George"`,
-						`can not add field "Ron"`,
-						`can not add field "Ginnie"`,
-						`can not add field "six"`,
-						`can not add field "seven"`,
+				testCaseStep{
+					Group: logrus.Fields{
+						"Fred":   badFieldValue,
+						"George": badFieldValue,
+						"Ron":    badFieldValue,
+						"Ginnie": badFieldValue,
+					},
+					ExpectedFieldValueParts: map[string]testutils.StringFieldAssertion{
+						"foo":          makeAssertion("bar"),
+						"logrus_error": makeAssertion(`can not add field "Fred", can not add field "George", can not add field "Ron", can not add field "Ginnie"`),
+					},
+				},
+				testCaseStep{
+					Group: logrus.Fields{
+						"six": badFieldValue,
+					},
+					ExpectedFieldValueParts: map[string]testutils.StringFieldAssertion{
+						"foo":          makeAssertion("bar"),
+						"logrus_error": makeAssertion(`can not add field "Fred", can not add field "George", can not add field "Ron", can not add field "Ginnie", can not add field "six"`),
+					},
+				},
+				testCaseStep{
+					Group: logrus.Fields{
+						"red": "green",
+					},
+					ExpectedFieldValueParts: map[string]testutils.StringFieldAssertion{
+						"foo":          makeAssertion("bar"),
+						"red":          makeAssertion("green"),
+						"logrus_error": makeAssertion(`can not add field "Fred", can not add field "George", can not add field "Ron", can not add field "Ginnie", can not add field "six"`),
+					},
+				},
+				testCaseStep{
+					Group: logrus.Fields{
+						"seven": badFieldValue,
+					},
+					ExpectedFieldValueParts: map[string]testutils.StringFieldAssertion{
+						"foo":          makeAssertion("bar"),
+						"red":          makeAssertion("green"),
+						"logrus_error": makeAssertion(`can not add field "Fred", can not add field "George", can not add field "Ron", can not add field "Ginnie", can not add field "six", can not add field "seven"`),
 					},
 				},
 			},
@@ -237,31 +230,31 @@ func TestEntryFormattingError(t *testing.T) {
 	} {
 		// Independant tests have a new Entry, and a new expected final state.
 		entry := logrus.NewEntry(logger)
-		var lastExpected map[string][]string
-		for _, fieldGroupTestPart := range independantTestCase {
+		var lastExpected map[string]testutils.StringFieldAssertion
+		for _, fieldGroupTestPart := range independantTestCase.Steps {
 			// Set outBuffer as a new "file" to log to.
 			outBuffer := &bytes.Buffer{}
 			logger.Out = outBuffer
 
-			// ******** SYSTEM UNDER TEST ********
 			// Multiple calls to the WithFields() method is the primary
 			// thing being tested:
 			entry = entry.WithFields(fieldGroupTestPart.Group)
+
 			// Everything below here is analizing the Entry state after
 			// WithFields() is called:
 
 			// Capture and parse logged output:
 			entry.Info("baz")
-			outputMap := make(map[string]string, len(fieldGroupTestPart.ExpectedFields)+2)
+			outputMap := make(map[string]string, len(fieldGroupTestPart.ExpectedFieldValueParts)+2)
 			if err := json.Unmarshal(outBuffer.Bytes(), &outputMap); err != nil {
-				assert.Fail(t, fmt.Sprintf("Failure unmarshalling logger output, %#v testing %s from output %#v", err.Error(), description, outBuffer.String()))
+				assert.Fail(t, fmt.Sprintf("Failure unmarshalling logger output, %#v testing %s from output %#v", err.Error(), independantTestCase.Description, outBuffer.String()))
 			} else {
 				// Remove level and msg created by logrus:
 				delete(outputMap, "level")
 				delete(outputMap, "msg")
-				lastExpected = fieldGroupTestPart.ExpectedFields
+				lastExpected = fieldGroupTestPart.ExpectedFieldValueParts
 
-				testutils.AssertMapOfStringToUnorderdStringsEqualf(t, ", ", fieldGroupTestPart.ExpectedFields, outputMap, "testing %s from map %#v", description, outputMap)
+				testutils.ApplyAssertsToMapOfStringf(t, fieldGroupTestPart.ExpectedFieldValueParts, outputMap, "testing %s from map %#v", independantTestCase.Description, outputMap)
 			}
 
 		}
@@ -269,7 +262,6 @@ func TestEntryFormattingError(t *testing.T) {
 		outBuffer := &bytes.Buffer{}
 		logger.Out = outBuffer
 
-		// ******** SYSTEM UNDER TEST ********
 		// This is the call really being tested
 		entry = entry.WithTime(time.Now())
 
@@ -278,12 +270,12 @@ func TestEntryFormattingError(t *testing.T) {
 		entry.Info("baz")
 		outputMap := make(map[string]string, len(lastExpected))
 		if err := json.Unmarshal(outBuffer.Bytes(), &outputMap); err != nil {
-			assert.Fail(t, fmt.Sprintf("Failure unmarshalling logger output, %#v testing %s from output %#v", err.Error(), description, outBuffer.String()))
+			assert.Fail(t, fmt.Sprintf("Failure unmarshalling logger output, %#v testing %s from output %#v", err.Error(), independantTestCase.Description, outBuffer.String()))
 		} else {
 			// Remove level and msg created by logrus:
 			delete(outputMap, "level")
 			delete(outputMap, "msg")
-			testutils.AssertMapOfStringToUnorderdStringsEqualf(t, ", ", lastExpected, outputMap, "testing %s from map %#v", description, outputMap)
+			testutils.ApplyAssertsToMapOfStringf(t, lastExpected, outputMap, "testing %s from map %#v", independantTestCase.Description, outputMap)
 		}
 	}
 }

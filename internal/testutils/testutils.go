@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -15,6 +14,8 @@ import (
 	. "github.com/sirupsen/logrus"
 )
 
+// LogAndAssertJSON calls `log` function to log to a string buffer in JSON format,
+// then passes the parsed output to `assertions` function for validation.
 func LogAndAssertJSON(t *testing.T, log func(*Logger), assertions func(fields Fields)) {
 	var buffer bytes.Buffer
 	var fields Fields
@@ -60,73 +61,59 @@ func LogAndAssertText(t *testing.T, log func(*Logger), assertions func(fields ma
 	assertions(fields)
 }
 
-// AssertMapOfStringToUnorderdStringsEqualf ensures actual matches expected,
-// without regard to order of the seperator delimited parts of each key's value
-func AssertMapOfStringToUnorderdStringsEqualf(t *testing.T, seperator string, expected map[string][]string, actual map[string]string, format string, msgParts ...interface{}) {
-	message := fmt.Sprintf(format, msgParts...)
-	AssertMapOfStringToUnorderdStringsEqual(t, seperator, expected, actual, message)
+// StringFieldAssertion asserts some rules about a value of a struct field or
+// map value
+type StringFieldAssertion func(string, string, string) bool
+
+// ApplyAssertsToMapOfStringf applies a map of assertion functions to all values
+// in actual. Asserts that assertions and actual have the same set of keys.
+func ApplyAssertsToMapOfStringf(t *testing.T, assertions map[string]StringFieldAssertion, actual map[string]string, msg string, args ...interface{}) bool {
+	message := fmt.Sprintf(msg, args...)
+	return ApplyAssertsToMapOfString(t, assertions, actual, message)
 }
 
-// AssertMapOfStringToUnorderdStringsEqual ensures actual matches expected,
-// without regard to order of the seperator delimited parts of each key's value
-func AssertMapOfStringToUnorderdStringsEqual(t *testing.T, seperator string, expected map[string][]string, actual map[string]string, msgParts ...interface{}) {
-	message := fmt.Sprint(msgParts...)
-	if message != "" {
-		message = ": " + message
+// ApplyAssertsToMapOfString applies a map of assertion functions to all values
+// in actual. Asserts that assertions and actual have the same set of keys.
+func ApplyAssertsToMapOfString(t *testing.T, assertions map[string]StringFieldAssertion, actual map[string]string, msgAndArgs ...interface{}) bool {
+	message := fmt.Sprint(msgAndArgs...)
+	messageSuffix := message
+	if messageSuffix != "" {
+		messageSuffix = ": " + messageSuffix
 	}
-	// A map of how many times we see each expected key. At the end
-	// these should all be 1.
-	expectedKeysFound := make(map[string]int, len(expected))
-	for key := range expected {
-		expectedKeysFound[key] = 0
+	// A map of which expected key we saw. At the end
+	// these should all be true.
+	expectedKeysFound := make(map[string]bool, len(assertions))
+	for key := range assertions {
+		expectedKeysFound[key] = false
 	}
 
+	result := true
 	// each key - value pair
 	for actualKey, actualValue := range actual {
 
-		// Enforce no duplicate or unexpected keys
-		foundTimes, wasExpected := expectedKeysFound[actualKey]
+		// Enforce no unexpected keys
+		_, wasExpected := expectedKeysFound[actualKey]
 		assert.Truef(
 			t,
 			wasExpected,
 			"Expected %#v to be an expected key%s",
 			actualKey,
-			message)
-		assert.Equalf(
-			t,
-			0,
-			foundTimes,
-			"Expected %#v to only appear once%s",
-			actualKey,
-			message)
-		expectedKeysFound[actualKey]++
+			messageSuffix)
+		result = result && wasExpected
+		expectedKeysFound[actualKey] = true
 
-		// Split the value on `seperator` so it can be sorted and reassembeled
-		valParts := strings.Split(actualValue, seperator)
-		sort.Strings(valParts)
-		sort.Strings(expected[actualKey])
-
-		// Glue the string slices back together for comparison.
-		assert.Equal(
-			t,
-			strings.Join(expected[actualKey], seperator),
-			strings.Join(valParts, seperator),
-			"Expected key %#v (with value %#v) to have same parts as %#v%s",
-			actualKey,
-			actualValue,
-			expected[actualKey],
-			message)
+		// Apply the assertion
+		result = result && assertions[actualKey](actualValue, actualKey, message)
 	}
-	// Make sure no expected keys were missing (or duplicate, already
-	// checked for.)
-	for key, foundTimes := range expectedKeysFound {
-		assert.Equalf(
+	// Make sure no expected keys were missing.
+	for key, found := range expectedKeysFound {
+		assert.Truef(
 			t,
-			1,
-			foundTimes,
-			"Expected key %#v to be found 1 time (not %#v times)%s",
+			found,
+			"Expected key %#v to be present%s",
 			key,
-			foundTimes,
-			message)
+			messageSuffix)
+		result = result && found
 	}
+	return result
 }
