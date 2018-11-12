@@ -108,13 +108,14 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range entry.Data {
 		data[k] = v
 	}
-	var field_err string
+	field_err := entry.err
 	for k, v := range fields {
 		if t := reflect.TypeOf(v); t != nil && t.Kind() == reflect.Func {
-			field_err = fmt.Sprintf("can not add field %q", k)
-			if entry.err != "" {
-				field_err = entry.err + ", " + field_err
+			seperator := ""
+			if field_err != "" {
+				seperator = ", "
 			}
+			field_err = fmt.Sprintf("%s%scan not add field %q", field_err, seperator, k)
 		} else {
 			data[k] = v
 		}
@@ -124,7 +125,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 
 // Overrides the time of the Entry.
 func (entry *Entry) WithTime(t time.Time) *Entry {
-	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: t}
+	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: t, err: entry.err}
 }
 
 // getPackageName reduces a fully qualified function name to the package name
