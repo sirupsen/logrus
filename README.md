@@ -29,8 +29,8 @@ With `log.SetFormatter(&log.JSONFormatter{})`, for easy parsing by logstash
 or Splunk:
 
 ```json
-{"animal":"walrus","level":"info","msg":"A group of walrus emerges from the
-ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
+{"animal":"walrus","level":"info","msg":"A group of walrus emerges from the ocean",
+"size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 
 {"level":"warning","msg":"The group's number increased tremendously!",
 "number":122,"omg":true,"time":"2014-03-10 19:57:38.562471297 -0400 EDT"}

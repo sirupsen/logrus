@@ -11,6 +11,7 @@ import (
 )
 
 func TestAllHooks(t *testing.T) {
+	//noinspection GoImportUsedAsName
 	assert := assert.New(t)
 
 	logger, hook := NewNullLogger()
@@ -44,6 +45,7 @@ func TestLoggingWithHooksRace(t *testing.T) {
 	rand.Seed(time.Now().Unix())
 	unlocker := rand.Int() % 100
 
+	//noinspection GoImportUsedAsName
 	assert := assert.New(t)
 	logger, hook := NewNullLogger()
 
@@ -73,6 +75,7 @@ func TestLoggingWithHooksRace(t *testing.T) {
 }
 
 func TestFatalWithAlternateExit(t *testing.T) {
+	//noinspection GoImportUsedAsName
 	assert := assert.New(t)
 
 	logger, hook := NewNullLogger()
