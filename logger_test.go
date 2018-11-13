@@ -1,4 +1,4 @@
-package logrus
+package logrus_test
 
 import (
 	"bytes"
@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	. "github.com/sirupsen/logrus"
 )
 
 func TestFieldValueError(t *testing.T) {

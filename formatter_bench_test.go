@@ -1,9 +1,11 @@
-package logrus
+package logrus_test
 
 import (
 	"fmt"
 	"testing"
 	"time"
+
+	. "github.com/sirupsen/logrus"
 )
 
 // smallFields is a small size data set for benchmarking

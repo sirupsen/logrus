@@ -1,12 +1,13 @@
 // +build !windows,!nacl,!plan9
 
-package syslog
+package syslog_test
 
 import (
 	"log/syslog"
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	. "github.com/sirupsen/logrus/hooks/syslog"
 )
 
 func TestLocalhostAddAndPrint(t *testing.T) {

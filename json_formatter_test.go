@@ -1,4 +1,4 @@
-package logrus
+package logrus_test
 
 import (
 	"encoding/json"
@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	. "github.com/sirupsen/logrus"
 )
 
 func TestErrorNotLost(t *testing.T) {
