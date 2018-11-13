@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -167,8 +168,8 @@ func TestFieldsInNestedDictionary(t *testing.T) {
 	}
 
 	logEntry := WithFields(Fields{
-		"level":      "level",
-		"test":		  "test",
+		"level": "level",
+		"test":  "test",
 	})
 	logEntry.Level = InfoLevel
 
@@ -265,6 +266,55 @@ func TestJSONTimeKey(t *testing.T) {
 	if !strings.Contains(s, "timeywimey") {
 		t.Fatal("Expected JSON to format time key")
 	}
+}
+
+func TestFieldDoesNotClashWithCaller(t *testing.T) {
+	SetReportCaller(false)
+	formatter := &JSONFormatter{}
+
+	b, err := formatter.Format(WithField("func", "howdy pardner"))
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	entry := make(map[string]interface{})
+	err = json.Unmarshal(b, &entry)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	if entry["func"] != "howdy pardner" {
+		t.Fatal("func field replaced when ReportCaller=false")
+	}
+}
+
+func TestFieldClashWithCaller(t *testing.T) {
+	SetReportCaller(true)
+	formatter := &JSONFormatter{}
+	e := WithField("func", "howdy pardner")
+	e.Caller = &runtime.Frame{Function: "somefunc"}
+	b, err := formatter.Format(e)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	entry := make(map[string]interface{})
+	err = json.Unmarshal(b, &entry)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	if entry["fields.func"] != "howdy pardner" {
+		t.Fatalf("fields.func not set to original func field when ReportCaller=true (got '%s')",
+			entry["fields.func"])
+	}
+
+	if entry["func"] != "somefunc" {
+		t.Fatalf("func not set as expected when ReportCaller=true (got '%s')",
+			entry["func"])
+	}
+
+	SetReportCaller(false) // return to default value
 }
 
 func TestJSONDisableTimestamp(t *testing.T) {
