@@ -377,11 +377,6 @@ func (logger *Logger) Unlock() {
 	logger.mu.Unlock()
 }
 
-func (logger *Logger) SetOutput(out io.Writer) {
-	logger.mu.Lock()
-	defer logger.mu.Unlock()
-	logger.Out = out
-}
 
 // GetLevel returns the logger level.
 func (logger *Logger) GetLevel() Level {
