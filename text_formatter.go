@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -102,7 +103,7 @@ func (f *TextFormatter) isColored() bool {
 		}
 	}
 
-	return isColored && !f.DisableColors
+	return isColored && !f.DisableColors && (runtime.GOOS != "windows")
 }
 
 // Format renders a single log entry
