@@ -144,7 +144,7 @@ func TestDisableLevelTruncation(t *testing.T) {
 		tf := &TextFormatter{DisableLevelTruncation: disabled}
 		var b bytes.Buffer
 		entry.Level = level
-		tf.printColored(&b, entry, keys, timestampFormat)
+		tf.printColored(&b, entry, keys, nil, timestampFormat)
 		logLine := (&b).String()
 		if disabled {
 			expected := strings.ToUpper(level.String())
