@@ -37,15 +37,7 @@ func TestEntryPanicln(t *testing.T) {
 
 	defer func() {
 		p := recover()
-		assert.NotNil(t, p)
-
-		switch pVal := p.(type) {
-		case *Entry:
-			assert.Equal(t, "kaboom", pVal.Message)
-			assert.Equal(t, errBoom, pVal.Data["err"])
-		default:
-			t.Fatalf("want type *Entry, got %T: %#v", pVal, pVal)
-		}
+		assert.Equal(t, "kaboom", p)
 	}()
 
 	logger := New()
@@ -59,15 +51,7 @@ func TestEntryPanicf(t *testing.T) {
 
 	defer func() {
 		p := recover()
-		assert.NotNil(t, p)
-
-		switch pVal := p.(type) {
-		case *Entry:
-			assert.Equal(t, "kaboom true", pVal.Message)
-			assert.Equal(t, errBoom, pVal.Data["err"])
-		default:
-			t.Fatalf("want type *Entry, got %T: %#v", pVal, pVal)
-		}
+		assert.Equal(t, "kaboom true", p)
 	}()
 
 	logger := New()
@@ -112,4 +96,18 @@ func TestEntryHooksPanic(t *testing.T) {
 
 	entry := NewEntry(logger)
 	entry.Info(badMessage)
+}
+
+func TestEntry_log_panic(t *testing.T) {
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	logger.Level = InfoLevel
+
+	defer func() {
+		err := recover()
+		assert.Equal(t, panicMessage, err)
+	}()
+
+	entry := Entry{Logger: logger}
+	entry.log(PanicLevel, panicMessage)
 }

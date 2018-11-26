@@ -22,18 +22,12 @@ func Example_basic() {
 	// 	log.Info("Failed to log to file, using default stderr")
 	// }
 
+	const panicMsg = "It's over 9000!"
+
 	defer func() {
 		err := recover()
 		if err != nil {
-			entry := err.(*logrus.Entry)
-			log.WithFields(logrus.Fields{
-				"omg":         true,
-				"err_animal":  entry.Data["animal"],
-				"err_size":    entry.Data["size"],
-				"err_level":   entry.Level,
-				"err_message": entry.Message,
-				"number":      100,
-			}).Error("The ice breaks!") // or use Fatal() to force the process to exit with a nonzero code
+			log.Errorf("The ice breaks! %s", err) // or use Fatal() to force the process to exit with a nonzero code
 		}
 	}()
 
@@ -64,7 +58,7 @@ func Example_basic() {
 	log.WithFields(logrus.Fields{
 		"animal": "orca",
 		"size":   9009,
-	}).Panic("It's over 9000!")
+	}).Panic(panicMsg)
 
 	// Output:
 	// level=trace msg="Went to the beach" animal=walrus number=0
@@ -73,5 +67,5 @@ func Example_basic() {
 	// level=warning msg="The group's number increased tremendously!" number=122 omg=true
 	// level=debug msg="Temperature changes" temperature=-4
 	// level=panic msg="It's over 9000!" animal=orca size=9009
-	// level=error msg="The ice breaks!" err_animal=orca err_level=panic err_message="It's over 9000!" err_size=9009 number=100 omg=true
+	// level=error msg="The ice breaks! It's over 9000!"
 }
