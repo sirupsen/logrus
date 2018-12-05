@@ -108,18 +108,27 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	for k, v := range entry.Data {
 		data[k] = v
 	}
-	var field_err string
+	var fieldErr string
 	for k, v := range fields {
-		if t := reflect.TypeOf(v); t != nil && t.Kind() == reflect.Func {
-			field_err = fmt.Sprintf("can not add field %q", k)
+		isErrField := false
+		if t := reflect.TypeOf(v); t != nil {
+			switch t.Kind() {
+			case reflect.Func:
+				isErrField = true
+			case reflect.Ptr:
+				isErrField = t.Elem().Kind() == reflect.Func
+			}
+		}
+		if isErrField {
+			fieldErr = fmt.Sprintf("can not add field %q", k)
 			if entry.err != "" {
-				field_err = entry.err + ", " + field_err
+				fieldErr = entry.err + ", " + fieldErr
 			}
 		} else {
 			data[k] = v
 		}
 	}
-	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, err: field_err}
+	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, err: fieldErr}
 }
 
 // Overrides the time of the Entry.
