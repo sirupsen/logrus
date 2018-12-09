@@ -113,3 +113,16 @@ func TestEntryHooksPanic(t *testing.T) {
 	entry := NewEntry(logger)
 	entry.Info(badMessage)
 }
+
+func TestEntryWithIncorrectField(t *testing.T) {
+	assert := assert.New(t)
+
+	fn := func() {}
+
+	e := Entry{}
+	eWithFunc := e.WithFields(Fields{"func": fn})
+	eWithFuncPtr := e.WithFields(Fields{"funcPtr": &fn})
+
+	assert.Equal(eWithFunc.err, `can not add field "func"`)
+	assert.Equal(eWithFuncPtr.err, `can not add field "funcPtr"`)
+}
