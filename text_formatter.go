@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -90,7 +91,7 @@ func (f *TextFormatter) init(entry *Entry) {
 }
 
 func (f *TextFormatter) isColored() bool {
-	isColored := f.ForceColors || f.isTerminal
+	isColored := f.ForceColors || (f.isTerminal && (runtime.GOOS != "windows"))
 
 	if f.EnvironmentOverrideColors {
 		if force, ok := os.LookupEnv("CLICOLOR_FORCE"); ok && force != "0" {
