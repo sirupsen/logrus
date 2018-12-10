@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
@@ -443,7 +444,11 @@ func TestTextFormatterIsColored(t *testing.T) {
 				os.Setenv("CLICOLOR_FORCE", val.clicolorForceVal)
 			}
 			res := tf.isColored()
-			assert.Equal(subT, val.expectedResult, res)
+			if runtime.GOOS == "windows" && !tf.ForceColors && !val.clicolorForceIsSet {
+				assert.Equal(subT, false, res)
+			} else {
+				assert.Equal(subT, val.expectedResult, res)
+			}
 		})
 	}
 }
