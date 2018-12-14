@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -122,6 +123,18 @@ func TestEntryWithIncorrectField(t *testing.T) {
 	e := Entry{}
 	eWithFunc := e.WithFields(Fields{"func": fn})
 	eWithFuncPtr := e.WithFields(Fields{"funcPtr": &fn})
+
+	assert.Equal(eWithFunc.err, `can not add field "func"`)
+	assert.Equal(eWithFuncPtr.err, `can not add field "funcPtr"`)
+
+	eWithFunc = eWithFunc.WithField("not_a_func", "it is a string")
+	eWithFuncPtr = eWithFuncPtr.WithField("not_a_func", "it is a string")
+
+	assert.Equal(eWithFunc.err, `can not add field "func"`)
+	assert.Equal(eWithFuncPtr.err, `can not add field "funcPtr"`)
+
+	eWithFunc = eWithFunc.WithTime(time.Now())
+	eWithFuncPtr = eWithFuncPtr.WithTime(time.Now())
 
 	assert.Equal(eWithFunc.err, `can not add field "func"`)
 	assert.Equal(eWithFuncPtr.err, `can not add field "funcPtr"`)
