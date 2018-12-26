@@ -508,19 +508,6 @@ func TestParseLevel(t *testing.T) {
 	assert.Equal(t, "not a valid logrus Level: \"invalid\"", err.Error())
 }
 
-func TestUnmarshalText(t *testing.T) {
-	var u Level
-	for _, level := range AllLevels {
-		t.Run(level.String(), func(t *testing.T) {
-			assert.NoError(t, u.UnmarshalText([]byte(level.String())))
-			assert.Equal(t, level, u)
-		})
-	}
-	t.Run("invalid", func(t *testing.T) {
-		assert.Error(t, u.UnmarshalText([]byte("invalid")))
-	})
-}
-
 func TestGetSetLevelRace(t *testing.T) {
 	wg := sync.WaitGroup{}
 	for i := 0; i < 100; i++ {
