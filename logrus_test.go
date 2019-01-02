@@ -3,9 +3,11 @@ package logrus_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -338,6 +340,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	llog := logger.WithField("context", "eating raw fish")
 
 	llog.Info("looks delicious")
+	_, _, line, _ := runtime.Caller(0)
 
 	err := json.Unmarshal(buffer.Bytes(), &fields)
 	require.NoError(t, err, "should have decoded first message")
@@ -348,7 +351,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 		"github.com/sirupsen/logrus_test.TestNestedLoggingReportsCorrectCaller", fields["func"])
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
-	assert.Equal(t, filepath.ToSlash(cwd+"/logrus_test.go:340"), filepath.ToSlash(fields["file"].(string)))
+	assert.Equal(t, filepath.ToSlash(fmt.Sprintf("%s/logrus_test.go:%d", cwd, line-1)), filepath.ToSlash(fields["file"].(string)))
 
 	buffer.Reset()
 
@@ -363,6 +366,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	}).WithFields(Fields{
 		"James": "Brown",
 	}).Print("The hardest workin' man in show business")
+	_, _, line, _ = runtime.Caller(0)
 
 	err = json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded second message")
@@ -377,7 +381,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	assert.Equal(t,
 		"github.com/sirupsen/logrus_test.TestNestedLoggingReportsCorrectCaller", fields["func"])
 	require.NoError(t, err)
-	assert.Equal(t, filepath.ToSlash(cwd+"/logrus_test.go:365"), filepath.ToSlash(fields["file"].(string)))
+	assert.Equal(t, filepath.ToSlash(fmt.Sprintf("%s/logrus_test.go:%d", cwd, line-1)), filepath.ToSlash(fields["file"].(string)))
 
 	logger.ReportCaller = false // return to default value
 }
