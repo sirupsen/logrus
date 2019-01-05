@@ -1,3 +1,15 @@
+# 1.3.0
+This new release introduces:
+  * Log, Logf, Logln functions for Logger and Entry that take a Level
+
+Fixes:
+  * Building prometheus node_exporter on AIX (#840)
+  * Race condition in TextFormatter (#468)
+  * Travis CI import path (#868)
+  * Remove coloured output on Windows (#862)
+  * Pointer to func as field in JSONFormatter (#870)
+  * Properly marshal Levels (#873)
+
 # 1.2.0
 This new release introduces:
   * A new method `SetReportCaller` in the `Logger` to enable the file, line and calling function from which the trace has been issued
