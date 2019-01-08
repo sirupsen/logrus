@@ -12,9 +12,7 @@ import (
 
 // SyslogHook to send logs via syslog.
 type SyslogHook struct {
-	Writer        *syslog.Writer
-	SyslogNetwork string
-	SyslogRaddr   string
+	writer *syslog.Writer
 }
 
 // Creates a hook to be added to an instance of logger. This is called with
@@ -22,7 +20,7 @@ type SyslogHook struct {
 // `if err == nil { log.Hooks.Add(hook) }`
 func NewSyslogHook(network, raddr string, priority syslog.Priority, tag string) (*SyslogHook, error) {
 	w, err := syslog.Dial(network, raddr, priority, tag)
-	return &SyslogHook{w, network, raddr}, err
+	return &SyslogHook{w}, err
 }
 
 func (hook *SyslogHook) Fire(entry *logrus.Entry) error {
@@ -34,17 +32,17 @@ func (hook *SyslogHook) Fire(entry *logrus.Entry) error {
 
 	switch entry.Level {
 	case logrus.PanicLevel:
-		return hook.Writer.Crit(line)
+		return hook.writer.Crit(line)
 	case logrus.FatalLevel:
-		return hook.Writer.Crit(line)
+		return hook.writer.Crit(line)
 	case logrus.ErrorLevel:
-		return hook.Writer.Err(line)
+		return hook.writer.Err(line)
 	case logrus.WarnLevel:
-		return hook.Writer.Warning(line)
+		return hook.writer.Warning(line)
 	case logrus.InfoLevel:
-		return hook.Writer.Info(line)
+		return hook.writer.Info(line)
 	case logrus.DebugLevel, logrus.TraceLevel:
-		return hook.Writer.Debug(line)
+		return hook.writer.Debug(line)
 	default:
 		return nil
 	}
