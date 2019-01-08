@@ -11,7 +11,7 @@ type SyslogHook struct {
 }
 
 // Creates a stub hook to be added to an instance of logger on syslogless systems.
-func NewSyslogHook(network, raddr string, priority int, tag string) (*SyslogHook, error) {
+func NewSyslogHook(network, raddr string, priority Priority, tag string) (*SyslogHook, error) {
 	return &SyslogHook{}, nil
 }
 

@@ -18,7 +18,7 @@ type SyslogHook struct {
 // Creates a hook to be added to an instance of logger. This is called with
 // `hook, err := NewSyslogHook("udp", "localhost:514", int(syslog.LOG_DEBUG), "")`
 // `if err == nil { log.Hooks.Add(hook) }`
-func NewSyslogHook(network, raddr string, priority int, tag string) (*SyslogHook, error) {
+func NewSyslogHook(network, raddr string, priority Priority, tag string) (*SyslogHook, error) {
 	w, err := syslog.Dial(network, raddr, syslog.Priority(priority), tag)
 	return &SyslogHook{w}, err
 }

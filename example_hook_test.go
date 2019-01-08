@@ -1,13 +1,10 @@
-// +build !windows,!nacl,!plan9
-
 package logrus_test
 
 import (
-	"log/syslog"
 	"os"
 
 	"github.com/sirupsen/logrus"
-	slhooks "github.com/sirupsen/logrus/hooks/syslog"
+	"github.com/sirupsen/logrus/hooks/syslog"
 )
 
 // An example on how to use a hook
@@ -16,7 +13,7 @@ func Example_hook() {
 	log.Formatter = new(logrus.TextFormatter)                     // default
 	log.Formatter.(*logrus.TextFormatter).DisableColors = true    // remove colors
 	log.Formatter.(*logrus.TextFormatter).DisableTimestamp = true // remove timestamp from test output
-	if sl, err := slhooks.NewSyslogHook("udp", "localhost:514", int(syslog.LOG_INFO), ""); err == nil {
+	if sl, err := syslog.NewSyslogHook("udp", "localhost:514", syslog.LOG_INFO, ""); err == nil {
 		log.Hooks.Add(sl)
 	}
 	log.Out = os.Stdout
