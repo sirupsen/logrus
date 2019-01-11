@@ -12,18 +12,13 @@ import (
 )
 
 const (
-	nocolor = 0
-	red     = 31
-	green   = 32
-	yellow  = 33
-	blue    = 36
-	gray    = 37
+	red    = 31
+	yellow = 33
+	blue   = 36
+	gray   = 37
 )
 
-var (
-	baseTimestamp time.Time
-	emptyFieldMap FieldMap
-)
+var baseTimestamp time.Time
 
 func init() {
 	baseTimestamp = time.Now()
