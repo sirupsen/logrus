@@ -21,7 +21,7 @@ func (h *GlobalHook) Fire(e *logrus.Entry) error {
 	return nil
 }
 
-func Example() {
+func ExampleGlobalVariableHook() {
 	l := logrus.New()
 	l.Out = os.Stdout
 	l.Formatter = &logrus.TextFormatter{DisableTimestamp: true, DisableColors: true}
