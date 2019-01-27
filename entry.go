@@ -15,7 +15,7 @@ var (
 	bufferPool *sync.Pool
 
 	// qualified package name, cached at first use
-	logrusPackage string
+	skipPackageNameForCaller = make(map[string]bool, 1)
 
 	// Positions in the call stack when tracing to report the calling method
 	minimumCallerDepth int
@@ -38,6 +38,11 @@ func init() {
 
 	// start at the bottom of the stack before the package-name cache is primed
 	minimumCallerDepth = 1
+}
+
+// Set the global qualified package name.
+func SetSkipPackageNameForCaller(name string) {
+	skipPackageNameForCaller[name] = true
 }
 
 // Defines the key when adding errors using WithError.
@@ -163,18 +168,21 @@ func getCaller() *runtime.Frame {
 
 	// cache this package's fully-qualified name
 	callerInitOnce.Do(func() {
-		logrusPackage = getPackageName(runtime.FuncForPC(pcs[0]).Name())
-
 		// now that we have the cache, we can skip a minimum count of known-logrus functions
 		// XXX this is dubious, the number of frames may vary store an entry in a logger interface
-		minimumCallerDepth = knownLogrusFrames
+		if len(skipPackageNameForCaller) != 0 {
+			minimumCallerDepth = knownLogrusFrames + 1
+		} else {
+			minimumCallerDepth = knownLogrusFrames
+		}
+		skipPackageNameForCaller[getPackageName(runtime.FuncForPC(pcs[0]).Name())] = true
 	})
 
 	for f, again := frames.Next(); again; f, again = frames.Next() {
 		pkg := getPackageName(f.Function)
 
 		// If the caller isn't part of this package, we're done
-		if pkg != logrusPackage {
+		if !skipPackageNameForCaller[pkg] {
 			return &f
 		}
 	}
