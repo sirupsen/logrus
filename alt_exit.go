@@ -51,9 +51,9 @@ func Exit(code int) {
 	os.Exit(code)
 }
 
-// RegisterExitHandler adds a Logrus Exit handler, call logrus.Exit to invoke
-// all handlers. The handlers will also be invoked when any Fatal log entry is
-// made.
+// RegisterExitHandler appends a Logrus Exit handler to the list of handlers,
+// call logrus.Exit to invoke all handlers. The handlers will also be invoked when
+// any Fatal log entry is made.
 //
 // This method is useful when a caller wishes to use logrus to log a fatal
 // message but also needs to gracefully shutdown. An example usecase could be
@@ -63,9 +63,9 @@ func RegisterExitHandler(handler func()) {
 	handlers = append(handlers, handler)
 }
 
-// DeferExitHandler adds a Logrus Exit handler, call logrus.Exit to invoke
-// all handlers. The handlers will also be invoked when any Fatal log entry is
-// made.
+// DeferExitHandler prepends a Logrus Exit handler to the list of handlers,
+// call logrus.Exit to invoke all handlers. The handlers will also be invoked when
+// any Fatal log entry is made.
 //
 // This method is useful when a caller wishes to use logrus to log a fatal
 // message but also needs to gracefully shutdown. An example usecase could be
