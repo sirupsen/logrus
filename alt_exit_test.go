@@ -12,9 +12,6 @@ import (
 	"time"
 )
 
-func f1() {}
-func f2() {}
-
 func TestRegister(t *testing.T) {
 	current := len(handlers)
 
