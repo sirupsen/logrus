@@ -24,6 +24,8 @@ func init() {
 	baseTimestamp = time.Now()
 }
 
+type hyperlink string
+
 // TextFormatter formats logs into text
 type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
@@ -175,7 +177,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 			case key == f.FieldMap.resolve(FieldKeyFunc) && entry.HasCaller():
 				value = entry.Caller.Function
 			case key == f.FieldMap.resolve(FieldKeyFile) && entry.HasCaller():
-				value = fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line)
+				value = hyperlink(fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line))
 			default:
 				value = data[key]
 			}
@@ -255,6 +257,11 @@ func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interf
 }
 
 func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {
+	if stringVal, ok := value.(hyperlink);ok {
+		b.WriteString(fmt.Sprintf(" " + string(stringVal)))
+		return
+	}
+
 	stringVal, ok := value.(string)
 	if !ok {
 		stringVal = fmt.Sprint(value)
