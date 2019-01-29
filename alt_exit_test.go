@@ -14,9 +14,61 @@ import (
 
 func TestRegister(t *testing.T) {
 	current := len(handlers)
-	RegisterExitHandler(func() {})
-	if len(handlers) != current+1 {
-		t.Fatalf("expected %d handlers, got %d", current+1, len(handlers))
+
+	var results []string
+
+	h1 := func() { results = append(results, "first") }
+	h2 := func() { results = append(results, "second") }
+
+	RegisterExitHandler(h1)
+	RegisterExitHandler(h2)
+
+	if len(handlers) != current+2 {
+		t.Fatalf("expected %d handlers, got %d", current+2, len(handlers))
+	}
+
+	runHandlers()
+
+	if len(results) != 2 {
+		t.Fatalf("expected 2 handlers to be run, ran %d", len(results))
+	}
+
+	if results[0] != "first" {
+		t.Fatal("expected handler h1 to be run first, but it wasn't")
+	}
+
+	if results[1] != "second" {
+		t.Fatal("expected handler h2 to be run second, but it wasn't")
+	}
+}
+
+func TestDefer(t *testing.T) {
+	current := len(handlers)
+
+	var results []string
+
+	h1 := func() { results = append(results, "first") }
+	h2 := func() { results = append(results, "second") }
+
+	DeferExitHandler(h1)
+	DeferExitHandler(h2)
+
+	if len(handlers) != current+2 {
+		t.Fatalf("expected %d handlers, got %d", current+2, len(handlers))
+	}
+
+	runHandlers()
+
+	if len(results) != 2 {
+		t.Fatalf("expected 2 handlers to be run, ran %d", len(results))
+	}
+
+	if results[0] != "second" {
+		t.Fatal("expected handler h2 to be run first, but it wasn't")
+	}
+
+	if results[1] != "first" {
+		t.Fatal("expected handler h1 to be run second, but it wasn't")
 	}
 }
 
