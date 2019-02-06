@@ -298,7 +298,9 @@ func (entry *Entry) Panic(args ...interface{}) {
 // Entry Printf family functions
 
 func (entry *Entry) Logf(level Level, format string, args ...interface{}) {
-	entry.Log(level, fmt.Sprintf(format, args...))
+	if entry.Logger.IsLevelEnabled(level) {
+		entry.Log(level, fmt.Sprintf(format, args...))
+	}
 }
 
 func (entry *Entry) Tracef(format string, args ...interface{}) {
