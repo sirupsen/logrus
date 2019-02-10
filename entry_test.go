@@ -139,3 +139,17 @@ func TestEntryWithIncorrectField(t *testing.T) {
 	assert.Equal(eWithFunc.err, `can not add field "func"`)
 	assert.Equal(eWithFuncPtr.err, `can not add field "funcPtr"`)
 }
+
+func TestEntryLogfLevel(t *testing.T) {
+	logger := New()
+	buffer := &bytes.Buffer{}
+	logger.Out = buffer
+	logger.SetLevel(InfoLevel)
+	entry := NewEntry(logger)
+
+	entry.Logf(DebugLevel, "%s", "debug")
+	assert.NotContains(t, buffer.String(), "debug", )
+
+	entry.Logf(WarnLevel, "%s", "warn")
+	assert.Contains(t, buffer.String(), "warn", )
+}
