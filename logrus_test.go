@@ -521,6 +521,13 @@ func TestParseLevel(t *testing.T) {
 	assert.Equal(t, "not a valid logrus Level: \"invalid\"", err.Error())
 }
 
+func TestLevelString(t *testing.T) {
+	var loggerlevel Level
+	loggerlevel = 32000
+
+	_ = loggerlevel.String()
+}
+
 func TestGetSetLevelRace(t *testing.T) {
 	wg := sync.WaitGroup{}
 	for i := 0; i < 100; i++ {
