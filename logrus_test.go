@@ -521,7 +521,7 @@ func TestParseLevel(t *testing.T) {
 	assert.Equal(t, "not a valid logrus Level: \"invalid\"", err.Error())
 }
 
-func TestLogLevelString(t *testing.T) {
+func TestLevelString(t *testing.T) {
 	var loggerlevel Level
 	loggerlevel = 32000
 
