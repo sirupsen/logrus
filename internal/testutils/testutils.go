@@ -40,7 +40,7 @@ func LogAndAssertText(t *testing.T, log func(*Logger), assertions func(fields ma
 	log(logger)
 
 	fields := make(map[string]string)
-	for _, kv := range strings.Split(buffer.String(), " ") {
+	for _, kv := range strings.Split(strings.TrimRight(buffer.String(), "\n"), " ") {
 		if !strings.Contains(kv, "=") {
 			continue
 		}
