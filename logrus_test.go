@@ -53,6 +53,17 @@ func TestReportCallerWhenConfigured(t *testing.T) {
 		assert.Equal(t, "somekindoffunc", fields[FieldKeyFunc])
 		assert.Equal(t, "thisisafilename", fields[FieldKeyFile])
 	})
+
+	LogAndAssertText(t, func(log *Logger) {
+		log.ReportCaller = true
+		log.Formatter.(*TextFormatter).CallerPrettyfier = func(f *runtime.Frame) (string, string) {
+			return "somekindoffunc", "thisisafilename"
+		}
+		log.Print("testWithCallerPrettyfier")
+	}, func(fields map[string]string) {
+		assert.Equal(t, "somekindoffunc", fields[FieldKeyFunc])
+		assert.Equal(t, "thisisafilename", fields[FieldKeyFile])
+	})
 }
 
 func logSomething(t *testing.T, message string) Fields {
