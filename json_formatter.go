@@ -93,7 +93,6 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		fileVal := fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line)
 		if f.CallerPrettyfier != nil {
 			funcVal, fileVal = f.CallerPrettyfier(entry.Caller)
-			fmt.Println(funcVal, fileVal)
 		}
 		if funcVal != "" {
 			data[f.FieldMap.resolve(FieldKeyFunc)] = funcVal
