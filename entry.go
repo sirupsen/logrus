@@ -206,7 +206,9 @@ func (entry Entry) log(level Level, msg string) {
 	entry.Level = level
 	entry.Message = msg
 	if entry.Logger.ReportCaller {
+		entry.Logger.mu.Lock()
 		entry.Caller = getCaller()
+		entry.Logger.mu.Unlock()
 	}
 
 	entry.fireHooks()
