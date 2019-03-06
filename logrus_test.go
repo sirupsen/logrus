@@ -743,3 +743,20 @@ func TestReportCallerOnTextFormatter(t *testing.T) {
 	l.Formatter.(*TextFormatter).DisableColors = true
 	l.WithFields(Fields{"func": "func", "file": "file"}).Info("test")
 }
+
+func TestSetReportCallerRace(t *testing.T) {
+	l := New()
+	l.Out = ioutil.Discard
+	l.SetReportCaller(true)
+
+	var wg sync.WaitGroup
+	wg.Add(100)
+
+	for i := 0; i < 100; i++ {
+		go func() {
+			l.Error("Some Error")
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}
