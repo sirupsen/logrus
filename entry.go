@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -55,6 +56,9 @@ type Entry struct {
 
 	// Time at which the log entry was created
 	Time time.Time
+
+	// OverrideLoggerLevel allows to set another effective Logger.Level for this Entry
+	OverrideLoggerLevel Level
 
 	// Level the log entry was logged at: Trace, Debug, Info, Warn, Error, Fatal or Panic
 	// This field will be set on entry firing and the value will be equal to the one in Logger struct field.
@@ -254,8 +258,23 @@ func (entry *Entry) write() {
 	}
 }
 
+func (entry *Entry) getOverrideLoggerLevel() Level {
+	return Level(atomic.LoadUint32((*uint32)(&entry.OverrideLoggerLevel)))
+}
+
+// IsLevelEnabled checks if the passed logging level is enabled in the scope of the Entry
+func (entry *Entry) IsLevelEnabled(level Level) bool {
+	overrideLoggerLevel := entry.getOverrideLoggerLevel()
+
+	if overrideLoggerLevel == 0 {
+		return entry.Logger.IsLevelEnabled(level)
+	} else {
+		return overrideLoggerLevel >= level
+	}
+}
+
 func (entry *Entry) Log(level Level, args ...interface{}) {
-	if entry.Logger.IsLevelEnabled(level) {
+	if entry.IsLevelEnabled(level) {
 		entry.log(level, fmt.Sprint(args...))
 	}
 }
@@ -301,7 +320,7 @@ func (entry *Entry) Panic(args ...interface{}) {
 // Entry Printf family functions
 
 func (entry *Entry) Logf(level Level, format string, args ...interface{}) {
-	if entry.Logger.IsLevelEnabled(level) {
+	if entry.IsLevelEnabled(level) {
 		entry.Log(level, fmt.Sprintf(format, args...))
 	}
 }
@@ -346,7 +365,7 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 // Entry Println family functions
 
 func (entry *Entry) Logln(level Level, args ...interface{}) {
-	if entry.Logger.IsLevelEnabled(level) {
+	if entry.IsLevelEnabled(level) {
 		entry.Log(level, entry.sprintlnn(args...))
 	}
 }

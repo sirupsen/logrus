@@ -70,7 +70,7 @@ func (level Level) MarshalText() ([]byte, error) {
 		return []byte("error"), nil
 	case FatalLevel:
 		return []byte("fatal"), nil
-	case PanicLevel:
+	case 0, PanicLevel:
 		return []byte("panic"), nil
 	}
 
@@ -93,7 +93,7 @@ var AllLevels = []Level{
 const (
 	// PanicLevel level, highest level of severity. Logs and then calls panic with the
 	// message passed to Debug, Info, ...
-	PanicLevel Level = iota
+	PanicLevel Level = iota + 1
 	// FatalLevel level. Logs and then calls `logger.Exit(1)`. It will exit even if the
 	// logging level is set to Panic.
 	FatalLevel
