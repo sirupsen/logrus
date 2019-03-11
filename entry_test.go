@@ -2,6 +2,7 @@ package logrus
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -31,6 +32,19 @@ func TestEntryWithError(t *testing.T) {
 
 	assert.Equal(err, entry.WithError(err).Data["err"])
 
+}
+
+func TestEntryWithContext(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.WithValue(context.Background(), "foo", "bar")
+
+	assert.Equal(ctx, WithContext(ctx).Context)
+
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	entry := NewEntry(logger)
+
+	assert.Equal(ctx, entry.WithContext(ctx).Context)
 }
 
 func TestEntryPanicln(t *testing.T) {
