@@ -1,3 +1,16 @@
+# 1.4.0
+This new release introduces:
+  * Add `DeferExitHandler`, similar to `RegisterExitHandler` but prepending the handler to the list of handlers (semantically like `defer`) (#848).
+  * Add `CallerPrettyfier` to `JSONFormatter` and `TextFormatter (#909, #911)
+  * Add `Entry.WithContext()` and `Entry.Context`, to set a context on entries to be used e.g. in hooks (#919).
+
+Fixes:
+  * Fix wrong method calls `Logger.Print` and `Logger.Warningln` (#893).
+  * Update `Entry.Logf` to not do string formatting unless the log level is enabled (#903)
+  * Fix infinite recursion on unknown `Level.String()` (#907)
+  * Fix race condition in `getCaller` (#916).
+
+
 # 1.3.0
 This new release introduces:
   * Log, Logf, Logln functions for Logger and Entry that take a Level
