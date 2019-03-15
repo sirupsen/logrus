@@ -14,6 +14,7 @@ func TestDifferentLevelsGoToDifferentWriters(t *testing.T) {
 
 	log.SetFormatter(&log.TextFormatter{
 		DisableTimestamp: true,
+		DisableColors:    true,
 	})
 	log.SetOutput(ioutil.Discard) // Send all logs to nowhere by default
 
