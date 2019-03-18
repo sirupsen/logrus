@@ -41,7 +41,7 @@ func init() {
 }
 
 // Set the global qualified package name.
-func SetSkipPackageNameForCaller(name string) {
+func AddSkipPackageFromStackTrace(name string) {
 	skipPackageNameForCaller[name] = true
 }
 
