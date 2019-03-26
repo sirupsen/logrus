@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/sirupsen/logrus/internal/terminal"
 )
 
 const (
@@ -83,10 +85,10 @@ type TextFormatter struct {
 
 func (f *TextFormatter) init(entry *Entry) {
 	if entry.Logger != nil {
-		f.isTerminal = checkIfTerminal(entry.Logger.Out)
+		f.isTerminal = terminal.IsTerminal(entry.Logger.Out)
 
 		if f.isTerminal {
-			initTerminal(entry.Logger.Out)
+			terminal.InitTerminal(entry.Logger.Out)
 		}
 	}
 }
