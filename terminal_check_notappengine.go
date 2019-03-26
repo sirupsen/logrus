@@ -6,15 +6,13 @@ import (
 	"io"
 	"os"
 
-	"golang.org/x/sys/unix"
+	"github.com/sirupsen/logrus/internal/terminal"
 )
 
 func checkIfTerminal(w io.Writer) bool {
 	switch v := w.(type) {
 	case *os.File:
-		_, err := unix.IoctlGetTermios(int(v.Fd()), ioctlReadTermios)
-
-		return err == nil
+		return terminal.IsTerminal(int(v.Fd()))
 	default:
 		return false
 	}
