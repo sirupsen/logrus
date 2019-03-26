@@ -1,4 +1,4 @@
-// +build !appengine,!js,!windows,!aix
+// +build !appengine,!js,!windows
 
 package logrus
 
@@ -6,13 +6,15 @@ import (
 	"io"
 	"os"
 
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/sys/unix"
 )
 
 func checkIfTerminal(w io.Writer) bool {
 	switch v := w.(type) {
 	case *os.File:
-		return terminal.IsTerminal(int(v.Fd()))
+		_, err := unix.IoctlGetTermios(int(v.Fd()), ioctlReadTermios)
+
+		return err == nil
 	default:
 		return false
 	}
