@@ -1,6 +1,6 @@
 // +build !appengine,!js,windows
 
-package logrus
+package terminal
 
 import (
 	"io"
@@ -8,7 +8,7 @@ import (
 	"syscall"
 )
 
-func checkIfTerminal(w io.Writer) bool {
+func IsTerminal(w io.Writer) bool {
 	switch v := w.(type) {
 	case *os.File:
 		var mode uint32

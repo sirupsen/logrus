@@ -1,6 +1,6 @@
 // +build darwin dragonfly freebsd netbsd openbsd
 
-package logrus
+package terminal
 
 import "golang.org/x/sys/unix"
 

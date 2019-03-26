@@ -1,6 +1,6 @@
 // +build !appengine,!js,windows
 
-package logrus
+package terminal
 
 import (
 	"io"
@@ -10,7 +10,7 @@ import (
 	sequences "github.com/konsorten/go-windows-terminal-sequences"
 )
 
-func initTerminal(w io.Writer) {
+func InitTerminal(w io.Writer) {
 	switch v := w.(type) {
 	case *os.File:
 		sequences.EnableVirtualTerminalProcessing(syscall.Handle(v.Fd()), true)
