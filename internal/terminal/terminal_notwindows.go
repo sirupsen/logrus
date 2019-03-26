@@ -1,6 +1,6 @@
 // +build !windows
 
-package logrus
+package terminal
 
 import "io"
 

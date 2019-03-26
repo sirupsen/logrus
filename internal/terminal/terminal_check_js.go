@@ -1,6 +1,6 @@
 // +build js
 
-package logrus
+package terminal
 
 import (
 	"io"
