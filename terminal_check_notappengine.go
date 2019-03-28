@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/sirupsen/logrus/internal/terminal"
+	"github.com/sirupsen/logrus/terminal"
 )
 
 func checkIfTerminal(w io.Writer) bool {
