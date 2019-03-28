@@ -114,13 +114,16 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		keys = append(keys, k)
 	}
 
-	fixedKeys := make([]string, 0, 3+len(entry.Data))
+	fixedKeys := make([]string, 0, 4+len(entry.Data))
 	if !f.DisableTimestamp {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyTime))
 	}
 	fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyLevel))
 	if entry.Message != "" {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyMsg))
+	}
+	if entry.err != "" {
+		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyLogrusError))
 	}
 
 	if !f.DisableSorting {
@@ -164,6 +167,8 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 				value = entry.Level.String()
 			case f.FieldMap.resolve(FieldKeyMsg):
 				value = entry.Message
+			case f.FieldMap.resolve(FieldKeyLogrusError):
+				value = entry.err
 			default:
 				value = entry.Data[key]
 			}
