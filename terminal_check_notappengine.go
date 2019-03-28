@@ -1,4 +1,4 @@
-// +build !appengine,!js,!windows,!aix
+// +build !appengine,!js,!windows
 
 package logrus
 
@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"golang.org/x/crypto/ssh/terminal"
+	"github.com/sirupsen/logrus/internal/terminal"
 )
 
 func checkIfTerminal(w io.Writer) bool {
