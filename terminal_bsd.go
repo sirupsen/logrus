@@ -1,10 +1,17 @@
 // +build darwin freebsd openbsd netbsd dragonfly
-// +build !appengine
+// +build !appengine,!js
 
 package logrus
 
-import "syscall"
+import (
+	"io"
 
-const ioctlReadTermios = syscall.TIOCGETA
+	"golang.org/x/sys/unix"
+)
 
-type Termios syscall.Termios
+const ioctlReadTermios = unix.TIOCGETA
+
+type Termios unix.Termios
+
+func initTerminal(w io.Writer) {
+}
