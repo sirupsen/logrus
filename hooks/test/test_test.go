@@ -71,3 +71,15 @@ func TestLoggingWithHooksRace(t *testing.T) {
 	entries := hook.AllEntries()
 	assert.Equal(100, len(entries))
 }
+
+func TestFatalWithAlternateExit(t *testing.T) {
+	assert := assert.New(t)
+
+	logger, hook := NewNullLogger()
+	logger.ExitFunc = func(code int) {}
+
+	logger.Fatal("something went very wrong")
+	assert.Equal(logrus.FatalLevel, hook.LastEntry().Level)
+	assert.Equal("something went very wrong", hook.LastEntry().Message)
+	assert.Equal(1, len(hook.Entries))
+}
