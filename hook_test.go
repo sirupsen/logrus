@@ -1,4 +1,4 @@
-package logrus
+package logrus_test
 
 import (
 	"bytes"
@@ -8,6 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	. "github.com/sirupsen/logrus"
+	. "github.com/sirupsen/logrus/internal/testutils"
 )
 
 type TestHook struct {
@@ -21,6 +24,7 @@ func (hook *TestHook) Fire(entry *Entry) error {
 
 func (hook *TestHook) Levels() []Level {
 	return []Level{
+		TraceLevel,
 		DebugLevel,
 		InfoLevel,
 		WarnLevel,
@@ -53,6 +57,7 @@ func (hook *ModifyHook) Fire(entry *Entry) error {
 
 func (hook *ModifyHook) Levels() []Level {
 	return []Level{
+		TraceLevel,
 		DebugLevel,
 		InfoLevel,
 		WarnLevel,
