@@ -190,3 +190,27 @@ func TestAddHookRace(t *testing.T) {
 		// actually assert on the hook
 	})
 }
+
+type HookCallFunc struct {
+	F func()
+}
+
+func (h *HookCallFunc) Levels() []Level {
+	return AllLevels
+}
+
+func (h *HookCallFunc) Fire(e *Entry) error {
+	h.F()
+	return nil
+}
+
+func TestHookFireOrder(t *testing.T) {
+	checkers := []string{}
+	h := LevelHooks{}
+	h.Add(&HookCallFunc{F: func() { checkers = append(checkers, "first hook") }})
+	h.Add(&HookCallFunc{F: func() { checkers = append(checkers, "second hook") }})
+	h.Add(&HookCallFunc{F: func() { checkers = append(checkers, "third hook") }})
+
+	h.Fire(InfoLevel, &Entry{})
+	require.Equal(t, []string{"first hook", "second hook", "third hook"}, checkers)
+}
