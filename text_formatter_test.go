@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFormatting(t *testing.T) {
@@ -177,6 +180,29 @@ func TestDisableTimestampWithColoredOutput(t *testing.T) {
 	}
 }
 
+func TestNewlineBehavior(t *testing.T) {
+	tf := &TextFormatter{ForceColors: true}
+
+	// Ensure a single new line is removed as per stdlib log
+	e := NewEntry(StandardLogger())
+	e.Message = "test message\n"
+	b, _ := tf.Format(e)
+	if bytes.Contains(b, []byte("test message\n")) {
+		t.Error("first newline at end of Entry.Message resulted in unexpected 2 newlines in output. Expected newline to be removed.")
+	}
+
+	// Ensure a double new line is reduced to a single new line
+	e = NewEntry(StandardLogger())
+	e.Message = "test message\n\n"
+	b, _ = tf.Format(e)
+	if bytes.Contains(b, []byte("test message\n\n")) {
+		t.Error("Double newline at end of Entry.Message resulted in unexpected 2 newlines in output. Expected single newline")
+	}
+	if !bytes.Contains(b, []byte("test message\n")) {
+		t.Error("Double newline at end of Entry.Message did not result in a single newline after formatting")
+	}
+}
+
 func TestTextFormatterFieldMap(t *testing.T) {
 	formatter := &TextFormatter{
 		DisableColors: true,
@@ -216,5 +242,239 @@ func TestTextFormatterFieldMap(t *testing.T) {
 		"Formatted output doesn't respect FieldMap")
 }
 
-// TODO add tests for sorting etc., this requires a parser for the text
-// formatter output.
+func TestTextFormatterIsColored(t *testing.T) {
+	params := []struct {
+		name               string
+		expectedResult     bool
+		isTerminal         bool
+		disableColor       bool
+		forceColor         bool
+		envColor           bool
+		clicolorIsSet      bool
+		clicolorForceIsSet bool
+		clicolorVal        string
+		clicolorForceVal   string
+	}{
+		// Default values
+		{
+			name:               "testcase1",
+			expectedResult:     false,
+			isTerminal:         false,
+			disableColor:       false,
+			forceColor:         false,
+			envColor:           false,
+			clicolorIsSet:      false,
+			clicolorForceIsSet: false,
+		},
+		// Output on terminal
+		{
+			name:               "testcase2",
+			expectedResult:     true,
+			isTerminal:         true,
+			disableColor:       false,
+			forceColor:         false,
+			envColor:           false,
+			clicolorIsSet:      false,
+			clicolorForceIsSet: false,
+		},
+		// Output on terminal with color disabled
+		{
+			name:               "testcase3",
+			expectedResult:     false,
+			isTerminal:         true,
+			disableColor:       true,
+			forceColor:         false,
+			envColor:           false,
+			clicolorIsSet:      false,
+			clicolorForceIsSet: false,
+		},
+		// Output not on terminal with color disabled
+		{
+			name:               "testcase4",
+			expectedResult:     false,
+			isTerminal:         false,
+			disableColor:       true,
+			forceColor:         false,
+			envColor:           false,
+			clicolorIsSet:      false,
+			clicolorForceIsSet: false,
+		},
+		// Output not on terminal with color forced
+		{
+			name:               "testcase5",
+			expectedResult:     true,
+			isTerminal:         false,
+			disableColor:       false,
+			forceColor:         true,
+			envColor:           false,
+			clicolorIsSet:      false,
+			clicolorForceIsSet: false,
+		},
+		// Output on terminal with clicolor set to "0"
+		{
+			name:               "testcase6",
+			expectedResult:     false,
+			isTerminal:         true,
+			disableColor:       false,
+			forceColor:         false,
+			envColor:           true,
+			clicolorIsSet:      true,
+			clicolorForceIsSet: false,
+			clicolorVal:        "0",
+		},
+		// Output on terminal with clicolor set to "1"
+		{
+			name:               "testcase7",
+			expectedResult:     true,
+			isTerminal:         true,
+			disableColor:       false,
+			forceColor:         false,
+			envColor:           true,
+			clicolorIsSet:      true,
+			clicolorForceIsSet: false,
+			clicolorVal:        "1",
+		},
+		// Output not on terminal with clicolor set to "0"
+		{
+			name:               "testcase8",
+			expectedResult:     false,
+			isTerminal:         false,
+			disableColor:       false,
+			forceColor:         false,
+			envColor:           true,
+			clicolorIsSet:      true,
+			clicolorForceIsSet: false,
+			clicolorVal:        "0",
+		},
+		// Output not on terminal with clicolor set to "1"
+		{
+			name:               "testcase9",
+			expectedResult:     false,
+			isTerminal:         false,
+			disableColor:       false,
+			forceColor:         false,
+			envColor:           true,
+			clicolorIsSet:      true,
+			clicolorForceIsSet: false,
+			clicolorVal:        "1",
+		},
+		// Output not on terminal with clicolor set to "1" and force color
+		{
+			name:               "testcase10",
+			expectedResult:     true,
+			isTerminal:         false,
+			disableColor:       false,
+			forceColor:         true,
+			envColor:           true,
+			clicolorIsSet:      true,
+			clicolorForceIsSet: false,
+			clicolorVal:        "1",
+		},
+		// Output not on terminal with clicolor set to "0" and force color
+		{
+			name:               "testcase11",
+			expectedResult:     false,
+			isTerminal:         false,
+			disableColor:       false,
+			forceColor:         true,
+			envColor:           true,
+			clicolorIsSet:      true,
+			clicolorForceIsSet: false,
+			clicolorVal:        "0",
+		},
+		// Output not on terminal with clicolor_force set to "1"
+		{
+			name:               "testcase12",
+			expectedResult:     true,
+			isTerminal:         false,
+			disableColor:       false,
+			forceColor:         false,
+			envColor:           true,
+			clicolorIsSet:      false,
+			clicolorForceIsSet: true,
+			clicolorForceVal:   "1",
+		},
+		// Output not on terminal with clicolor_force set to "0"
+		{
+			name:               "testcase13",
+			expectedResult:     false,
+			isTerminal:         false,
+			disableColor:       false,
+			forceColor:         false,
+			envColor:           true,
+			clicolorIsSet:      false,
+			clicolorForceIsSet: true,
+			clicolorForceVal:   "0",
+		},
+		// Output on terminal with clicolor_force set to "0"
+		{
+			name:               "testcase14",
+			expectedResult:     false,
+			isTerminal:         true,
+			disableColor:       false,
+			forceColor:         false,
+			envColor:           true,
+			clicolorIsSet:      false,
+			clicolorForceIsSet: true,
+			clicolorForceVal:   "0",
+		},
+	}
+
+	cleanenv := func() {
+		os.Unsetenv("CLICOLOR")
+		os.Unsetenv("CLICOLOR_FORCE")
+	}
+
+	defer cleanenv()
+
+	for _, val := range params {
+		t.Run("textformatter_"+val.name, func(subT *testing.T) {
+			tf := TextFormatter{
+				isTerminal:                val.isTerminal,
+				DisableColors:             val.disableColor,
+				ForceColors:               val.forceColor,
+				EnvironmentOverrideColors: val.envColor,
+			}
+			cleanenv()
+			if val.clicolorIsSet {
+				os.Setenv("CLICOLOR", val.clicolorVal)
+			}
+			if val.clicolorForceIsSet {
+				os.Setenv("CLICOLOR_FORCE", val.clicolorForceVal)
+			}
+			res := tf.isColored()
+			assert.Equal(subT, val.expectedResult, res)
+		})
+	}
+}
+
+func TestCustomSorting(t *testing.T) {
+	formatter := &TextFormatter{
+		DisableColors: true,
+		SortingFunc: func(keys []string) {
+			sort.Slice(keys, func(i, j int) bool {
+				if keys[j] == "prefix" {
+					return false
+				}
+				if keys[i] == "prefix" {
+					return true
+				}
+				return strings.Compare(keys[i], keys[j]) == -1
+			})
+		},
+	}
+
+	entry := &Entry{
+		Message: "Testing custom sort function",
+		Time:    time.Now(),
+		Level:   InfoLevel,
+		Data: Fields{
+			"test":      "testvalue",
+			"prefix":    "the application prefix",
+			"blablabla": "blablabla",
+		},
+	}
+	b, err := formatter.Format(entry)
+	require.NoError(t, err)
+	require.True(t, strings.HasPrefix(string(b), "prefix="), "format output is %q", string(b))
+}
