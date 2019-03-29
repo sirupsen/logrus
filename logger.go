@@ -97,6 +97,7 @@ func (logger *Logger) newEntry() *Entry {
 
 func (logger *Logger) releaseEntry(entry *Entry) {
 	entry.Data = map[string]interface{}{}
+	entry.Context = nil
 	logger.entryPool.Put(entry)
 }
 
