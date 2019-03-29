@@ -90,6 +90,7 @@ func New() *Logger {
 func (logger *Logger) newEntry() *Entry {
 	entry, ok := logger.entryPool.Get().(*Entry)
 	if ok {
+		entry.Context = nil
 		return entry
 	}
 	return NewEntry(logger)
