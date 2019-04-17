@@ -2,6 +2,7 @@ package logrus
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -31,6 +32,19 @@ func TestEntryWithError(t *testing.T) {
 
 	assert.Equal(err, entry.WithError(err).Data["err"])
 
+}
+
+func TestEntryWithContext(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.WithValue(context.Background(), "foo", "bar")
+
+	assert.Equal(ctx, WithContext(ctx).Context)
+
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	entry := NewEntry(logger)
+
+	assert.Equal(ctx, entry.WithContext(ctx).Context)
 }
 
 func TestEntryPanicln(t *testing.T) {
@@ -138,4 +152,18 @@ func TestEntryWithIncorrectField(t *testing.T) {
 
 	assert.Equal(eWithFunc.err, `can not add field "func"`)
 	assert.Equal(eWithFuncPtr.err, `can not add field "funcPtr"`)
+}
+
+func TestEntryLogfLevel(t *testing.T) {
+	logger := New()
+	buffer := &bytes.Buffer{}
+	logger.Out = buffer
+	logger.SetLevel(InfoLevel)
+	entry := NewEntry(logger)
+
+	entry.Logf(DebugLevel, "%s", "debug")
+	assert.NotContains(t, buffer.String(), "debug", )
+
+	entry.Logf(WarnLevel, "%s", "warn")
+	assert.Contains(t, buffer.String(), "warn", )
 }
