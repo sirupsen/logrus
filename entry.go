@@ -42,7 +42,7 @@ func init() {
 }
 
 // Set the global qualified package name.
-// ex: logrus.SetSkipPackageNameForCaller("github.com/go-xorm/xorm")
+// ex: logrus.AddSkipPackageFromStackTrace("github.com/go-xorm/xorm")
 func AddSkipPackageFromStackTrace(name string) {
 	skipPackageNameForCaller[name] = struct{}{}
 }
