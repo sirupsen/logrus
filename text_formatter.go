@@ -125,7 +125,7 @@ func (f *TextFormatter) isColored(isTerminal bool) bool {
 		return false
 	}
 
-	colored := f.ForceColors || (isTerminal && (runtime.GOOS != "windows"))
+	colored := f.ForceColors || isTerminal
 	if !f.EnvironmentOverrideColors {
 		return colored
 	}

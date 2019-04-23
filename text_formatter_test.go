@@ -503,16 +503,10 @@ func TestTextFormatterIsColored(t *testing.T) {
 				EnvironmentOverrideColors: len(tc.envVars) > 0,
 			}
 
-			expected := tc.expected
-			if runtime.GOOS == "windows" && !tc.forceColors && os.Getenv("CLICOLOR_FORCE") == "" {
-				// On Windows, without ForceColors or CLICOLOR_FORCE, colors are disabled.
-				expected = false
-			}
-
 			// TODO(thaJeztah): need a way to mock "isTerminal" and check "isColored" for testing
 			//  without depending on non-exported methods and fields.
 			res := tf.isColored(tc.isTerminal) // tc.isTerminal avoids depending on a real TTY
-			assert.Equal(t, expected, res)
+			assert.Equal(t, tc.expected, res)
 		})
 	}
 }
@@ -573,9 +567,6 @@ func TestCustomSorting(t *testing.T) {
 //
 // regression test for https://github.com/sirupsen/logrus/issues/1298
 func TestCustomSorting_FirstFormat(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("colored output not supported on Windows")
-	}
 	if !checkIfTerminal(os.Stderr) {
 		if runtime.Compiler == "tinygo" {
 			// TinyGo currently (v0.41.1) doesn't support t.Skip (SkipNow is incomplete, requires runtime.Goexit())
