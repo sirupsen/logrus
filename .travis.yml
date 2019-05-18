@@ -18,7 +18,7 @@ install:
   - if [[ "$GO111MODULE" ==  "on" ]]; then go mod download; fi
   - if [[ "$GO111MODULE" == "off" ]]; then go get github.com/stretchr/testify/assert golang.org/x/sys/unix github.com/konsorten/go-windows-terminal-sequences; fi
 script:
-  - if [[ "$TRAVIS_GO_VERSION" =~ ^1\.12\. ]]; then /tmp/gox/gox -build-lib -all; fi
+  - ./travis/cross_build.sh
   - export GOMAXPROCS=4
   - export GORACE=halt_on_error=1
   - go test -race -v ./...
