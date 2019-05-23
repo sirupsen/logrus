@@ -34,6 +34,8 @@ type Logger struct {
 	// Flag for whether to log caller info (off by default)
 	ReportCaller bool
 
+	// Skip some
+	CallerSkip int
 	// The logging level the logger should log at. This is typically (and defaults
 	// to) `logrus.Info`, which allows Info(), Warn(), Error() and Fatal() to be
 	// logged.
