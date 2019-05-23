@@ -10,11 +10,12 @@ import (
 	sequences "github.com/konsorten/go-windows-terminal-sequences"
 )
 
-func initTerminal(w io.Writer) {
+func initTerminal(w io.Writer) error {
 	switch v := w.(type) {
 	case *os.File:
-		sequences.EnableVirtualTerminalProcessing(syscall.Handle(v.Fd()), true)
+		return sequences.EnableVirtualTerminalProcessing(syscall.Handle(v.Fd()), true)
 	}
+	return nil
 }
 
 func checkIfTerminal(w io.Writer) bool {
@@ -28,7 +29,7 @@ func checkIfTerminal(w io.Writer) bool {
 		ret = false
 	}
 	if ret {
-		initTerminal(w)
+		ret = (initTerminal(w) == nil)
 	}
 	return ret
 }
