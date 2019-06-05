@@ -221,8 +221,8 @@ func TestPadLevelText(t *testing.T) {
 		},
 	}
 
-	// We create a "default" TextFormatter to do a control case test
-	// and a TextFormatter with PadLevelText, which is the flag we are testing here
+	// We create a "default" TextFormatter to do a control test.
+	// We also create a TextFormatter with PadLevelText, which is the parameter we want to do our most relevant assertions against.
 	tfDefault := TextFormatter{}
 	tfWithPadding := TextFormatter{PadLevelText: true}
 
