@@ -84,7 +84,7 @@ time="2015-03-26T01:27:38-04:00" level=fatal method=github.com/sirupsen/arcticcr
 ```
 Note that this does add measurable overhead - the cost will depend on the version of Go, but is
 between 20 and 40% in recent tests with 1.6 and 1.7.  You can validate this in your
-environment via benchmarks: 
+environment via benchmarks:
 ```
 go test -bench=.*CallerTracing
 ```
@@ -354,6 +354,7 @@ The built-in logging formatters are:
     [github.com/mattn/go-colorable](https://github.com/mattn/go-colorable).
   * When colors are enabled, levels are truncated to 4 characters by default. To disable
     truncation set the `DisableLevelTruncation` field to `true`.
+  * When outputting to a TTY, its often helpful to visually scan down a column where all the levels are the same width. Setting the `PadLevelText` field to `true` enables this functionality, by adding padding to the level text.
   * All options are listed in the [generated docs](https://godoc.org/github.com/sirupsen/logrus#TextFormatter).
 * `logrus.JSONFormatter`. Logs fields as JSON.
   * All options are listed in the [generated docs](https://godoc.org/github.com/sirupsen/logrus#JSONFormatter).
