@@ -57,6 +57,10 @@ type TextFormatter struct {
 	// Disables the truncation of the level text to 4 characters.
 	DisableLevelTruncation bool
 
+	// PadLevelText Adds padding the level text so that all the levels output at the same length
+	// PadLevelText is a superset of the DisableLevelTruncation option
+	PadLevelText bool
+
 	// QuoteEmptyFields will wrap empty fields in quotes if true
 	QuoteEmptyFields bool
 
@@ -217,8 +221,11 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	}
 
 	levelText := strings.ToUpper(entry.Level.String())
-	if !f.DisableLevelTruncation {
+	if !f.DisableLevelTruncation && !f.PadLevelText {
 		levelText = levelText[0:4]
+	}
+	if f.PadLevelText {
+		levelText = fmt.Sprintf("%-7s", levelText)
 	}
 
 	// Remove a single newline if it already exists in the message to keep
