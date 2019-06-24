@@ -51,6 +51,9 @@ type JSONFormatter struct {
 
 	// PrettyPrint will indent all json logs
 	PrettyPrint bool
+
+	// DisableEscapeHTML allows disabling HTML escape.
+	DisableEscapeHTML bool
 }
 
 // Format renders a single log entry
@@ -110,6 +113,9 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	}
 
 	encoder := json.NewEncoder(b)
+	if f.DisableEscapeHTML {
+		encoder.SetEscapeHTML(false)
+	}
 	if f.PrettyPrint {
 		encoder.SetIndent("", "  ")
 	}

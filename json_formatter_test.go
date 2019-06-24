@@ -344,3 +344,32 @@ func TestJSONEnableTimestamp(t *testing.T) {
 		t.Error("Timestamp not present", s)
 	}
 }
+
+func TestJSONDisableEscapeHTML(t *testing.T) {
+	formatter := &JSONFormatter{
+		DisableEscapeHTML: true,
+	}
+
+	b, err := formatter.Format(WithField("xml", "<xml>&</xml>"))
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+	s := string(b)
+	if !strings.Contains(s, "<xml>&</xml>") {
+		t.Error("Raw keyword does not find", s)
+	}
+}
+
+func TestJSONEnableEscapeHTML(t *testing.T) {
+	formatter := &JSONFormatter{}
+
+	b, err := formatter.Format(WithField("xml", "<xml>&</xml>"))
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+	s := string(b)
+	escaped := `\u003cxml\u003e\u0026\u003c/xml\u003e` // same `<xml>&</xml>`
+	if !strings.Contains(s, escaped) {
+		t.Error("Escaped keyword does not find", s)
+	}
+}
