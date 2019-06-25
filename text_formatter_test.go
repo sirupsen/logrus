@@ -233,8 +233,11 @@ func TestPadLevelText(t *testing.T) {
 			var bytesWithPadding bytes.Buffer
 
 			// The TextFormatter instance and the bytes.Buffer instance are different here
-			// all the other arguments are the same
+			// all the other arguments are the same. We also initialize them so that they
+			// fill in the value of levelTextMaxLength.
+			tfDefault.init(&Entry{})
 			tfDefault.printColored(&bytesDefault, &Entry{Level: val.level}, []string{}, nil, "")
+			tfWithPadding.init(&Entry{})
 			tfWithPadding.printColored(&bytesWithPadding, &Entry{Level: val.level}, []string{}, nil, "")
 
 			// turn the bytes back into a string so that we can actually work with the data
