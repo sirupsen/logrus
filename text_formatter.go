@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -83,11 +84,21 @@ type TextFormatter struct {
 	CallerPrettyfier func(*runtime.Frame) (function string, file string)
 
 	terminalInitOnce sync.Once
+
+	// The max length of the level text, generated dynamically on init
+	levelTextMaxLength int
 }
 
 func (f *TextFormatter) init(entry *Entry) {
 	if entry.Logger != nil {
 		f.isTerminal = checkIfTerminal(entry.Logger.Out)
+	}
+	// Get the max length of the level text
+	for _, level := range AllLevels {
+		levelTextLength := len(level.String())
+		if levelTextLength > f.levelTextMaxLength {
+			f.levelTextMaxLength = levelTextLength
+		}
 	}
 }
 
@@ -225,7 +236,13 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 		levelText = levelText[0:4]
 	}
 	if f.PadLevelText {
-		levelText = fmt.Sprintf("%-7s", levelText)
+		// Generates the format string used in the next line, for example "%-6s" or "%-7s".
+		// Based on the max level text length.
+		formatString := "%-" + strconv.Itoa(f.levelTextMaxLength) + "s"
+		// Formats the level text by appending spaces up to the max length, for example:
+		// 	- "INFO   "
+		//	- "WARNING"
+		levelText = fmt.Sprintf(formatString, levelText)
 	}
 
 	// Remove a single newline if it already exists in the message to keep
