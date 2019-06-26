@@ -117,6 +117,13 @@ func (logger *Logger) WithFields(fields Fields) *Entry {
 	return entry.WithFields(fields)
 }
 
+//Add log path, since each module may be stored under different directories, dynamic assignment is needed when calling
+func (logger *Logger) WithPath(p string) *Entry {
+	entry := logger.newEntry()
+	defer logger.releaseEntry(entry)
+	return entry.WithPath(p)
+}
+
 // Add an error as single field to the log entry.  All it does is call
 // `WithError` for the given `error`.
 func (logger *Logger) WithError(err error) *Entry {
