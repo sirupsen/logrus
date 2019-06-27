@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 )
 
 const (
@@ -95,7 +96,7 @@ func (f *TextFormatter) init(entry *Entry) {
 	}
 	// Get the max length of the level text
 	for _, level := range AllLevels {
-		levelTextLength := len(level.String())
+		levelTextLength := utf8.RuneCount([]byte(level.String()))
 		if levelTextLength > f.levelTextMaxLength {
 			f.levelTextMaxLength = levelTextLength
 		}
