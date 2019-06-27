@@ -246,17 +246,17 @@ func TestPadLevelText(t *testing.T) {
 
 			// Control: the level text should not be padded by default
 			if val.paddedLevelText != "" && strings.Contains(logLineDefault, val.paddedLevelText) {
-				t.Errorf("log line \"%s\" should not contain the padded level text \"%s\" by default", logLineDefault, val.paddedLevelText)
+				t.Errorf("log line %q should not contain the padded level text %q by default", logLineDefault, val.paddedLevelText)
 			}
 
 			// Assertion: the level text should still contain the string representation of the level
 			if !strings.Contains(strings.ToLower(logLineWithPadding), val.level.String()) {
-				t.Errorf("log line \"%s\" should contain the level text \"%s\" when padding is enabled", logLineWithPadding, val.level.String())
+				t.Errorf("log line %q should contain the level text %q when padding is enabled", logLineWithPadding, val.level.String())
 			}
 
 			// Assertion: the level text should be in its padded form now
 			if val.paddedLevelText != "" && !strings.Contains(logLineWithPadding, val.paddedLevelText) {
-				t.Errorf("log line \"%s\" should contain the padded level text \"%s\" when padding is enabled", logLineWithPadding, val.paddedLevelText)
+				t.Errorf("log line %q should contain the padded level text %q when padding is enabled", logLineWithPadding, val.paddedLevelText)
 			}
 
 		})
