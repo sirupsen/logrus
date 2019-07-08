@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"os"
 	"reflect"
 	"runtime"
 	"strings"
@@ -245,7 +244,8 @@ func (entry *Entry) fireHooks() {
 	defer entry.Logger.mu.Unlock()
 	err := entry.Logger.Hooks.Fire(entry.Level, entry)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
+		err := fmt.Errorf("Failed to fire hook: %v\n", err)
+		entry.Logger.ErrorCallback(err)
 	}
 }
 
@@ -254,11 +254,13 @@ func (entry *Entry) write() {
 	defer entry.Logger.mu.Unlock()
 	serialized, err := entry.Logger.Formatter.Format(entry)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v\n", err)
+		err := fmt.Errorf("Failed to obtain reader, %v\n", err)
+		entry.Logger.ErrorCallback(err)
 	} else {
 		_, err = entry.Logger.Out.Write(serialized)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
+			err := fmt.Errorf("Failed to write to log, %v\n", err)
+			entry.Logger.ErrorCallback(err)
 		}
 	}
 }

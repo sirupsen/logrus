@@ -25,6 +25,11 @@ func SetFormatter(formatter Formatter) {
 	std.SetFormatter(formatter)
 }
 
+// SetErrorCallback sets the error callback for end user.
+func SetErrorCallback(errorCallback ErrorCallback) {
+	std.SetErrorCallback(errorCallback)
+}
+
 // SetReportCaller sets whether the standard logger will include the calling
 // method as a field.
 func SetReportCaller(include bool) {

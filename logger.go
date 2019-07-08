@@ -39,7 +39,11 @@ type Logger struct {
 	entryPool sync.Pool
 	// Function to exit the application, defaults to `os.Exit()`
 	ExitFunc exitFunc
+	// ErrorCallback is called when any error occurs in Logrus
+	ErrorCallback ErrorCallback
 }
+
+type ErrorCallback func(error)
 
 type exitFunc func(int)
 
@@ -78,12 +82,13 @@ func (mw *MutexWrap) Disable() {
 // It's recommended to make this a global instance called `log`.
 func New() *Logger {
 	return &Logger{
-		Out:          os.Stderr,
-		Formatter:    new(TextFormatter),
-		Hooks:        make(LevelHooks),
-		Level:        InfoLevel,
-		ExitFunc:     os.Exit,
-		ReportCaller: false,
+		Out:           os.Stderr,
+		Formatter:     new(TextFormatter),
+		Hooks:         make(LevelHooks),
+		Level:         InfoLevel,
+		ExitFunc:      os.Exit,
+		ReportCaller:  false,
+		ErrorCallback: func(e error) {},
 	}
 }
 
@@ -348,4 +353,10 @@ func (logger *Logger) ReplaceHooks(hooks LevelHooks) LevelHooks {
 	logger.Hooks = hooks
 	logger.mu.Unlock()
 	return oldHooks
+}
+
+func (logger *Logger) SetErrorCallback(errorCallback ErrorCallback) {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	logger.ErrorCallback = errorCallback
 }
