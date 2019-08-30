@@ -1,6 +1,9 @@
 package logrus
 
-import "time"
+import (
+	"reflect"
+	"time"
+)
 
 // Default key names for the default fields
 const (
@@ -75,4 +78,8 @@ func prefixFieldClashes(data Fields, fieldMap FieldMap, reportCaller bool) {
 			data["fields."+fileKey] = l
 		}
 	}
+}
+
+func ignoreEmptyValueFieldsFilter(_ string, value interface{}) bool {
+	return !(value == nil || reflect.DeepEqual(value, reflect.Zero(reflect.TypeOf(value)).Interface()))
 }

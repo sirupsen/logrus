@@ -78,6 +78,9 @@ type TextFormatter struct {
 	//         FieldKeyMsg:   "@message"}}
 	FieldMap FieldMap
 
+	// IgnoreFieldsWithEmptyValue will ignore the fields that have empty/nil values.
+	IgnoreFieldsWithEmptyValue bool
+
 	// CallerPrettyfier can be set by the user to modify the content
 	// of the function and file keys in the data when ReportCaller is
 	// activated. If any of the returned value is the empty string the
@@ -123,7 +126,13 @@ func (f *TextFormatter) isColored() bool {
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	data := make(Fields)
 	for k, v := range entry.Data {
-		data[k] = v
+		if f.IgnoreFieldsWithEmptyValue {
+			if ignoreEmptyValueFieldsFilter(k, v) {
+				data[k] = v
+			}
+		} else {
+			data[k] = v
+		}
 	}
 	prefixFieldClashes(data, f.FieldMap, entry.HasCaller())
 	keys := make([]string, 0, len(data))
