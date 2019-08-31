@@ -26,7 +26,7 @@ func TestFormattingWithFieldFilters(t *testing.T) {
 		for _, formatter := range formatters {
 			b, err := formatter.Format(entry)
 			require.NoError(t, err)
-			require.True(t, strings.Contains(string(b), "wantedFieldKey=value"))
+			require.True(t, strings.Contains(string(b), "wantedFieldKey"))
 			require.False(t, strings.Contains(string(b), "unwantedFieldKeyWithEmptyStringValue"))
 			require.False(t, strings.Contains(string(b), "unwantedFieldKeyWithNilValue"))
 		}
