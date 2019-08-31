@@ -234,6 +234,22 @@ requestLogger.Info("something happened on that request") # will log request_id a
 requestLogger.Warn("something not great happened")
 ```
 
+#### Filtering Fields
+
+It might sometimes be required that some fields be filtered out of logs for various reasons.
+For example, one might want to filter out fields that contain empty values.
+
+A [FieldFilter](https://github.com/pradykaushik/logrus/blob/issues/logemptyvalues/formatter.go#L85) can
+be added while instantiating formatters.
+```go
+formatter := &TextFormatter{
+    FieldFilters: []FieldFilter{IgnoreEmptyValueFieldFilter},
+}
+```
+The [TextFormatter](https://github.com/pradykaushik/logrus/blob/issues/logemptyvalues/text_formatter.go#L126)
+will apply the specified field filters when formatting. [IgnoreEmptyValueFieldFilter] is a field
+filter that can be used to filter out fields that have empty values.
+
 #### Hooks
 
 You can add hooks for logging levels. For example to send errors to an exception
