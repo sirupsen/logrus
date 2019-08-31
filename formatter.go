@@ -80,6 +80,12 @@ func prefixFieldClashes(data Fields, fieldMap FieldMap, reportCaller bool) {
 	}
 }
 
-func ignoreEmptyValueFieldsFilter(_ string, value interface{}) bool {
+// FieldFilter represents a filter to be used when adding fields in logs.
+// Returns true if field is to be filtered out.
+type FieldFilter func(string, interface{}) bool
+
+// IgnoreEmptyValueFieldFilter filters out fields that contain empty value.
+// An empty value represents the zero value of the corresponding type.
+func IgnoreEmptyValueFieldFilter(_ string, value interface{}) bool {
 	return !(value == nil || reflect.DeepEqual(value, reflect.Zero(reflect.TypeOf(value)).Interface()))
 }

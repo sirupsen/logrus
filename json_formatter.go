@@ -43,6 +43,9 @@ type JSONFormatter struct {
 	// }
 	FieldMap FieldMap
 
+	// FieldFilters to be used to filter out fields that are not to be logged.
+	FieldFilters []FieldFilter
+
 	// CallerPrettyfier can be set by the user to modify the content
 	// of the function and file keys in the json data when ReportCaller is
 	// activated. If any of the returned value is the empty string the
@@ -56,7 +59,7 @@ type JSONFormatter struct {
 // Format renders a single log entry
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data := make(Fields, len(entry.Data)+4)
-	for k, v := range entry.Data {
+	addFieldToData := func(k string, v interface{}) {
 		switch v := v.(type) {
 		case error:
 			// Otherwise errors are ignored by `encoding/json`
@@ -64,6 +67,18 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 			data[k] = v.Error()
 		default:
 			data[k] = v
+		}
+	}
+	for k, v := range entry.Data {
+		if len(f.FieldFilters) == 0 {
+			addFieldToData(k, v)
+		} else {
+			// Applying field filters.
+			for _, fieldFilter := range f.FieldFilters {
+				if fieldFilter(k, v) {
+					addFieldToData(k, v)
+				}
+			}
 		}
 	}
 

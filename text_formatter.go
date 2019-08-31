@@ -78,8 +78,8 @@ type TextFormatter struct {
 	//         FieldKeyMsg:   "@message"}}
 	FieldMap FieldMap
 
-	// IgnoreFieldsWithEmptyValue will ignore the fields that have empty/nil values.
-	IgnoreFieldsWithEmptyValue bool
+	// FieldFilters to be used to filter out fields that are not to be logged.
+	FieldFilters []FieldFilter
 
 	// CallerPrettyfier can be set by the user to modify the content
 	// of the function and file keys in the data when ReportCaller is
@@ -126,12 +126,15 @@ func (f *TextFormatter) isColored() bool {
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	data := make(Fields)
 	for k, v := range entry.Data {
-		if f.IgnoreFieldsWithEmptyValue {
-			if ignoreEmptyValueFieldsFilter(k, v) {
-				data[k] = v
-			}
-		} else {
+		if len(f.FieldFilters) == 0 {
 			data[k] = v
+		} else {
+			// Applying field filters.
+			for _, fieldFilter := range f.FieldFilters {
+				if fieldFilter(k, v) {
+					data[k] = v
+				}
+			}
 		}
 	}
 	prefixFieldClashes(data, f.FieldMap, entry.HasCaller())
