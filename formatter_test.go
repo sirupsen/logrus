@@ -8,7 +8,6 @@ import (
 )
 
 func TestFormattingWithFieldFilters(t *testing.T) {
-	// Text Formatting.
 	textFormatter := &TextFormatter{FieldFilters: []FieldFilter{IgnoreEmptyValueFieldFilter}}
 	jsonFormatter := &JSONFormatter{FieldFilters: []FieldFilter{IgnoreEmptyValueFieldFilter}}
 
