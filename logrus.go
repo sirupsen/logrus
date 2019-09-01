@@ -1,9 +1,11 @@
 package logrus
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
+	"time"
 )
 
 // Fields type, used to pass to `WithFields`.
@@ -140,7 +142,11 @@ type FieldLogger interface {
 	WithField(key string, value interface{}) *Entry
 	WithFields(fields Fields) *Entry
 	WithError(err error) *Entry
+	WithContext(ctx context.Context) *Entry
+	WithTime(t time.Time) *Entry
 
+	Logf(level Level, format string, args ...interface{})
+	Tracef(format string, args ...interface{})
 	Debugf(format string, args ...interface{})
 	Infof(format string, args ...interface{})
 	Printf(format string, args ...interface{})
@@ -150,6 +156,8 @@ type FieldLogger interface {
 	Fatalf(format string, args ...interface{})
 	Panicf(format string, args ...interface{})
 
+	Log(level Level, args ...interface{})
+	Trace(args ...interface{})
 	Debug(args ...interface{})
 	Info(args ...interface{})
 	Print(args ...interface{})
@@ -159,6 +167,8 @@ type FieldLogger interface {
 	Fatal(args ...interface{})
 	Panic(args ...interface{})
 
+	Logln(level Level, args ...interface{})
+	Traceln(args ...interface{})
 	Debugln(args ...interface{})
 	Infoln(args ...interface{})
 	Println(args ...interface{})
