@@ -255,11 +255,10 @@ func (entry *Entry) write() {
 	serialized, err := entry.Logger.Formatter.Format(entry)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v\n", err)
-	} else {
-		_, err = entry.Logger.Out.Write(serialized)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
-		}
+		return
+	}
+	if _, err = entry.Logger.Out.Write(serialized); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
 	}
 }
 
