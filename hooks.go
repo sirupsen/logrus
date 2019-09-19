@@ -21,14 +21,34 @@ func (hooks LevelHooks) Add(hook Hook) {
 	}
 }
 
+// multiErr may contain multiple errors.
+type multiErr []error
+
+func (e multiErr) Error() string {
+	if e == nil || len(e) == 0 {
+		return ""
+	}
+	return e[0].Error()
+}
+
+func (e multiErr) Unwrap() error {
+	if e == nil || len(e) == 0 {
+		return nil
+	}
+	return e[0]
+}
+
 // Fire all the hooks for the passed level. Used by `entry.log` to fire
 // appropriate hooks for a log entry.
 func (hooks LevelHooks) Fire(level Level, entry *Entry) error {
+	merr := make(multiErr, 0)
 	for _, hook := range hooks[level] {
 		if err := hook.Fire(entry); err != nil {
-			return err
+			merr = append(merr, err)
 		}
 	}
-
+	if len(merr) > 0 {
+		return merr
+	}
 	return nil
 }
