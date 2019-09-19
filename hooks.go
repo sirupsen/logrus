@@ -39,7 +39,8 @@ func (e multiErr) Unwrap() error {
 }
 
 // Fire all the hooks for the passed level. Used by `entry.log` to fire
-// appropriate hooks for a log entry.
+// appropriate hooks for a log entry. In case of an error, the first error
+// encountered will be returned, but all hooks will fire.
 func (hooks LevelHooks) Fire(level Level, entry *Entry) error {
 	merr := make(multiErr, 0)
 	for _, hook := range hooks[level] {
