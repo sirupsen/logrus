@@ -63,6 +63,9 @@ type TextFormatter struct {
 	// PadLevelText is a superset of the DisableLevelTruncation option
 	PadLevelText bool
 
+	// QuoteAllFields will wrap all fields in quotes if true
+	QuoteAllFields bool
+
 	// QuoteEmptyFields will wrap empty fields in quotes if true
 	QuoteEmptyFields bool
 
@@ -283,6 +286,9 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 }
 
 func (f *TextFormatter) needsQuoting(text string) bool {
+	if f.QuoteAllFields {
+		return true
+	}
 	if f.QuoteEmptyFields && len(text) == 0 {
 		return true
 	}

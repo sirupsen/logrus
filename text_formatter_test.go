@@ -71,6 +71,16 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(true, "")
 	checkQuoting(false, "abcd")
 	checkQuoting(true, errors.New("invalid argument"))
+
+	tf.QuoteAllFields = true
+	checkQuoting(true, "")
+	checkQuoting(true, "abcd")
+	checkQuoting(true, errors.New("invalid argument"))
+
+	tf.QuoteEmptyFields = false
+	checkQuoting(true, "")
+	checkQuoting(true, "abcd")
+	checkQuoting(true, errors.New("invalid argument"))
 }
 
 func TestEscaping(t *testing.T) {
