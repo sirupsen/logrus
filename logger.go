@@ -29,6 +29,11 @@ type Logger struct {
 	// Flag for whether to log caller info (off by default)
 	ReportCaller bool
 
+	// FireAllHooks indicates that all hooks should be fired, even in case of an
+	// error. When off (default), when an error occurs firing one of the hooks,
+	// subsequent hooks will not be fired.
+	FireAllHooks bool
+
 	// The logging level the logger should log at. This is typically (and defaults
 	// to) `logrus.Info`, which allows Info(), Warn(), Error() and Fatal() to be
 	// logged.

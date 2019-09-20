@@ -3,6 +3,7 @@ package logrus_test
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"sync"
 	"testing"
 
@@ -213,4 +214,39 @@ func TestHookFireOrder(t *testing.T) {
 
 	h.Fire(InfoLevel, &Entry{})
 	require.Equal(t, []string{"first hook", "second hook", "third hook"}, checkers)
+}
+
+type HookCallFuncErr struct {
+	F func() error
+}
+
+func (h *HookCallFuncErr) Levels() []Level {
+	return AllLevels
+}
+
+func (h *HookCallFuncErr) Fire(e *Entry) error {
+	return h.F()
+}
+
+func TestFireAllHooks(t *testing.T) {
+	t.Run("FireAllHooks: true", func(t *testing.T) {
+		checkers := []string{}
+		h := LevelHooks{}
+		h.Add(&HookCallFuncErr{func() error { return errors.New("failure") }})
+		h.Add(&HookCallFuncErr{func() error { checkers = append(checkers, "second"); return nil }})
+		h.Fire(InfoLevel, &Entry{
+			Logger: &Logger{FireAllHooks: true},
+		})
+		require.Equal(t, []string{"second"}, checkers)
+	})
+	t.Run("FireAllHooks: false", func(t *testing.T) {
+		checkers := []string{}
+		h := LevelHooks{}
+		h.Add(&HookCallFuncErr{func() error { return errors.New("failure") }})
+		h.Add(&HookCallFuncErr{func() error { checkers = append(checkers, "second"); return nil }})
+		h.Fire(InfoLevel, &Entry{
+			Logger: &Logger{FireAllHooks: false},
+		})
+		require.Equal(t, []string{}, checkers)
+	})
 }

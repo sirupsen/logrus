@@ -45,6 +45,9 @@ func (hooks LevelHooks) Fire(level Level, entry *Entry) error {
 	merr := make(multiErr, 0)
 	for _, hook := range hooks[level] {
 		if err := hook.Fire(entry); err != nil {
+			if !entry.Logger.FireAllHooks {
+				return err
+			}
 			merr = append(merr, err)
 		}
 	}
