@@ -42,7 +42,7 @@ func (e multiErr) Unwrap() error {
 // appropriate hooks for a log entry. In case of an error, the first error
 // encountered will be returned, but all hooks will fire.
 func (hooks LevelHooks) Fire(level Level, entry *Entry) error {
-	merr := make(multiErr, 0)
+	var merr multiErr
 	for _, hook := range hooks[level] {
 		if err := hook.Fire(entry); err != nil {
 			if !entry.Logger.FireAllHooks {
@@ -51,8 +51,5 @@ func (hooks LevelHooks) Fire(level Level, entry *Entry) error {
 			merr = append(merr, err)
 		}
 	}
-	if len(merr) > 0 {
-		return merr
-	}
-	return nil
+	return merr
 }
