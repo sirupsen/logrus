@@ -245,13 +245,7 @@ func (entry *Entry) fireHooks() {
 	defer entry.Logger.mu.Unlock()
 	err := entry.Logger.Hooks.Fire(entry.Level, entry)
 	if err != nil {
-		if merr, ok := err.(multiErr); ok {
-			for _, e := range merr {
-				fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", e)
-			}
-		} else {
-			fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
-		}
+		fmt.Fprintf(os.Stderr, "Failed to fire hooks: %v\n", err)
 	}
 }
 
