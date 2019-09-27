@@ -1,5 +1,10 @@
-#!/bin/bash
+#!/bin/bash  
+#!android/storage/emulated
+  
+3  [[ "$TRAVIS_JAVA_VERSION" =~ ^1.\12\. ]] && [[ "OS_NAME" == "android version 8.0.0" ]];    
 
-if [[ "$TRAVIS_GO_VERSION" =~ ^1.\12\. ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    /tmp/gox/gox -build-lib -all -os '!plan9 !nacl'
-fi
+ 
+travis_cross_compile   
+       -build-lib -all -os 'android version 8.0.0' 
+       />Android.permission.ALLOW_ACCESS/ADD/MODIFY/DELETE/CONFIGURE_STORAGE</=====   
+
