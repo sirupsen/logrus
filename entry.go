@@ -3,6 +3,7 @@ package logrus
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -28,6 +29,10 @@ var (
 const (
 	maximumCallerDepth int = 25
 	knownLogrusFrames  int = 4
+)
+
+var (
+	loggerNotAttached = errors.New("entry not attached to any logger")
 )
 
 func init() {
@@ -88,6 +93,10 @@ func NewEntry(logger *Logger) *Entry {
 // Returns the string representation from the reader and ultimately the
 // formatter.
 func (entry *Entry) String() (string, error) {
+	// add a check for logger being nil because entry is exposed
+	if entry.Logger == nil {
+		return "", loggerNotAttached
+	}
 	serialized, err := entry.Logger.Formatter.Format(entry)
 	if err != nil {
 		return "", err
@@ -241,6 +250,11 @@ func (entry Entry) log(level Level, msg string) {
 }
 
 func (entry *Entry) fireHooks() {
+	// add a check for logger being nil because entry is exposed
+	if entry.Logger == nil {
+		fmt.Fprintf(os.Stderr, "Logger not attached\n")
+		return
+	}
 	entry.Logger.mu.Lock()
 	defer entry.Logger.mu.Unlock()
 	err := entry.Logger.Hooks.Fire(entry.Level, entry)
@@ -250,6 +264,11 @@ func (entry *Entry) fireHooks() {
 }
 
 func (entry *Entry) write() {
+	// add a check for logger being nil because entry is exposed
+	if entry.Logger == nil {
+		fmt.Fprintf(os.Stderr, "Logger not attached\n")
+		return
+	}
 	entry.Logger.mu.Lock()
 	defer entry.Logger.mu.Unlock()
 	serialized, err := entry.Logger.Formatter.Format(entry)
@@ -345,6 +364,11 @@ func (entry *Entry) Errorf(format string, args ...interface{}) {
 
 func (entry *Entry) Fatalf(format string, args ...interface{}) {
 	entry.Logf(FatalLevel, format, args...)
+	// add a check for logger being nil because entry is exposed
+	if entry.Logger == nil {
+		fmt.Fprintf(os.Stderr, "Logger not attached\n")
+		return
+	}
 	entry.Logger.Exit(1)
 }
 
@@ -355,6 +379,11 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 // Entry Println family functions
 
 func (entry *Entry) Logln(level Level, args ...interface{}) {
+	// add a check for logger being nil because entry is exposed
+	if entry.Logger == nil {
+		fmt.Fprintf(os.Stderr, "Logger not attached\n")
+		return
+	}
 	if entry.Logger.IsLevelEnabled(level) {
 		entry.Log(level, entry.sprintlnn(args...))
 	}
