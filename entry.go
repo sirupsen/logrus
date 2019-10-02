@@ -283,6 +283,11 @@ func (entry *Entry) write() {
 }
 
 func (entry *Entry) Log(level Level, args ...interface{}) {
+	// add a check for logger being nil because entry is exposed
+	if entry.Logger == nil {
+		fmt.Fprintf(os.Stderr, "Logger not attached\n")
+		return
+	}
 	if entry.Logger.IsLevelEnabled(level) {
 		entry.log(level, fmt.Sprint(args...))
 	}
