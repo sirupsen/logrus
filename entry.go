@@ -264,11 +264,6 @@ func (entry *Entry) fireHooks() {
 }
 
 func (entry *Entry) write() {
-	// add a check for logger being nil because entry is exposed
-	if entry.Logger == nil {
-		fmt.Fprintf(os.Stderr, "Logger not attached\n")
-		return
-	}
 	entry.Logger.mu.Lock()
 	defer entry.Logger.mu.Unlock()
 	serialized, err := entry.Logger.Formatter.Format(entry)
