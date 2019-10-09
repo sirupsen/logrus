@@ -329,6 +329,10 @@ func (entry *Entry) Panic(args ...interface{}) {
 // Entry Printf family functions
 
 func (entry *Entry) Logf(level Level, format string, args ...interface{}) {
+	if entry.Logger == nil {
+		fmt.Fprintf(os.Stderr, "Logger not attached\n")
+		return
+	}
 	if entry.Logger.IsLevelEnabled(level) {
 		entry.Log(level, fmt.Sprintf(format, args...))
 	}
