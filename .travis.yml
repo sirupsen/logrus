@@ -9,13 +9,6 @@ go: [1.11.x, 1.12.x, 1.13.x]
 os: [linux, osx]
 install:
   - ./travis/install.sh
-  - if [[ "$GO111MODULE" ==  "on" ]]; then go mod download; fi
-  - if [[ "$GO111MODULE" == "off" ]]; then go get \
-    github.com/stretchr/testify/assert \
-    golang.org/x/sys/unix \
-    github.com/konsorten/go-windows-terminal-sequences \
-    github.com/hashicorp/go-version \
-    github.com/hashicorp/go-version; fi
 script:
   - ./travis/cross_build.sh
   - export GOMAXPROCS=4
