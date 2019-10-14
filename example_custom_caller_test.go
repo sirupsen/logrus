@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func ExampleCustomFormatter() {
+func ExampleJSONFormatter_CallerPrettyfier() {
 	l := logrus.New()
 	l.SetReportCaller(true)
 	l.Out = os.Stdout
