@@ -3,11 +3,7 @@
 set -e
 
 if [[ "$TRAVIS_GO_VERSION" =~ ^1\.12\. ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    git clone https://github.com/dgsb/gox.git /tmp/gox
-    pushd /tmp/gox
-    git checkout new_master
-    go build ./
-    popd
+    GO111MODULE=off go get github.com/dgsb/gox
 fi
 
 if [[ "$GO111MODULE" ==  "on" ]]; then
@@ -16,5 +12,4 @@ fi
 
 if [[ "$GO111MODULE" == "off" ]]; then
     go get github.com/stretchr/testify/assert golang.org/x/sys/unix github.com/konsorten/go-windows-terminal-sequences
-    go get github.com/hashicorp/go-version github.com/hashicorp/go-version
 fi
