@@ -7,6 +7,10 @@ env:
   - GO111MODULE=off
 go: [1.11.x, 1.12.x, 1.13.x]
 os: [linux, osx]
+matrix:
+  exclude:
+    - go: 1.13.x
+      env: GO111MODULE=off ## Modules are the default now.
 install:
   - ./travis/install.sh
 script:
