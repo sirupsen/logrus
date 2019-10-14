@@ -1,8 +1,9 @@
 package logrus_test
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
+
+	"github.com/sirupsen/logrus"
 )
 
 type DefaultFieldHook struct {
@@ -18,7 +19,7 @@ func (h *DefaultFieldHook) Fire(e *logrus.Entry) error {
 	return nil
 }
 
-func ExampleDefaultField() {
+func ExampleDefaultFieldHook() {
 	l := logrus.New()
 	l.Out = os.Stdout
 	l.Formatter = &logrus.TextFormatter{DisableTimestamp: true, DisableColors: true}
