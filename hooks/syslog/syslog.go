@@ -4,10 +4,8 @@ package syslog
 
 import (
 	"fmt"
-	"log/syslog"
-	"os"
-
 	"github.com/sirupsen/logrus"
+	"log/syslog"
 )
 
 // SyslogHook to send logs via syslog.
@@ -28,8 +26,7 @@ func NewSyslogHook(network, raddr string, priority syslog.Priority, tag string) 
 func (hook *SyslogHook) Fire(entry *logrus.Entry) error {
 	line, err := entry.String()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to read entry, %v", err)
-		return err
+		return fmt.Errorf("unable to read entry, %v", err)
 	}
 
 	switch entry.Level {
