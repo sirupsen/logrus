@@ -211,6 +211,8 @@ func TestHookFireOrder(t *testing.T) {
 	h.Add(&HookCallFunc{F: func() { checkers = append(checkers, "second hook") }})
 	h.Add(&HookCallFunc{F: func() { checkers = append(checkers, "third hook") }})
 
-	h.Fire(InfoLevel, &Entry{})
+	if err := h.Fire(InfoLevel, &Entry{}); err != nil {
+		t.Error("unexpected error:", err)
+	}
 	require.Equal(t, []string{"first hook", "second hook", "third hook"}, checkers)
 }

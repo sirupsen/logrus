@@ -21,7 +21,9 @@ func TestFieldValueError(t *testing.T) {
 	l.WithField("func", func() {}).Info("test")
 	fmt.Println(buf.String())
 	var data map[string]interface{}
-	json.Unmarshal(buf.Bytes(), &data)
+	if err := json.Unmarshal(buf.Bytes(), &data); err != nil {
+		t.Error("unexpected error", err)
+	}
 	_, ok := data[FieldKeyLogrusError]
 	require.True(t, ok)
 }
@@ -37,7 +39,9 @@ func TestNoFieldValueError(t *testing.T) {
 	l.WithField("str", "str").Info("test")
 	fmt.Println(buf.String())
 	var data map[string]interface{}
-	json.Unmarshal(buf.Bytes(), &data)
+	if err := json.Unmarshal(buf.Bytes(), &data); err != nil {
+		t.Error("unexpected error", err)
+	}
 	_, ok := data[FieldKeyLogrusError]
 	require.False(t, ok)
 }
