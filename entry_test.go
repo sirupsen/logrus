@@ -134,7 +134,7 @@ func TestEntryWithIncorrectField(t *testing.T) {
 
 	fn := func() {}
 
-	e := Entry{}
+	e := &Entry{Logger: New()}
 	eWithFunc := e.WithFields(Fields{"func": fn})
 	eWithFuncPtr := e.WithFields(Fields{"funcPtr": &fn})
 
@@ -162,8 +162,8 @@ func TestEntryLogfLevel(t *testing.T) {
 	entry := NewEntry(logger)
 
 	entry.Logf(DebugLevel, "%s", "debug")
-	assert.NotContains(t, buffer.String(), "debug", )
+	assert.NotContains(t, buffer.String(), "debug")
 
 	entry.Logf(WarnLevel, "%s", "warn")
-	assert.Contains(t, buffer.String(), "warn", )
+	assert.Contains(t, buffer.String(), "warn")
 }
