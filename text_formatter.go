@@ -34,6 +34,9 @@ type TextFormatter struct {
 	// Force disabling colors.
 	DisableColors bool
 
+	// Force quoting of all values
+	ForceQuote bool
+
 	// Override coloring based on CLICOLOR and CLICOLOR_FORCE. - https://bixense.com/clicolors/
 	EnvironmentOverrideColors bool
 
@@ -283,6 +286,9 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 }
 
 func (f *TextFormatter) needsQuoting(text string) bool {
+	if f.ForceQuote {
+		return true
+	}
 	if f.QuoteEmptyFields && len(text) == 0 {
 		return true
 	}
