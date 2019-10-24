@@ -16,7 +16,7 @@ var (
 	bufferPool *sync.Pool
 
 	// qualified package name, cached at first use
-	logrusPackage string
+	skipPackageNameForCaller = make(map[string]struct{}, 1)
 
 	// Positions in the call stack when tracing to report the calling method
 	minimumCallerDepth int
@@ -147,6 +147,13 @@ func (entry *Entry) WithTime(t time.Time) *Entry {
 	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: t, err: entry.err, Context: entry.Context}
 }
 
+// AddSkipPackageFromStackTrace
+// ex: logrus.AddSkipPackageFromStackTrace("github.com/go-xorm/xorm")
+func AddSkipPackageFromStackTrace(name string) {
+	skipPackageNameForCaller[name] = struct{}{}
+}
+
+
 // getPackageName reduces a fully qualified function name to the package name
 // There really ought to be to be a better way...
 func getPackageName(f string) string {
@@ -170,7 +177,7 @@ func getCaller() *runtime.Frame {
 	callerInitOnce.Do(func() {
 		pcs := make([]uintptr, 2)
 		_ = runtime.Callers(0, pcs)
-		logrusPackage = getPackageName(runtime.FuncForPC(pcs[1]).Name())
+		AddSkipPackageFromStackTrace(getPackageName(runtime.FuncForPC(pcs[1]).Name()))
 
 		// now that we have the cache, we can skip a minimum count of known-logrus functions
 		// XXX this is dubious, the number of frames may vary
@@ -183,10 +190,8 @@ func getCaller() *runtime.Frame {
 	frames := runtime.CallersFrames(pcs[:depth])
 
 	for f, again := frames.Next(); again; f, again = frames.Next() {
-		pkg := getPackageName(f.Function)
-
 		// If the caller isn't part of this package, we're done
-		if pkg != logrusPackage {
+		if _, has := skipPackageNameForCaller[getPackageName(f.Function)]; !has {
 			return &f
 		}
 	}

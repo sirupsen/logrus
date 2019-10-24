@@ -167,3 +167,37 @@ func TestEntryLogfLevel(t *testing.T) {
 	entry.Logf(WarnLevel, "%s", "warn")
 	assert.Contains(t, buffer.String(), "warn", )
 }
+
+
+func hasPkg(t *testing.T,pkgName string){
+	if _, has := skipPackageNameForCaller[pkgName]; has {
+		t.Log("has pkg",pkgName)
+	}else{
+		t.Error("not has",pkgName)
+	}
+}
+
+func notHasPkg(t *testing.T,pkgName string){
+	if _, has := skipPackageNameForCaller[pkgName]; !has {
+		t.Log("not has pkg",pkgName)
+	}else{
+		t.Error("has",pkgName)
+	}
+}
+
+func TestEntrySkipPackage(t *testing.T) {
+	logger := New()
+	logger.ReportCaller = true
+	buffer := &bytes.Buffer{}
+	logger.Out = buffer
+	entry := NewEntry(logger)
+	entry.log(DebugLevel, "debug")
+	hasPkg(t,"github.com/sirupsen/logrus")
+	notHasPkg(t,"github.com/go-xorm/xorm")
+
+	AddSkipPackageFromStackTrace("github.com/go-xorm/xorm")
+	hasPkg(t,"github.com/sirupsen/logrus")
+	hasPkg(t,"github.com/go-xorm/xorm")
+	notHasPkg(t,"github.com/jinzhu/gorm")
+}
+
