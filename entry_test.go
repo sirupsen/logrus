@@ -186,7 +186,6 @@ func TestEntryIfFail(t *testing.T) {
 		logIfFail ifFail
 		wantLevel string
 	}{
-		{entry.DebugIfFail, "debug"},
 		{entry.InfoIfFail, "info"},
 		{entry.WarnIfFail, "warn"},
 		{entry.ErrIfFail, "error"},
