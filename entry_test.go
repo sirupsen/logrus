@@ -3,6 +3,7 @@ package logrus
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -166,4 +167,39 @@ func TestEntryLogfLevel(t *testing.T) {
 
 	entry.Logf(WarnLevel, "%s", "warn")
 	assert.Contains(t, buffer.String(), "warn", )
+}
+
+func TestEntryIfFail(t *testing.T) {
+	t.Parallel()
+
+	wantErr := errors.New("error")
+	returnErrFunc := func() error { return wantErr }
+
+	logger := New()
+	buffer := &bytes.Buffer{}
+	logger.Out = buffer
+	logger.Level = DebugLevel
+	entry := NewEntry(logger)
+
+	type ifFail = func(fn func() error, args ...interface{})
+	testCases := []struct {
+		logIfFail ifFail
+		wantLevel string
+	}{
+		{entry.DebugIfFail, "debug"},
+		{entry.InfoIfFail, "info"},
+		{entry.WarnIfFail, "warn"},
+		{entry.ErrIfFail, "error"},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run("", func(t *testing.T) {
+			t.Parallel()
+			tc.logIfFail(returnErrFunc)
+
+			assert.Contains(t, buffer.String(), wantErr.Error())
+			assert.Contains(t, buffer.String(), tc.wantLevel)
+		})
+	}
 }

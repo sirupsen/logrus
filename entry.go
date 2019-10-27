@@ -276,6 +276,10 @@ func (entry *Entry) Debug(args ...interface{}) {
 	entry.Log(DebugLevel, args...)
 }
 
+func (entry *Entry) DebugIfFail(fn func() error, args ...interface{}) {
+	entry.Logger.DebugIfFail(fn, args...)
+}
+
 func (entry *Entry) Print(args ...interface{}) {
 	entry.Info(args...)
 }
@@ -284,8 +288,16 @@ func (entry *Entry) Info(args ...interface{}) {
 	entry.Log(InfoLevel, args...)
 }
 
+func (entry *Entry) InfoIfFail(fn func() error, args ...interface{}) {
+	entry.Logger.InfoIfFail(fn, args...)
+}
+
 func (entry *Entry) Warn(args ...interface{}) {
 	entry.Log(WarnLevel, args...)
+}
+
+func (entry *Entry) WarnIfFail(fn func() error, args ...interface{}) {
+	entry.Logger.WarnIfFail(fn, args...)
 }
 
 func (entry *Entry) Warning(args ...interface{}) {
@@ -296,9 +308,17 @@ func (entry *Entry) Error(args ...interface{}) {
 	entry.Log(ErrorLevel, args...)
 }
 
+func (entry *Entry) ErrIfFail(fn func() error, args ...interface{}) {
+	entry.Logger.ErrIfFail(fn, args...)
+}
+
 func (entry *Entry) Fatal(args ...interface{}) {
 	entry.Log(FatalLevel, args...)
 	entry.Logger.Exit(1)
+}
+
+func (entry *Entry) FatalIfFail(fn func() error, args ...interface{}) {
+	entry.Logger.WarnIfFail(fn, args...)
 }
 
 func (entry *Entry) Panic(args ...interface{}) {
