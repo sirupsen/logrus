@@ -168,6 +168,12 @@ type FieldLogger interface {
 	Fatalln(args ...interface{})
 	Panicln(args ...interface{})
 
+	DebugIfFail(fn func() error, args ...interface{})
+	InfoIfFail(fn func() error, args ...interface{})
+	WarnIfFail(fn func() error, args ...interface{})
+	ErrIfFail(fn func() error, args ...interface{})
+	FatalIfFail(fn func() error, args ...interface{})
+
 	// IsDebugEnabled() bool
 	// IsInfoEnabled() bool
 	// IsWarnEnabled() bool
