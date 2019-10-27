@@ -195,7 +195,6 @@ func TestEntryIfFail(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run("", func(t *testing.T) {
-			t.Parallel()
 			tc.logIfFail(returnErrFunc)
 
 			assert.Contains(t, buffer.String(), wantErr.Error())
