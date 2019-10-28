@@ -178,7 +178,6 @@ func TestEntryIfFail(t *testing.T) {
 	logger := New()
 	buffer := &bytes.Buffer{}
 	logger.Out = buffer
-	logger.Level = DebugLevel
 	entry := NewEntry(logger)
 
 	type ifFail = func(fn func() error, args ...interface{})
