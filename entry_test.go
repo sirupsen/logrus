@@ -172,8 +172,7 @@ func TestEntryLogfLevel(t *testing.T) {
 func TestEntryIfFail(t *testing.T) {
 	t.Parallel()
 
-	wantErr := errors.New("error")
-	returnErrFunc := func() error { return wantErr }
+	returnErrFunc := func() error { return errors.New("error") }
 
 	logger := New()
 	buffer := &bytes.Buffer{}
@@ -195,7 +194,6 @@ func TestEntryIfFail(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			tc.logIfFail(returnErrFunc)
 
-			assert.Contains(t, buffer.String(), wantErr.Error())
 			assert.Contains(t, buffer.String(), tc.wantLevel)
 		})
 	}
