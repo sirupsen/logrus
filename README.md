@@ -186,7 +186,7 @@ func main() {
   // if err == nil {
   //  log.Out = file
   // } else {
-  //  log.Info("Failed to log to file, using default stderr")
+  //  log.Info("Failed to log to file, using default stdout")
   // }
 
   log.WithFields(logrus.Fields{
