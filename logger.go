@@ -186,6 +186,15 @@ func (logger *Logger) Panicf(format string, args ...interface{}) {
 	logger.Logf(PanicLevel, format, args...)
 }
 
+func (logger *Logger) Recoverf(f func(), format string, args ...interface{}) error {
+	err := captureError(f)
+	if err == nil {
+		return nil
+	}
+	logger.WithError(err).Logf(ErrorLevel, format, args...)
+	return err
+}
+
 func (logger *Logger) Log(level Level, args ...interface{}) {
 	if logger.IsLevelEnabled(level) {
 		entry := logger.newEntry()
@@ -233,6 +242,15 @@ func (logger *Logger) Panic(args ...interface{}) {
 	logger.Log(PanicLevel, args...)
 }
 
+func (logger *Logger) Recover(f func(), args ...interface{}) error {
+	err := captureError(f)
+	if err == nil {
+		return nil
+	}
+	logger.WithError(err).Log(ErrorLevel, args...)
+	return err
+}
+
 func (logger *Logger) Logln(level Level, args ...interface{}) {
 	if logger.IsLevelEnabled(level) {
 		entry := logger.newEntry()
@@ -278,6 +296,15 @@ func (logger *Logger) Fatalln(args ...interface{}) {
 
 func (logger *Logger) Panicln(args ...interface{}) {
 	logger.Logln(PanicLevel, args...)
+}
+
+func (logger *Logger) Recoverln(f func(), args ...interface{}) error {
+	err := captureError(f)
+	if err == nil {
+		return nil
+	}
+	logger.WithError(err).Logln(ErrorLevel, args...)
+	return err
 }
 
 func (logger *Logger) Exit(code int) {

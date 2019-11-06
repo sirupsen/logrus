@@ -162,8 +162,24 @@ func TestEntryLogfLevel(t *testing.T) {
 	entry := NewEntry(logger)
 
 	entry.Logf(DebugLevel, "%s", "debug")
-	assert.NotContains(t, buffer.String(), "debug", )
+	assert.NotContains(t, buffer.String(), "debug")
 
 	entry.Logf(WarnLevel, "%s", "warn")
-	assert.Contains(t, buffer.String(), "warn", )
+	assert.Contains(t, buffer.String(), "warn")
+}
+
+func TestEntryRecover(t *testing.T) {
+	errTest := fmt.Errorf("test error")
+	buffer := bytes.NewBuffer(nil)
+
+	logger := New()
+	logger.Out = buffer
+
+	err := logger.Recoverf(func() {
+		panic(errTest)
+	}, "test recover: %s", "unit test")
+
+	assert.NotNil(t, err)
+	assert.Equal(t, errTest, err)
+	assert.Contains(t, buffer.String(), "test recover: unit test")
 }

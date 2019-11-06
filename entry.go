@@ -306,6 +306,15 @@ func (entry *Entry) Panic(args ...interface{}) {
 	panic(fmt.Sprint(args...))
 }
 
+func (entry *Entry) Recover(f func(), args ...interface{}) error {
+	err := captureError(f)
+	if err == nil {
+		return nil
+	}
+	entry.WithError(err).Log(ErrorLevel, args...)
+	return err
+}
+
 // Entry Printf family functions
 
 func (entry *Entry) Logf(level Level, format string, args ...interface{}) {
@@ -349,6 +358,15 @@ func (entry *Entry) Fatalf(format string, args ...interface{}) {
 
 func (entry *Entry) Panicf(format string, args ...interface{}) {
 	entry.Logf(PanicLevel, format, args...)
+}
+
+func (entry *Entry) Recoverf(f func(), format string, args ...interface{}) error {
+	err := captureError(f)
+	if err == nil {
+		return nil
+	}
+	entry.WithError(err).Logf(ErrorLevel, format, args...)
+	return err
 }
 
 // Entry Println family functions
@@ -396,6 +414,15 @@ func (entry *Entry) Panicln(args ...interface{}) {
 	entry.Logln(PanicLevel, args...)
 }
 
+func (entry *Entry) Recoverln(f func(), args ...interface{}) error {
+	err := captureError(f)
+	if err == nil {
+		return nil
+	}
+	entry.WithError(err).Logln(ErrorLevel, args...)
+	return err
+}
+
 // Sprintlnn => Sprint no newline. This is to get the behavior of how
 // fmt.Sprintln where spaces are always added between operands, regardless of
 // their type. Instead of vendoring the Sprintln implementation to spare a
@@ -403,4 +430,27 @@ func (entry *Entry) Panicln(args ...interface{}) {
 func (entry *Entry) sprintlnn(args ...interface{}) string {
 	msg := fmt.Sprintln(args...)
 	return msg[:len(msg)-1]
+}
+
+func captureError(f func()) (err error) {
+	defer func() {
+		e := recover()
+		if e == nil {
+			return
+		}
+		err = getError(e)
+	}()
+
+	f()
+	return
+}
+
+func getError(e interface{}) error {
+	switch v := e.(type) {
+	case error:
+		return v
+	case *Entry:
+		return fmt.Errorf(v.String())
+	}
+	return fmt.Errorf("%v", e)
 }

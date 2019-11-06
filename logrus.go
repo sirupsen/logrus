@@ -16,9 +16,8 @@ type Level uint32
 func (level Level) String() string {
 	if b, err := level.MarshalText(); err == nil {
 		return string(b)
-	} else {
-		return "unknown"
 	}
+	return "unknown"
 }
 
 // ParseLevel takes a string level and returns the Logrus log level constant.
@@ -56,6 +55,7 @@ func (level *Level) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// MarshalText implements encoding.TextMarshaler.
 func (level Level) MarshalText() ([]byte, error) {
 	switch level {
 	case TraceLevel:
@@ -77,7 +77,7 @@ func (level Level) MarshalText() ([]byte, error) {
 	return nil, fmt.Errorf("not a valid logrus level %d", level)
 }
 
-// A constant exposing all logging levels
+// AllLevels a constant exposing all logging levels
 var AllLevels = []Level{
 	PanicLevel,
 	FatalLevel,
@@ -183,4 +183,13 @@ type Ext1FieldLogger interface {
 	Tracef(format string, args ...interface{})
 	Trace(args ...interface{})
 	Traceln(args ...interface{})
+}
+
+// Ext2FieldLogger (the second extension to FieldLogger) is superfluous, it is
+// here for consistancy. Do not use. Use Logger or Entry instead.
+type Ext2FieldLogger interface {
+	Ext1FieldLogger
+	Recoverf(f func(), format string, args ...interface{}) error
+	Recover(f func(), args ...interface{}) error
+	Recoverln(f func(), args ...interface{}) error
 }

@@ -11,6 +11,7 @@ var (
 	std = New()
 )
 
+// StandardLogger return std logger.
 func StandardLogger() *Logger {
 	return std
 }
@@ -129,6 +130,11 @@ func Panic(args ...interface{}) {
 	std.Panic(args...)
 }
 
+// Recover capture error and logs a message at level Panic on the standard logger if panic happened.
+func Recover(f func(), args ...interface{}) error {
+	return std.Recover(f, args...)
+}
+
 // Fatal logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
 func Fatal(args ...interface{}) {
 	std.Fatal(args...)
@@ -174,6 +180,11 @@ func Panicf(format string, args ...interface{}) {
 	std.Panicf(format, args...)
 }
 
+// Recoverf capture error and logs a message at level Panic on the standard logger if panic happened.
+func Recoverf(f func(), format string, args ...interface{}) error {
+	return std.Recoverf(f, format, args...)
+}
+
 // Fatalf logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
 func Fatalf(format string, args ...interface{}) {
 	std.Fatalf(format, args...)
@@ -217,6 +228,11 @@ func Errorln(args ...interface{}) {
 // Panicln logs a message at level Panic on the standard logger.
 func Panicln(args ...interface{}) {
 	std.Panicln(args...)
+}
+
+// Recoverln capture error and logs a message at level Panic on the standard logger if panic happened.
+func Recoverln(f func(), args ...interface{}) error {
+	return std.Recoverln(f, args...)
 }
 
 // Fatalln logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
