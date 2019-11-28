@@ -47,6 +47,34 @@ func TestEntryWithContext(t *testing.T) {
 	assert.Equal(ctx, entry.WithContext(ctx).Context)
 }
 
+func TestEntryWithContextCopiesData(t *testing.T) {
+	assert := assert.New(t)
+	ctx1 := context.WithValue(context.Background(), "foo", "bar")
+	ctx2 := context.WithValue(context.Background(), "bar", "baz")
+	assert.NotEqual(ctx1, ctx2)
+
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	parentEntry := NewEntry(logger).WithField("parentKey", "parentValue")
+	childEntry1 := parentEntry.WithContext(ctx1)
+	assert.Equal(ctx1, childEntry1.Context)
+	childEntry2 := parentEntry.WithContext(ctx2)
+	assert.Equal(ctx2, childEntry2.Context)
+	assert.NotEqual(ctx1, ctx2)
+	assert.Equal("parentValue", childEntry1.Data["parentKey"])
+	assert.Equal("parentValue", childEntry2.Data["parentKey"])
+
+	childEntry1.Data["ChildKeyValue1"] = "ChildDataValue1"
+
+	val, exists := childEntry1.Data["ChildKeyValue1"]
+	assert.True(exists)
+	assert.Equal("ChildDataValue1", val)
+
+	val, exists = childEntry2.Data["ChildKeyValue1"]
+	assert.False(exists)
+	assert.Empty(val)
+}
+
 func TestEntryPanicln(t *testing.T) {
 	errBoom := fmt.Errorf("boom time")
 
