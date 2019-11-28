@@ -103,7 +103,11 @@ func (entry *Entry) WithError(err error) *Entry {
 
 // Add a context to the Entry.
 func (entry *Entry) WithContext(ctx context.Context) *Entry {
-	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: entry.Time, err: entry.err, Context: ctx}
+	dataCopy := make(Fields, len(entry.Data))
+	for k, v := range entry.Data {
+		dataCopy[k] = v
+	}
+	return &Entry{Logger: entry.Logger, Data: dataCopy, Time: entry.Time, err: entry.err, Context: ctx}
 }
 
 // Add a single field to the Entry.
@@ -144,7 +148,11 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 
 // Overrides the time of the Entry.
 func (entry *Entry) WithTime(t time.Time) *Entry {
-	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: t, err: entry.err, Context: entry.Context}
+	dataCopy := make(Fields, len(entry.Data))
+	for k, v := range entry.Data {
+		dataCopy[k] = v
+	}
+	return &Entry{Logger: entry.Logger, Data: dataCopy, Time: t, err: entry.err, Context: entry.Context}
 }
 
 // getPackageName reduces a fully qualified function name to the package name
