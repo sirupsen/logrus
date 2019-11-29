@@ -62,6 +62,11 @@ func Example_basic() {
 	}).Debug("Temperature changes")
 
 	log.WithFields(logrus.Fields{
+		"animal":   "orca",
+		"location": "outside",
+	}).Audit("It's left the building!")
+
+	log.WithFields(logrus.Fields{
 		"animal": "orca",
 		"size":   9009,
 	}).Panic("It's over 9000!")
@@ -72,6 +77,7 @@ func Example_basic() {
 	// level=info msg="A group of walrus emerges from the ocean" animal=walrus size=10
 	// level=warning msg="The group's number increased tremendously!" number=122 omg=true
 	// level=debug msg="Temperature changes" temperature=-4
+	// level=audit msg="It's left the building!" animal=orca location=outside
 	// level=panic msg="It's over 9000!" animal=orca size=9009
 	// level=error msg="The ice breaks!" err_animal=orca err_level=panic err_message="It's over 9000!" err_size=9009 number=100 omg=true
 }

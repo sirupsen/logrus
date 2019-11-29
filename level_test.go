@@ -39,6 +39,7 @@ func TestLevelUnmarshalText(t *testing.T) {
 
 func TestLevelMarshalText(t *testing.T) {
 	levelStrings := []string{
+		"audit",
 		"panic",
 		"fatal",
 		"error",

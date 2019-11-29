@@ -22,7 +22,7 @@ func TestFormatting(t *testing.T) {
 		value    string
 		expected string
 	}{
-		{`foo`, "time=\"0001-01-01T00:00:00Z\" level=panic test=foo\n"},
+		{`foo`, "time=\"0001-01-01T00:00:00Z\" level=audit test=foo\n"},
 	}
 
 	for _, tc := range testCases {
@@ -190,6 +190,11 @@ func TestPadLevelText(t *testing.T) {
 		level           Level
 		paddedLevelText string
 	}{
+		{
+			name:            "AuditLevel",
+			level:           AuditLevel,
+			paddedLevelText: "AUDIT  ", // 2 extra spaces
+		},
 		{
 			name:            "PanicLevel",
 			level:           PanicLevel,

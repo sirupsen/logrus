@@ -31,6 +31,7 @@ func (hook *TestHook) Levels() []Level {
 		ErrorLevel,
 		FatalLevel,
 		PanicLevel,
+		AuditLevel,
 	}
 }
 
@@ -64,6 +65,7 @@ func (hook *ModifyHook) Levels() []Level {
 		ErrorLevel,
 		FatalLevel,
 		PanicLevel,
+		AuditLevel,
 	}
 }
 

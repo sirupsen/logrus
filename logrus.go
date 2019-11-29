@@ -24,6 +24,8 @@ func (level Level) String() string {
 // ParseLevel takes a string level and returns the Logrus log level constant.
 func ParseLevel(lvl string) (Level, error) {
 	switch strings.ToLower(lvl) {
+	case "audit":
+		return AuditLevel, nil
 	case "panic":
 		return PanicLevel, nil
 	case "fatal":
@@ -72,6 +74,8 @@ func (level Level) MarshalText() ([]byte, error) {
 		return []byte("fatal"), nil
 	case PanicLevel:
 		return []byte("panic"), nil
+	case AuditLevel:
+		return []byte("audit"), nil
 	}
 
 	return nil, fmt.Errorf("not a valid logrus level %d", level)
@@ -79,6 +83,7 @@ func (level Level) MarshalText() ([]byte, error) {
 
 // A constant exposing all logging levels
 var AllLevels = []Level{
+	AuditLevel,
 	PanicLevel,
 	FatalLevel,
 	ErrorLevel,
@@ -91,9 +96,13 @@ var AllLevels = []Level{
 // These are the different logging levels. You can set the logging level to log
 // on your instance of logger, obtained with `logrus.New()`.
 const (
+	// AuditLevel level, real highest level of severity. Logs. Used for audit messages that
+	// should always be reported but are not errors. Commonly used for hooks to send logs
+	// to security auditing services.
+	AuditLevel Level = iota
 	// PanicLevel level, highest level of severity. Logs and then calls panic with the
 	// message passed to Debug, Info, ...
-	PanicLevel Level = iota
+	PanicLevel
 	// FatalLevel level. Logs and then calls `logger.Exit(1)`. It will exit even if the
 	// logging level is set to Panic.
 	FatalLevel
@@ -149,6 +158,7 @@ type FieldLogger interface {
 	Errorf(format string, args ...interface{})
 	Fatalf(format string, args ...interface{})
 	Panicf(format string, args ...interface{})
+	Auditf(format string, args ...interface{})
 
 	Debug(args ...interface{})
 	Info(args ...interface{})
@@ -158,6 +168,7 @@ type FieldLogger interface {
 	Error(args ...interface{})
 	Fatal(args ...interface{})
 	Panic(args ...interface{})
+	Audit(args ...interface{})
 
 	Debugln(args ...interface{})
 	Infoln(args ...interface{})
@@ -167,6 +178,7 @@ type FieldLogger interface {
 	Errorln(args ...interface{})
 	Fatalln(args ...interface{})
 	Panicln(args ...interface{})
+	Auditln(args ...interface{})
 
 	// IsDebugEnabled() bool
 	// IsInfoEnabled() bool
@@ -174,6 +186,7 @@ type FieldLogger interface {
 	// IsErrorEnabled() bool
 	// IsFatalEnabled() bool
 	// IsPanicEnabled() bool
+	// IsAuditEnabled() bool
 }
 
 // Ext1FieldLogger (the first extension to FieldLogger) is superfluous, it is

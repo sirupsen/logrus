@@ -64,8 +64,8 @@ func WithContext(ctx context.Context) *Entry {
 // WithField creates an entry from the standard logger and adds a field to
 // it. If you want multiple fields, use `WithFields`.
 //
-// Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal
-// or Panic on the Entry it returns.
+// Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal,
+// Panic, or Audit on the Entry it returns.
 func WithField(key string, value interface{}) *Entry {
 	return std.WithField(key, value)
 }
@@ -74,8 +74,8 @@ func WithField(key string, value interface{}) *Entry {
 // fields to it. This is simply a helper for `WithField`, invoking it
 // once for each field.
 //
-// Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal
-// or Panic on the Entry it returns.
+// Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal,
+// Panic, or Audit on the Entry it returns.
 func WithFields(fields Fields) *Entry {
 	return std.WithFields(fields)
 }
@@ -83,8 +83,8 @@ func WithFields(fields Fields) *Entry {
 // WithTime creats an entry from the standard logger and overrides the time of
 // logs generated with it.
 //
-// Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal
-// or Panic on the Entry it returns.
+// Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal,
+// Panic, or Audit on the Entry it returns.
 func WithTime(t time.Time) *Entry {
 	return std.WithTime(t)
 }
@@ -127,6 +127,11 @@ func Error(args ...interface{}) {
 // Panic logs a message at level Panic on the standard logger.
 func Panic(args ...interface{}) {
 	std.Panic(args...)
+}
+
+// Audit logs a message at level Audit on the standard logger.
+func Audit(args ...interface{}) {
+	std.Audit(args...)
 }
 
 // Fatal logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
@@ -174,6 +179,11 @@ func Panicf(format string, args ...interface{}) {
 	std.Panicf(format, args...)
 }
 
+// Auditf logs a message at level Audit on the standard logger.
+func Auditf(format string, args ...interface{}) {
+	std.Auditf(format, args...)
+}
+
 // Fatalf logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
 func Fatalf(format string, args ...interface{}) {
 	std.Fatalf(format, args...)
@@ -217,6 +227,11 @@ func Errorln(args ...interface{}) {
 // Panicln logs a message at level Panic on the standard logger.
 func Panicln(args ...interface{}) {
 	std.Panicln(args...)
+}
+
+// Auditln logs a message at level Audit on the standard logger.
+func Auditln(args ...interface{}) {
+	std.Auditln(args...)
 }
 
 // Fatalln logs a message at level Fatal on the standard logger then the process will exit with status set to 1.

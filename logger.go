@@ -101,7 +101,7 @@ func (logger *Logger) releaseEntry(entry *Entry) {
 }
 
 // Adds a field to the log entry, note that it doesn't log until you call
-// Debug, Print, Info, Warn, Error, Fatal or Panic. It only creates a log entry.
+// Debug, Print, Info, Warn, Error, Fatal, Panic, or Audit. It only creates a log entry.
 // If you want multiple fields, use `WithFields`.
 func (logger *Logger) WithField(key string, value interface{}) *Entry {
 	entry := logger.newEntry()
@@ -186,6 +186,10 @@ func (logger *Logger) Panicf(format string, args ...interface{}) {
 	logger.Logf(PanicLevel, format, args...)
 }
 
+func (logger *Logger) Auditf(format string, args ...interface{}) {
+	logger.Logf(AuditLevel, format, args...)
+}
+
 func (logger *Logger) Log(level Level, args ...interface{}) {
 	if logger.IsLevelEnabled(level) {
 		entry := logger.newEntry()
@@ -233,6 +237,10 @@ func (logger *Logger) Panic(args ...interface{}) {
 	logger.Log(PanicLevel, args...)
 }
 
+func (logger *Logger) Audit(args ...interface{}) {
+	logger.Log(AuditLevel, args...)
+}
+
 func (logger *Logger) Logln(level Level, args ...interface{}) {
 	if logger.IsLevelEnabled(level) {
 		entry := logger.newEntry()
@@ -278,6 +286,10 @@ func (logger *Logger) Fatalln(args ...interface{}) {
 
 func (logger *Logger) Panicln(args ...interface{}) {
 	logger.Logln(PanicLevel, args...)
+}
+
+func (logger *Logger) Auditln(args ...interface{}) {
+	logger.Logln(AuditLevel, args...)
 }
 
 func (logger *Logger) Exit(code int) {

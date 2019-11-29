@@ -162,8 +162,21 @@ func TestEntryLogfLevel(t *testing.T) {
 	entry := NewEntry(logger)
 
 	entry.Logf(DebugLevel, "%s", "debug")
-	assert.NotContains(t, buffer.String(), "debug", )
+	assert.NotContains(t, buffer.String(), "debug")
 
 	entry.Logf(WarnLevel, "%s", "warn")
-	assert.Contains(t, buffer.String(), "warn", )
+	assert.Contains(t, buffer.String(), "warn")
+}
+
+func TestEntryAuditDoesNotPanic(t *testing.T) {
+	defer func() {
+		p := recover()
+		assert.Nil(t, p)
+	}()
+
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	entry := NewEntry(logger)
+	entry.WithField("event", "something").Audit("something happened")
+	// if we get this far then it didn't panic
 }

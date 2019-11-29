@@ -46,7 +46,7 @@ var ErrorKey = "error"
 
 // An entry is the final or intermediate Logrus logging entry. It contains all
 // the fields passed with WithField{,s}. It's finally logged when Trace, Debug,
-// Info, Warn, Error, Fatal or Panic is called on it. These objects can be
+// Info, Warn, Error, Fatal, Panic, or Audit is called on it. These objects can be
 // reused and passed around as much as you wish to avoid field duplication.
 type Entry struct {
 	Logger *Logger
@@ -57,14 +57,14 @@ type Entry struct {
 	// Time at which the log entry was created
 	Time time.Time
 
-	// Level the log entry was logged at: Trace, Debug, Info, Warn, Error, Fatal or Panic
+	// Level the log entry was logged at: Trace, Debug, Info, Warn, Error, Fatal, Panic, or Audit
 	// This field will be set on entry firing and the value will be equal to the one in Logger struct field.
 	Level Level
 
 	// Calling method, with package name
 	Caller *runtime.Frame
 
-	// Message passed to Trace, Debug, Info, Warn, Error, Fatal or Panic
+	// Message passed to Trace, Debug, Info, Warn, Error, Fatal, Panic, or Audit
 	Message string
 
 	// When formatter is called in entry.log(), a Buffer may be set to entry
@@ -235,7 +235,7 @@ func (entry Entry) log(level Level, msg string) {
 	// To avoid Entry#log() returning a value that only would make sense for
 	// panic() to use in Entry#Panic(), we avoid the allocation by checking
 	// directly here.
-	if level <= PanicLevel {
+	if level <= PanicLevel && level != AuditLevel {
 		panic(&entry)
 	}
 }
@@ -306,6 +306,10 @@ func (entry *Entry) Panic(args ...interface{}) {
 	panic(fmt.Sprint(args...))
 }
 
+func (entry *Entry) Audit(args ...interface{}) {
+	entry.Log(AuditLevel, args...)
+}
+
 // Entry Printf family functions
 
 func (entry *Entry) Logf(level Level, format string, args ...interface{}) {
@@ -351,6 +355,10 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 	entry.Logf(PanicLevel, format, args...)
 }
 
+func (entry *Entry) Auditf(format string, args ...interface{}) {
+	entry.Logf(AuditLevel, format, args...)
+}
+
 // Entry Println family functions
 
 func (entry *Entry) Logln(level Level, args ...interface{}) {
@@ -394,6 +402,10 @@ func (entry *Entry) Fatalln(args ...interface{}) {
 
 func (entry *Entry) Panicln(args ...interface{}) {
 	entry.Logln(PanicLevel, args...)
+}
+
+func (entry *Entry) Auditln(args ...interface{}) {
+	entry.Logln(AuditLevel, args...)
 }
 
 // Sprintlnn => Sprint no newline. This is to get the behavior of how

@@ -33,6 +33,8 @@ func (hook *SyslogHook) Fire(entry *logrus.Entry) error {
 	}
 
 	switch entry.Level {
+	case logrus.AuditLevel:
+		return hook.Writer.Crit(line)
 	case logrus.PanicLevel:
 		return hook.Writer.Crit(line)
 	case logrus.FatalLevel:
