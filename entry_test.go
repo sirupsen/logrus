@@ -49,28 +49,76 @@ func TestEntryWithContext(t *testing.T) {
 
 func TestEntryWithContextCopiesData(t *testing.T) {
 	assert := assert.New(t)
-	ctx1 := context.WithValue(context.Background(), "foo", "bar")
-	ctx2 := context.WithValue(context.Background(), "bar", "baz")
-	assert.NotEqual(ctx1, ctx2)
 
+	// Initialize a parent Entry object with a key/value set in its Data map
 	logger := New()
 	logger.Out = &bytes.Buffer{}
 	parentEntry := NewEntry(logger).WithField("parentKey", "parentValue")
+
+	// Create two children Entry objects from the parent in different contexts
+	ctx1 := context.WithValue(context.Background(), "foo", "bar")
 	childEntry1 := parentEntry.WithContext(ctx1)
 	assert.Equal(ctx1, childEntry1.Context)
+
+	ctx2 := context.WithValue(context.Background(), "bar", "baz")
 	childEntry2 := parentEntry.WithContext(ctx2)
 	assert.Equal(ctx2, childEntry2.Context)
 	assert.NotEqual(ctx1, ctx2)
+
+	// Ensure that data set in the parent Entry are preserved to both children
 	assert.Equal("parentValue", childEntry1.Data["parentKey"])
 	assert.Equal("parentValue", childEntry2.Data["parentKey"])
 
-	childEntry1.Data["ChildKeyValue1"] = "ChildDataValue1"
+	// Modify data stored in the child entry
+	childEntry1.Data["childKey"] = "childValue"
 
-	val, exists := childEntry1.Data["ChildKeyValue1"]
+	// Verify that data is successfully stored in the child it was set on
+	val, exists := childEntry1.Data["childKey"]
 	assert.True(exists)
-	assert.Equal("ChildDataValue1", val)
+	assert.Equal("childValue", val)
 
-	val, exists = childEntry2.Data["ChildKeyValue1"]
+	// Verify that the data change to child 1 has not affected its sibling
+	val, exists = childEntry2.Data["childKey"]
+	assert.False(exists)
+	assert.Empty(val)
+
+	// Verify that the data change to child 1 has not affected its parent
+	val, exists = parentEntry.Data["childKey"]
+	assert.False(exists)
+	assert.Empty(val)
+}
+
+func TestEntryWithTimeCopiesData(t *testing.T) {
+	assert := assert.New(t)
+
+	// Initialize a parent Entry object with a key/value set in its Data map
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+	parentEntry := NewEntry(logger).WithField("parentKey", "parentValue")
+
+	// Create two children Entry objects from the parent with two different times
+	childEntry1 := parentEntry.WithTime(time.Now().AddDate(0, 0, 1))
+	childEntry2 := parentEntry.WithTime(time.Now().AddDate(0, 0, 2))
+
+	// Ensure that data set in the parent Entry are preserved to both children
+	assert.Equal("parentValue", childEntry1.Data["parentKey"])
+	assert.Equal("parentValue", childEntry2.Data["parentKey"])
+
+	// Modify data stored in the child entry
+	childEntry1.Data["childKey"] = "childValue"
+
+	// Verify that data is successfully stored in the child it was set on
+	val, exists := childEntry1.Data["childKey"]
+	assert.True(exists)
+	assert.Equal("childValue", val)
+
+	// Verify that the data change to child 1 has not affected its sibling
+	val, exists = childEntry2.Data["childKey"]
+	assert.False(exists)
+	assert.Empty(val)
+
+	// Verify that the data change to child 1 has not affected its parent
+	val, exists = parentEntry.Data["childKey"]
 	assert.False(exists)
 	assert.Empty(val)
 }
