@@ -344,3 +344,28 @@ func TestJSONEnableTimestamp(t *testing.T) {
 		t.Error("Timestamp not present", s)
 	}
 }
+func TestJSONDisableHTMLEscape(t *testing.T) {
+	formatter := &JSONFormatter{}
+	entry := WithField("key", "<value>")
+
+	// HTMLEscape is enabled by default.
+	b, err := formatter.Format(entry)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+	s := string(b)
+	if !strings.Contains(s, "\\u003cvalue\\u003e") {
+		t.Fatal("Expected JSON to escape HTML")
+	}
+
+	// HTMLEscape can be disabled.
+	formatter.DisableHTMLEscape = true
+	b, err = formatter.Format(entry)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+	s = string(b)
+	if !strings.Contains(s, "<value>") {
+		t.Fatal("Expected JSON to not escape HTML")
+	}
+}

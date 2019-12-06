@@ -25,8 +25,11 @@ type JSONFormatter struct {
 	// TimestampFormat sets the format used for marshaling timestamps.
 	TimestampFormat string
 
-	// DisableTimestamp allows disabling automatic timestamps in output
+	// DisableTimestamp allows disabling automatic timestamps in output.
 	DisableTimestamp bool
+
+	// DisableHTMLEscape allows disabling of HTML escaping in output.
+	DisableHTMLEscape bool
 
 	// DataKey allows users to put all the log entry parameters into a nested dictionary at a given key.
 	DataKey string
@@ -113,6 +116,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	if f.PrettyPrint {
 		encoder.SetIndent("", "  ")
 	}
+	encoder.SetEscapeHTML(!f.DisableHTMLEscape)
 	if err := encoder.Encode(data); err != nil {
 		return nil, fmt.Errorf("failed to marshal fields to JSON, %v", err)
 	}
