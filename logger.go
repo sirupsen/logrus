@@ -335,10 +335,16 @@ func (logger *Logger) SetOutput(output io.Writer) {
 	logger.Out = output
 }
 
+// SetReportCaller ...
 func (logger *Logger) SetReportCaller(reportCaller bool) {
 	logger.mu.Lock()
 	defer logger.mu.Unlock()
 	logger.ReportCaller = reportCaller
+}
+
+// AddSkipPackageFromStackTrace ...
+func (logger *Logger) AddSkipPackageFromStackTrace(name string) {
+	skipPackageNameForCaller[name] = struct{}{}
 }
 
 // ReplaceHooks replaces the logger hooks and returns the old ones

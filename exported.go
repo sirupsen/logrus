@@ -31,6 +31,11 @@ func SetReportCaller(include bool) {
 	std.SetReportCaller(include)
 }
 
+// AddSkipPackageFromStackTrace ...
+func AddSkipPackageFromStackTrace(name string) {
+	std.AddSkipPackageFromStackTrace(name)
+}
+
 // SetLevel sets the standard logger level.
 func SetLevel(level Level) {
 	std.SetLevel(level)
