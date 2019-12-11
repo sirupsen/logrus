@@ -31,7 +31,9 @@ func SetReportCaller(include bool) {
 	std.SetReportCaller(include)
 }
 
-// AddSkipPackageFromStackTrace ...
+// AddSkipPackageFromStackTrace excludes package names from the caller report when
+// SetReportCaller set to true. Commonly used to skip a custom logrus wrapper package frames.
+// ex. log.AddSkipPackageFromStackTrace("mycoolapp/mylogger") // skip mycoolapp/mylogger wrapper.
 func AddSkipPackageFromStackTrace(name string) {
 	std.AddSkipPackageFromStackTrace(name)
 }

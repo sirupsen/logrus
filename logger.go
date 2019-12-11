@@ -335,14 +335,14 @@ func (logger *Logger) SetOutput(output io.Writer) {
 	logger.Out = output
 }
 
-// SetReportCaller ...
+// SetReportCaller logs the caller stack frame.
 func (logger *Logger) SetReportCaller(reportCaller bool) {
 	logger.mu.Lock()
 	defer logger.mu.Unlock()
 	logger.ReportCaller = reportCaller
 }
 
-// AddSkipPackageFromStackTrace ...
+// AddSkipPackageFromStackTrace excludes a package from the caller report.
 func (logger *Logger) AddSkipPackageFromStackTrace(name string) {
 	skipPackageNameForCaller[name] = struct{}{}
 }

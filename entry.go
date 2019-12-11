@@ -16,7 +16,6 @@ var (
 	bufferPool *sync.Pool
 
 	// qualified package name, cached at first use
-	//logrusPackage string
 	skipPackageNameForCaller = make(map[string]struct{}, 1)
 
 	// Positions in the call stack when tracing to report the calling method
@@ -148,12 +147,6 @@ func (entry *Entry) WithTime(t time.Time) *Entry {
 	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: t, err: entry.err, Context: entry.Context}
 }
 
-// AddSkipPackageFromStackTrace
-// ex: logrus.AddSkipPackageFromStackTrace("github.com/go-xorm/xorm")
-// func AddSkipPackageFromStackTrace(name string) {
-// 	skipPackageNameForCaller[name] = struct{}{}
-// }
-
 // getPackageName reduces a fully qualified function name to the package name
 // There really ought to be to be a better way...
 func getPackageName(f string) string {
@@ -194,7 +187,6 @@ func getCaller() *runtime.Frame {
 		//pkg := getPackageName(f.Function)
 
 		// If the caller isn't part of this package, we're done
-		//if pkg != logrusPackage {a
 		if _, has := skipPackageNameForCaller[getPackageName(f.Function)]; !has {
 			return &f
 		}
