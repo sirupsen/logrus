@@ -18,5 +18,5 @@ fi
 
 if [[ "$GO111MODULE" == "off" ]]; then
     # Should contain all regular (not indirect) modules from go.mod
-    go get github.com/stretchr/testify golang.org/x/sys/unix github.com/konsorten/go-windows-terminal-sequences
+    go get github.com/stretchr/testify golang.org/x/sys/unix golang.org/x/sys/windows
 fi
