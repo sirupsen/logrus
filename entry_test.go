@@ -243,3 +243,19 @@ func TestEntryLogfLevel(t *testing.T) {
 	entry.Logf(WarnLevel, "%s", "warn")
 	assert.Contains(t, buffer.String(), "warn", )
 }
+
+func TestEntryLoggerNotAttached(t *testing.T) {
+	assert := assert.New(t)
+
+	e := Entry{}
+
+	_, err := e.String()
+	assert.NotNil(err)
+
+	e.fireHooks()
+
+	e.Log(InfoLevel)
+	e.Logf(InfoLevel, "")
+	e.Fatalf("")
+	e.Logln(InfoLevel)
+}
