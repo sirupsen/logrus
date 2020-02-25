@@ -3,6 +3,26 @@
 Logrus is a structured logger for Go (golang), completely API compatible with
 the standard library logger.
 
+**Logrus is in maintenance-mode.** We will not be introducing new features. It's
+simply too hard to do in a way that won't break many people's projects, which is
+the last thing you want from your Logging library (again...).
+
+This does not mean Logrus is dead. Logrus will continue to be maintained for
+security, (backwards compatible) bug fixes, and performance (where we are
+limited by the interface). 
+
+I believe Logrus' biggest contribution is to have played a part in today's
+widespread use of structured logging in Golang. There doesn't seem to be a
+reason to do a major, breaking iteration into Logrus V2, since the fantastic Go
+community has built those independently. Many fantastic alternatives have sprung
+up. Logrus would look like those, had it been re-designed with what we know
+about structured logging in Go today. Check out, for example,
+[Zerolog][zerolog], [Zap][zap], and [Apex][apex].
+
+[zerolog]: https://github.com/rs/zerolog
+[zap]: https://github.com/uber-go/zap
+[apex]: https://github.com/apex/log
+
 **Seeing weird case-sensitive problems?** It's in the past been possible to
 import Logrus as both upper- and lower-case. Due to the Go package environment,
 this caused issues in the community and we needed a standard. Some environments
