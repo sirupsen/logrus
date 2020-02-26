@@ -85,10 +85,15 @@ func NewEntry(logger *Logger) *Entry {
 	}
 }
 
+// Returns the bytes representation of this entry from the formatter.
+func (entry *Entry) Bytes() ([]byte, error) {
+	return entry.Logger.Formatter.Format(entry)
+}
+
 // Returns the string representation from the reader and ultimately the
 // formatter.
 func (entry *Entry) String() (string, error) {
-	serialized, err := entry.Logger.Formatter.Format(entry)
+	serialized, err := entry.Bytes()
 	if err != nil {
 		return "", err
 	}
