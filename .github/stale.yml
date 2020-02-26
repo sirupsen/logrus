@@ -16,3 +16,5 @@ markComment: >
   for your contributions.
 # Comment to post when closing a stale issue. Set to `false` to disable
 closeComment: false
+# Only mark issues as stale for now until we go through backlog of PRs
+only: issues
