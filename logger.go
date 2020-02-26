@@ -68,10 +68,10 @@ func (mw *MutexWrap) Disable() {
 // `Out` and `Hooks` directly on the default logger instance. You can also just
 // instantiate your own:
 //
-//    var log = &Logger{
+//    var log = &logrus.Logger{
 //      Out: os.Stderr,
-//      Formatter: new(JSONFormatter),
-//      Hooks: make(LevelHooks),
+//      Formatter: new(logrus.JSONFormatter),
+//      Hooks: make(logrus.LevelHooks),
 //      Level: logrus.DebugLevel,
 //    }
 //
