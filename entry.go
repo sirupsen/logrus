@@ -185,7 +185,7 @@ func getCaller() *runtime.Frame {
 	callerInitOnce.Do(func() {
 		pcs := make([]uintptr, 2)
 		_ = runtime.Callers(0, pcs)
-		logrusPackage = getPackageName(runtime.FuncForPC(pcs[1]).Name())
+		logrusPackage = getPackageName(funcName(pcs))
 
 		// now that we have the cache, we can skip a minimum count of known-logrus functions
 		// XXX this is dubious, the number of frames may vary
