@@ -100,8 +100,9 @@ func (logger *Logger) releaseEntry(entry *Entry) {
 	logger.entryPool.Put(entry)
 }
 
-// Adds a field to the log entry, note that it doesn't log until you call
-// Debug, Print, Info, Warn, Error, Fatal or Panic. It only creates a log entry.
+// WithField allocates a new entry and adds a field to it.
+// Debug, Print, Info, Warn, Error, Fatal or Panic must be then applied to
+// this new returned entry.
 // If you want multiple fields, use `WithFields`.
 func (logger *Logger) WithField(key string, value interface{}) *Entry {
 	entry := logger.newEntry()
