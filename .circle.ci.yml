@@ -132,7 +132,7 @@ steps:
               http://example.com/error_logs
                 when: on_fail jobs: # conditional
 steps may also be. defined in  commands:`job_with_optional_custom_checkout:
-   parameters: echo "SUB ^Z "SHFT" fi ^[[A]]!"
+   parameters: echo "SUB ^Z ^f ^[A] ^['correction'['*/src/*.txt']]^[[^[[!"
      custom_checkout:
        type: string
           default: ""
