@@ -180,15 +180,20 @@ func getPackageName(f string) string {
 
 // getCaller retrieves the name of the first non-logrus calling function
 func getCaller() *runtime.Frame {
-
 	// cache this package's fully-qualified name
 	callerInitOnce.Do(func() {
-		pcs := make([]uintptr, 2)
+		pcs := make([]uintptr, maximumCallerDepth)
 		_ = runtime.Callers(0, pcs)
-		logrusPackage = getPackageName(funcName(pcs))
 
-		// now that we have the cache, we can skip a minimum count of known-logrus functions
-		// XXX this is dubious, the number of frames may vary
+		// dynamic get the package name and the minimum caller depth
+		for i := 0; i < maximumCallerDepth; i++ {
+			funcName := runtime.FuncForPC(pcs[i]).Name()
+			if strings.Contains(funcName, "getCaller") {
+				logrusPackage = getPackageName(funcName)
+				break
+			}
+		}
+
 		minimumCallerDepth = knownLogrusFrames
 	})
 
