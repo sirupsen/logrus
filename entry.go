@@ -219,8 +219,7 @@ func (entry Entry) HasCaller() (has bool) {
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
-	entry.Logger.mu.Lock()
-	defer entry.Logger.mu.Unlock()
+
 	var buffer *bytes.Buffer
 
 	// Default to now, but allow users to override if they want.
@@ -234,9 +233,11 @@ func (entry Entry) log(level Level, msg string) {
 
 	entry.Level = level
 	entry.Message = msg
+	entry.Logger.mu.Lock()
 	if entry.Logger.ReportCaller {
 		entry.Caller = getCaller()
 	}
+	entry.Logger.mu.Unlock()
 
 	entry.fireHooks()
 
