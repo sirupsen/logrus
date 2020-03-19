@@ -243,3 +243,14 @@ func TestEntryLogfLevel(t *testing.T) {
 	entry.Logf(WarnLevel, "%s", "warn")
 	assert.Contains(t, buffer.String(), "warn")
 }
+
+func TestEntryReportCallerRace(t *testing.T) {
+	logger := New()
+	entry := NewEntry(logger)
+	go func() {
+		logger.SetReportCaller(true)
+	}()
+	go func() {
+		entry.Info("should not race")
+	}()
+}
