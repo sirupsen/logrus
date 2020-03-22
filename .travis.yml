@@ -4,13 +4,8 @@ git:
   depth: 1
 env:
   - GO111MODULE=on
-  - GO111MODULE=off
-go: [1.12.x, 1.13.x]
+go: [1.13.x, 1.14.x]
 os: [linux, osx]
-matrix:
-  exclude:
-    - go: 1.13.x
-      env: GO111MODULE=off ## Modules are the default now.
 install:
   - ./travis/install.sh
 script:
