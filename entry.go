@@ -232,9 +232,11 @@ func (entry Entry) log(level Level, msg string) {
 
 	entry.Level = level
 	entry.Message = msg
+	entry.Logger.mu.Lock()
 	if entry.Logger.ReportCaller {
 		entry.Caller = getCaller()
 	}
+	entry.Logger.mu.Unlock()
 
 	entry.fireHooks()
 
