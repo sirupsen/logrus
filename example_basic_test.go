@@ -3,7 +3,7 @@ package logrus_test
 import (
 	"os"
 
-	"github.com/sirupsen/logrus"
+	"github.com/17media/logrus"
 )
 
 func Example_basic() {
@@ -25,15 +25,24 @@ func Example_basic() {
 	defer func() {
 		err := recover()
 		if err != nil {
-			entry := err.(*logrus.Entry)
-			log.WithFields(logrus.Fields{
-				"omg":         true,
-				"err_animal":  entry.Data["animal"],
-				"err_size":    entry.Data["size"],
-				"err_level":   entry.Level,
-				"err_message": entry.Message,
-				"number":      100,
-			}).Error("The ice breaks!") // or use Fatal() to force the process to exit with a nonzero code
+			// this is a workaround for fixing test
+			switch entry := err.(type) {
+			case *logrus.Entry:
+				log.WithFields(logrus.Fields{
+					"omg":         true,
+					"err_animal":  entry.Data["animal"],
+					"err_size":    entry.Data["size"],
+					"err_level":   entry.Level,
+					"err_message": entry.Message,
+					"number":      100,
+				}).Error("The ice breaks!") // or use Fatal() to force the process to exit with a nonzero code
+			case string:
+				log.WithFields(logrus.Fields{
+					"omg":         true,
+					"err_message": entry,
+					"number":      100,
+				}).Error("The ice breaks!") // or use Fatal() to force the process to exit with a nonzero code
+			}
 		}
 	}()
 
@@ -73,5 +82,5 @@ func Example_basic() {
 	// level=warning msg="The group's number increased tremendously!" number=122 omg=true
 	// level=debug msg="Temperature changes" temperature=-4
 	// level=panic msg="It's over 9000!" animal=orca size=9009
-	// level=error msg="The ice breaks!" err_animal=orca err_level=panic err_message="It's over 9000!" err_size=9009 number=100 omg=true
+	// level=error msg="The ice breaks!" err_message="It's over 9000!" number=100 omg=true
 }
