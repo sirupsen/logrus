@@ -75,8 +75,6 @@ type Entry struct {
 
 	// err may contain a field formatting error
 	err string
-
-	mu sync.Mutex
 }
 
 func NewEntry(logger *Logger) *Entry {
@@ -124,12 +122,13 @@ func (entry *Entry) WithField(key string, value interface{}) *Entry {
 
 // Add a map of fields to the Entry.
 func (entry *Entry) WithFields(fields Fields) *Entry {
-	entry.mu.Lock()
-	defer entry.mu.Unlock()
+	entry.Logger.mu.Lock()
 	data := make(Fields, len(entry.Data)+len(fields))
 	for k, v := range entry.Data {
 		data[k] = v
 	}
+	entry.Logger.mu.Unlock()
+
 	fieldErr := entry.err
 	for k, v := range fields {
 		isErrField := false
