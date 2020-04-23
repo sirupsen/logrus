@@ -66,6 +66,14 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(false, errors.New("invalid"))
 	checkQuoting(true, errors.New("invalid argument"))
 
+	// Test for quoting disabled
+	tf.DisableQuote = true
+	checkQuoting(false, "")
+	checkQuoting(false, "abcd")
+	checkQuoting(false, "foo\n\rbar")
+	checkQuoting(false, errors.New("invalid argument"))
+	tf.DisableQuote = false
+
 	// Test for quoting empty fields.
 	tf.QuoteEmptyFields = true
 	checkQuoting(true, "")
