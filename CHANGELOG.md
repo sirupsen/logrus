@@ -11,7 +11,7 @@ Fixes:
 # 1.4.0
 This new release introduces:
   * Add `DeferExitHandler`, similar to `RegisterExitHandler` but prepending the handler to the list of handlers (semantically like `defer`) (#848).
-  * Add `CallerPrettyfier` to `JSONFormatter` and `TextFormatter (#909, #911)
+  * Add `CallerPrettyfier` to `JSONFormatter` and `TextFormatter` (#909, #911)
   * Add `Entry.WithContext()` and `Entry.Context`, to set a context on entries to be used e.g. in hooks (#919).
 
 Fixes:
