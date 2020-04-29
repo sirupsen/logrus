@@ -59,6 +59,7 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(false, "foo@bar")
 	checkQuoting(false, "foobar^")
 	checkQuoting(false, "+/-_^@f.oobar")
+	checkQuoting(true, "foo\n\rbar")
 	checkQuoting(true, "foobar$")
 	checkQuoting(true, "&foobar")
 	checkQuoting(true, "x y")
@@ -70,13 +71,30 @@ func TestQuoting(t *testing.T) {
 	tf.QuoteEmptyFields = true
 	checkQuoting(true, "")
 	checkQuoting(false, "abcd")
+	checkQuoting(true, "foo\n\rbar")
 	checkQuoting(true, errors.New("invalid argument"))
 
 	// Test forcing quotes.
 	tf.ForceQuote = true
 	checkQuoting(true, "")
 	checkQuoting(true, "abcd")
+	checkQuoting(true, "foo\n\rbar")
 	checkQuoting(true, errors.New("invalid argument"))
+
+	// Test forcing quotes when also disabling them.
+	tf.DisableQuote = true
+	checkQuoting(true, "")
+	checkQuoting(true, "abcd")
+	checkQuoting(true, "foo\n\rbar")
+	checkQuoting(true, errors.New("invalid argument"))
+
+	// Test disabling quotes
+	tf.ForceQuote = false
+	tf.QuoteEmptyFields = false
+	checkQuoting(false, "")
+	checkQuoting(false, "abcd")
+	checkQuoting(false, "foo\n\rbar")
+	checkQuoting(false, errors.New("invalid argument"))
 }
 
 func TestEscaping(t *testing.T) {
