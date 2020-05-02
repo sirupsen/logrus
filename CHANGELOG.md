@@ -1,9 +1,32 @@
+# 1.6.0
+Fixes:
+  * end of line cleanup
+  * revert the entry concurrency bug fix whic leads to deadlock under some circumstances
+  * update dependency on go-windows-terminal-sequences to fix a crash with go 1.14
+
+Features:
+  * add an option to the `TextFormatter` to completely disable fields quoting
+
+# 1.5.0
+Code quality:
+  * add golangci linter run on travis
+
+Fixes:
+  * add mutex for hooks concurrent access on `Entry` data
+  * caller function field for go1.14
+  * fix build issue for gopherjs target
+
+Feature:
+  * add an hooks/writer sub-package whose goal is to split output on different stream depending on the trace level
+  * add a `DisableHTMLEscape` option in the `JSONFormatter`
+  * add `ForceQuote` and `PadLevelText` options in the `TextFormatter`
+
 # 1.4.2
   * Fixes build break for plan9, nacl, solaris
 # 1.4.1
 This new release introduces:
   * Enhance TextFormatter to not print caller information when they are empty (#944)
-  * Remove dependency on golang.org/x/crypto (#932, #943) 
+  * Remove dependency on golang.org/x/crypto (#932, #943)
 
 Fixes:
   * Fix Entry.WithContext method to return a copy of the initial entry (#941)
