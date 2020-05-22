@@ -7,6 +7,7 @@ import (
 	"os"
 	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -223,7 +224,23 @@ func (entry Entry) HasCaller() (has bool) {
 // race conditions will occur when using multiple goroutines
 func (entry Entry) log(level Level, msg string) {
 	var buffer *bytes.Buffer
-
+	pc := make([]uintptr, 15)
+	n := runtime.Callers(4, pc)
+	frames := runtime.CallersFrames(pc[:n])
+	frame, _ := frames.Next()
+	for {
+		if strings.Contains(frame.Function, "github.com/sirupsen/logrus") {
+			frame, _ = frames.Next()
+		} else {
+			break
+		}
+	}
+	if IsLevelEnabled(DebugLevel) {
+		entry.Data["func"]= frame.Function
+		entry.Data["file"]= frame.File + ":" + strconv.Itoa(frame.Line)
+	} else {
+		entry.Data["func"]= frame.Function
+	}
 	// Default to now, but allow users to override if they want.
 	//
 	// We don't have to worry about polluting future calls to Entry#log()
