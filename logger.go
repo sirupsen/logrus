@@ -75,7 +75,7 @@ func (mw *MutexWrap) Disable() {
 //
 //    var log = &logrus.Logger{
 //      Out: os.Stderr,
-//      Formatter: new(logrus.JSONFormatter),
+//      Formatter: new(logrus.TextFormatter),
 //      Hooks: make(logrus.LevelHooks),
 //      Level: logrus.DebugLevel,
 //    }
