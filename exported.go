@@ -51,6 +51,11 @@ func AddHook(hook Hook) {
 	std.AddHook(hook)
 }
 
+// WithForce return an entry with logging force flag.
+func WithForce(isForce bool) *Entry {
+	return std.WithForce(isForce)
+}
+
 // WithError creates an entry from the standard logger and adds an error to it, using the value defined in ErrorKey as key.
 func WithError(err error) *Entry {
 	return std.WithField(ErrorKey, err)

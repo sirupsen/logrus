@@ -68,6 +68,9 @@ type Entry struct {
 
 	// err may contain a field formatting error
 	err string
+
+	// IsForce flag meaning entry must be log, default false
+	IsForce bool
 }
 
 func NewEntry(logger *Logger) *Entry {
@@ -75,6 +78,8 @@ func NewEntry(logger *Logger) *Entry {
 		Logger: logger,
 		// Default is three fields, plus one optional.  Give a little extra room.
 		Data: make(Fields, 6),
+		// Default of force logging
+		IsForce: false,
 	}
 }
 
@@ -97,6 +102,12 @@ func (entry *Entry) String() (string, error) {
 // Add an error as single field (using the key defined in ErrorKey) to the Entry.
 func (entry *Entry) WithError(err error) *Entry {
 	return entry.WithField(ErrorKey, err)
+}
+
+// WithForce changes entry logging force flag.
+func (entry *Entry) WithForce(isForce bool) *Entry {
+	entry.IsForce = isForce
+	return entry
 }
 
 // Add a context to the Entry.
@@ -279,7 +290,7 @@ func (entry *Entry) write() {
 }
 
 func (entry *Entry) Log(level Level, args ...interface{}) {
-	if entry.Logger.IsLevelEnabled(level) {
+	if entry.IsForce || entry.Logger.IsLevelEnabled(level) {
 		entry.log(level, fmt.Sprint(args...))
 	}
 }
@@ -325,7 +336,7 @@ func (entry *Entry) Panic(args ...interface{}) {
 // Entry Printf family functions
 
 func (entry *Entry) Logf(level Level, format string, args ...interface{}) {
-	if entry.Logger.IsLevelEnabled(level) {
+	if entry.IsForce || entry.Logger.IsLevelEnabled(level) {
 		entry.Log(level, fmt.Sprintf(format, args...))
 	}
 }
@@ -370,7 +381,7 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 // Entry Println family functions
 
 func (entry *Entry) Logln(level Level, args ...interface{}) {
-	if entry.Logger.IsLevelEnabled(level) {
+	if entry.IsForce || entry.Logger.IsLevelEnabled(level) {
 		entry.Log(level, entry.sprintlnn(args...))
 	}
 }

@@ -105,6 +105,13 @@ func (logger *Logger) releaseEntry(entry *Entry) {
 	logger.entryPool.Put(entry)
 }
 
+// WithForce return an entry with logging force flag.
+func (logger *Logger) WithForce(isForce bool) *Entry {
+	entry := logger.newEntry()
+	defer logger.releaseEntry(entry)
+	return entry.WithForce(isForce)
+}
+
 // WithField allocates a new entry and adds a field to it.
 // Debug, Print, Info, Warn, Error, Fatal or Panic must be then applied to
 // this new returned entry.
