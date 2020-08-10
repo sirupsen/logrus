@@ -62,6 +62,8 @@ type Entry struct {
 
 	// When formatter is called in entry.log(), a Buffer may be set to entry
 	Buffer *bytes.Buffer
+	// Disable Buffer, a custom buffer may be set to entry
+	DisableBuffer bool
 
 	// Contains the context set by the user. Useful for hook processing etc.
 	Context context.Context
@@ -74,7 +76,8 @@ func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
 		// Default is three fields, plus one optional.  Give a little extra room.
-		Data: make(Fields, 6),
+		Data:          make(Fields, 6),
+		DisableBuffer: logger.DisableEntryBuffer,
 	}
 }
 
@@ -219,8 +222,6 @@ func (entry Entry) HasCaller() (has bool) {
 }
 
 func (entry *Entry) log(level Level, msg string) {
-	var buffer *bytes.Buffer
-
 	newEntry := entry.Dup()
 
 	if newEntry.Time.IsZero() {
@@ -240,17 +241,21 @@ func (entry *Entry) log(level Level, msg string) {
 
 	newEntry.fireHooks()
 
-	buffer = getBuffer()
-	defer func() {
-		newEntry.Buffer = nil
-		putBuffer(buffer)
-	}()
-	buffer.Reset()
-	newEntry.Buffer = buffer
+	if !entry.DisableBuffer {
+		buffer := getBuffer()
+		defer func() {
+			newEntry.Buffer = nil
+			putBuffer(buffer)
+		}()
+		buffer.Reset()
+		newEntry.Buffer = buffer
+	}
 
 	newEntry.write()
 
-	newEntry.Buffer = nil
+	if !entry.DisableBuffer {
+		newEntry.Buffer = nil
+	}
 
 	// To avoid Entry#log() returning a value that only would make sense for
 	// panic() to use in Entry#Panic(), we avoid the allocation by checking

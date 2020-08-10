@@ -44,6 +44,8 @@ type Logger struct {
 	entryPool sync.Pool
 	// Function to exit the application, defaults to `os.Exit()`
 	ExitFunc exitFunc
+	// Disable Entry Buffer, a custom buffer may be set to entry
+	DisableEntryBuffer bool
 }
 
 type exitFunc func(int)
@@ -401,4 +403,11 @@ func (logger *Logger) ReplaceHooks(hooks LevelHooks) LevelHooks {
 	logger.Hooks = hooks
 	logger.mu.Unlock()
 	return oldHooks
+}
+
+// SetEntryBufferDisable sets whether the logger will disable entry buffer
+func (logger *Logger) SetEntryBufferDisable(disable bool) {
+	logger.mu.Lock()
+	logger.DisableEntryBuffer = disable
+	logger.mu.Unlock()
 }
