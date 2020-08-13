@@ -73,6 +73,7 @@ type Entry struct {
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
+		Level:  logger.Level,
 		// Default is three fields, plus one optional.  Give a little extra room.
 		Data: make(Fields, 6),
 	}
@@ -141,7 +142,14 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 			data[k] = v
 		}
 	}
-	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, err: fieldErr, Context: entry.Context}
+	return &Entry{
+		Logger:  entry.Logger,
+		Data:    data,
+		Time:    entry.Time,
+		Level:   entry.Level,
+		err:     fieldErr,
+		Context: entry.Context,
+	}
 }
 
 // Overrides the time of the Entry.
