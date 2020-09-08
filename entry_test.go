@@ -246,6 +246,7 @@ func TestEntryLogfLevel(t *testing.T) {
 
 func TestEntryReportCallerRace(t *testing.T) {
 	logger := New()
+	logger.Out = &bytes.Buffer{}
 	entry := NewEntry(logger)
 	go func() {
 		logger.SetReportCaller(true)
