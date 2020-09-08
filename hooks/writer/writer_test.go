@@ -5,14 +5,15 @@ import (
 	"io"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDifferentLevelsGoToDifferentWriters(t *testing.T) {
 	var a, b bytes.Buffer
 
-	log.SetFormatter(&log.TextFormatter{
+	log := logrus.New()
+	log.SetFormatter(&logrus.TextFormatter{
 		DisableTimestamp: true,
 		DisableColors:    true,
 	})
@@ -20,14 +21,14 @@ func TestDifferentLevelsGoToDifferentWriters(t *testing.T) {
 
 	log.AddHook(&Hook{
 		Writer: &a,
-		LogLevels: []log.Level{
-			log.WarnLevel,
+		LogLevels: []logrus.Level{
+			logrus.WarnLevel,
 		},
 	})
 	log.AddHook(&Hook{ // Send info and debug logs to stdout
 		Writer: &b,
-		LogLevels: []log.Level{
-			log.InfoLevel,
+		LogLevels: []logrus.Level{
+			logrus.InfoLevel,
 		},
 	})
 	log.Warn("send to a")

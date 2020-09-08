@@ -1,6 +1,7 @@
 package test
 
 import (
+	"io"
 	"math/rand"
 	"sync"
 	"testing"
@@ -11,6 +12,14 @@ import (
 )
 
 func TestAllHooks(t *testing.T) {
+	// Test modifies the standard-logger; restore it afterward.
+	stdLogger := logrus.StandardLogger()
+	oldOut := stdLogger.Out
+	oldHooks := stdLogger.ReplaceHooks(make(logrus.LevelHooks))
+	t.Cleanup(func() {
+		stdLogger.SetOutput(oldOut)
+		stdLogger.ReplaceHooks(oldHooks)
+	})
 	assert := assert.New(t)
 
 	logger, hook := NewNullLogger()
@@ -33,6 +42,7 @@ func TestAllHooks(t *testing.T) {
 
 	hook = NewGlobal()
 
+	logrus.SetOutput(io.Discard)
 	logrus.Error("Hello error")
 	assert.Equal(logrus.ErrorLevel, hook.LastEntry().Level)
 	assert.Equal("Hello error", hook.LastEntry().Message)
@@ -88,6 +98,7 @@ func TestFatalWithAlternateExit(t *testing.T) {
 func TestNewLocal(t *testing.T) {
 	assert := assert.New(t)
 	logger := logrus.New()
+	logger.SetOutput(io.Discard)
 
 	var wg sync.WaitGroup
 	defer wg.Wait()

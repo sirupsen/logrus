@@ -213,7 +213,14 @@ func TestAddHookRace(t *testing.T) {
 }
 
 func TestAddHookRace2(t *testing.T) {
-	t.Parallel()
+	// Test modifies the standard-logger; restore it afterward.
+	stdLogger := StandardLogger()
+	oldOut := stdLogger.Out
+	oldHooks := stdLogger.ReplaceHooks(make(LevelHooks))
+	t.Cleanup(func() {
+		stdLogger.SetOutput(oldOut)
+		stdLogger.ReplaceHooks(oldHooks)
+	})
 
 	for i := range 3 {
 		testname := fmt.Sprintf("Test %d", i)
