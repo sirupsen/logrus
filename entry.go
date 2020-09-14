@@ -13,7 +13,6 @@ import (
 )
 
 var (
-
 	// qualified package name, cached at first use
 	logrusPackage string
 
@@ -141,7 +140,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 			data[k] = v
 		}
 	}
-	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, err: fieldErr, Context: entry.Context}
+	return &Entry{Level: entry.Logger.Level, Logger: entry.Logger, Data: data, Time: entry.Time, err: fieldErr, Context: entry.Context}
 }
 
 // Overrides the time of the Entry.
