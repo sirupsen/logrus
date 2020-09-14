@@ -111,6 +111,7 @@ func (logger *Logger) releaseEntry(entry *Entry) {
 // If you want multiple fields, use `WithFields`.
 func (logger *Logger) WithField(key string, value interface{}) *Entry {
 	entry := logger.newEntry()
+	entry.Level = logger.Level
 	defer logger.releaseEntry(entry)
 	return entry.WithField(key, value)
 }

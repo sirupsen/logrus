@@ -141,7 +141,11 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 			data[k] = v
 		}
 	}
-	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, err: fieldErr, Context: entry.Context}
+	level := PanicLevel
+	if entry.Logger != nil {
+		level = entry.Logger.Level
+	}
+	return &Entry{Level: level, Logger: entry.Logger, Data: data, Time: entry.Time, err: fieldErr, Context: entry.Context}
 }
 
 // Overrides the time of the Entry.

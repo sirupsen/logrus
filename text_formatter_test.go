@@ -22,7 +22,7 @@ func TestFormatting(t *testing.T) {
 		value    string
 		expected string
 	}{
-		{`foo`, "time=\"0001-01-01T00:00:00Z\" level=panic test=foo\n"},
+		{`foo`, "time=\"0001-01-01T00:00:00Z\" level=info test=foo\n"},
 	}
 
 	for _, tc := range testCases {
