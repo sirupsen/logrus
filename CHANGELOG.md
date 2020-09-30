@@ -1,3 +1,11 @@
+# 1.7.0
+Fixes:
+  * the dependency toward a windows terminal library has been removed
+
+Features:
+  * a new buffer pool management API has been added
+  * a set of `<LogLevel>Fn()` functions have been added
+
 # 1.6.0
 Fixes:
   * end of line cleanup
