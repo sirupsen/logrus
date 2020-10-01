@@ -7,6 +7,7 @@ import (
 )
 
 // Hook is a hook that writes logs of specified LogLevels to specified Writer
+// If Formatter is not nil, then it would used to format log entries before writing
 type Hook struct {
 	Writer    io.Writer
 	LogLevels []log.Level
