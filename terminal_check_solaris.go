@@ -1,3 +1,5 @@
+// +build solaris,!js
+
 package logrus
 
 import (
