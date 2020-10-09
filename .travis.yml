@@ -6,6 +6,11 @@ env:
   - GO111MODULE=on
 go: [1.13.x, 1.14.x]
 os: [linux, osx]
+arch: [amd64, ppc64le]
+matrix:
+  exclude:
+    - arch: ppc64le
+      os: osx
 install:
   - ./travis/install.sh
 script:
