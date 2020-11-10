@@ -9,7 +9,7 @@ os: linux
 install:
   - ./travis/install.sh
 script:
-  - ./travis/cross_build.sh
+  - go run mage.go -v crossBuild
   - ./travis/lint.sh
   - export GOMAXPROCS=4
   - export GORACE=halt_on_error=1
