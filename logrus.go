@@ -168,6 +168,7 @@ type FieldLogger interface {
 	Fatalln(args ...interface{})
 	Panicln(args ...interface{})
 
+	IsLevelEnabled(level Level) bool
 	// IsDebugEnabled() bool
 	// IsInfoEnabled() bool
 	// IsWarnEnabled() bool
