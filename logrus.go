@@ -168,14 +168,18 @@ type FieldLogger interface {
 	Fatalln(args ...interface{})
 	Panicln(args ...interface{})
 
-	SetLevel(level Level)
-	IsLevelEnabled(level Level) bool
 	// IsDebugEnabled() bool
 	// IsInfoEnabled() bool
 	// IsWarnEnabled() bool
 	// IsErrorEnabled() bool
 	// IsFatalEnabled() bool
 	// IsPanicEnabled() bool
+}
+
+type Ext2FieldLogger interface {
+	FieldLogger
+	SetLevel(level Level)
+	IsLevelEnabled(level Level) bool
 }
 
 // Ext1FieldLogger (the first extension to FieldLogger) is superfluous, it is
