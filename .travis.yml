@@ -4,8 +4,8 @@ git:
   depth: 1
 env:
   - GO111MODULE=on
-go: [1.13.x, 1.14.x]
-os: [linux, osx]
+go: 1.15.x
+os: linux
 install:
   - ./travis/install.sh
 script:
