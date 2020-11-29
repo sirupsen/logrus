@@ -60,6 +60,9 @@ type Entry struct {
 	// Message passed to Trace, Debug, Info, Warn, Error, Fatal or Panic
 	Message string
 
+	// add spaces
+	ArgSpaces bool
+
 	// When formatter is called in entry.log(), a Buffer may be set to entry
 	Buffer *bytes.Buffer
 
@@ -75,6 +78,7 @@ func NewEntry(logger *Logger) *Entry {
 		Logger: logger,
 		// Default is three fields, plus one optional.  Give a little extra room.
 		Data: make(Fields, 6),
+		ArgSpaces: len(logger.MsgSpaces) > 0,
 	}
 }
 
@@ -278,7 +282,7 @@ func (entry *Entry) write() {
 
 func (entry *Entry) Log(level Level, args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(level) {
-		entry.log(level, fmt.Sprint(args...))
+		entry.log(level, entry.sprintsp(args...))
 	}
 }
 
@@ -317,7 +321,7 @@ func (entry *Entry) Fatal(args ...interface{}) {
 
 func (entry *Entry) Panic(args ...interface{}) {
 	entry.Log(PanicLevel, args...)
-	panic(fmt.Sprint(args...))
+	panic(entry.sprintsp(args...))
 }
 
 // Entry Printf family functions
@@ -417,4 +421,16 @@ func (entry *Entry) Panicln(args ...interface{}) {
 func (entry *Entry) sprintlnn(args ...interface{}) string {
 	msg := fmt.Sprintln(args...)
 	return msg[:len(msg)-1]
+}
+
+// spaces are always added between operands
+func (entry *Entry) sprintsp(args ...interface{}) string {
+	if entry.ArgSpaces && len(args) > 1 {
+		var tmp []interface{}
+		for _, arg := range args {
+			tmp = append(tmp, arg, entry.Logger.MsgSpaces)
+		}
+		args = tmp[:len(tmp)-1]
+	}
+	return fmt.Sprint(args...)
 }

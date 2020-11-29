@@ -44,6 +44,8 @@ type Logger struct {
 	entryPool sync.Pool
 	// Function to exit the application, defaults to `os.Exit()`
 	ExitFunc exitFunc
+	// Spaces are always added between operands
+	MsgSpaces string
 }
 
 type exitFunc func(int)
