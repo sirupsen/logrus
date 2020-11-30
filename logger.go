@@ -46,6 +46,8 @@ type Logger struct {
 	ExitFunc exitFunc
 	// Spaces are always added between operands
 	MsgSpaces string
+	// Uses MsgSpaces 
+	UseMsgSpaces bool
 }
 
 type exitFunc func(int)
@@ -91,6 +93,8 @@ func New() *Logger {
 		Level:        InfoLevel,
 		ExitFunc:     os.Exit,
 		ReportCaller: false,
+		MsgSpaces:    " ",
+		UseMsgSpaces: true,
 	}
 }
 

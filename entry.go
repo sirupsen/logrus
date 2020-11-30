@@ -60,9 +60,6 @@ type Entry struct {
 	// Message passed to Trace, Debug, Info, Warn, Error, Fatal or Panic
 	Message string
 
-	// add spaces
-	ArgSpaces bool
-
 	// When formatter is called in entry.log(), a Buffer may be set to entry
 	Buffer *bytes.Buffer
 
@@ -78,7 +75,6 @@ func NewEntry(logger *Logger) *Entry {
 		Logger: logger,
 		// Default is three fields, plus one optional.  Give a little extra room.
 		Data: make(Fields, 6),
-		ArgSpaces: len(logger.MsgSpaces) > 0,
 	}
 }
 
@@ -425,7 +421,7 @@ func (entry *Entry) sprintlnn(args ...interface{}) string {
 
 // spaces are always added between operands
 func (entry *Entry) sprintsp(args ...interface{}) string {
-	if entry.ArgSpaces && len(args) > 1 {
+	if entry.Logger.UseMsgSpaces && len(args) > 1 {
 		var tmp []interface{}
 		for _, arg := range args {
 			tmp = append(tmp, arg, entry.Logger.MsgSpaces)
