@@ -317,7 +317,6 @@ func (entry *Entry) Fatal(args ...interface{}) {
 
 func (entry *Entry) Panic(args ...interface{}) {
 	entry.Log(PanicLevel, args...)
-	panic(fmt.Sprint(args...))
 }
 
 // Entry Printf family functions
