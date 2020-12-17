@@ -10,7 +10,7 @@ install:
   - ./travis/install.sh
 script:
   - go run mage.go -v crossBuild
-  - ./travis/lint.sh
+  - go run mage.go lint
   - export GOMAXPROCS=4
   - export GORACE=halt_on_error=1
   - go test -race -v ./...

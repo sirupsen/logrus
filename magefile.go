@@ -5,6 +5,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
@@ -57,4 +59,13 @@ func CrossBuild() error {
 		}
 	}
 	return nil
+}
+
+func Lint() error {
+	gopath := os.Getenv("GOPATH")
+	if gopath == "" {
+		return fmt.Errorf("cannot retrieve GOPATH")
+	}
+
+	return sh.Run(path.Join(gopath, "bin", "golangci-lint"), "run", "./...")
 }
