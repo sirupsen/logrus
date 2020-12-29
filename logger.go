@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"os"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -143,6 +144,28 @@ func (logger *Logger) WithTime(t time.Time) *Entry {
 	entry := logger.newEntry()
 	defer logger.releaseEntry(entry)
 	return entry.WithTime(t)
+}
+
+// Overrides the caller frame of the log entry.
+//
+// This method works regardless of whether ReportCaller is enabled or not.
+func (logger *Logger) WithCaller(frame *runtime.Frame) *Entry {
+	entry := logger.newEntry()
+	defer logger.releaseEntry(entry)
+	return entry.WithCaller(frame)
+}
+
+// Overrides the caller frame of the log entry,
+// finding the frame at the given calldepth.
+// A calldepth of 0 asks to fetch the frame
+// that calls WithCallerAt.
+//
+// If ReportCaller is disabled, this simply returns a blank entry
+// (roughly like calling `NewEntry(logger)`).
+func (logger *Logger) WithCallerAt(calldepth int) *Entry {
+	entry := logger.newEntry()
+	defer logger.releaseEntry(entry)
+	return entry.WithCallerAt(calldepth + 1)
 }
 
 func (logger *Logger) Logf(level Level, format string, args ...interface{}) {
