@@ -54,6 +54,10 @@ type JSONFormatter struct {
 
 	// PrettyPrint will indent all json logs
 	PrettyPrint bool
+
+	// ModifyEntryFields is called to allow adding/removing entry fields before encoding.
+	// This is done after data fields are copied so it is goroutine safe.
+	ModifyEntryFields func(data Fields)
 }
 
 // Format renders a single log entry
@@ -68,6 +72,12 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		default:
 			data[k] = v
 		}
+	}
+
+	// If ModifyEntryFields is set then call it to potentially add/modify the entry fields.
+	if f.ModifyEntryFields != nil {
+		// Maps are passed by reference so it can add/remove fields.
+		f.ModifyEntryFields(data)
 	}
 
 	if f.DataKey != "" {
