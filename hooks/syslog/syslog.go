@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	sg "log/syslog"
 )
 
 const (
@@ -34,7 +35,7 @@ type SEntry struct {
 // Creates a hook to be added to an instance of logger. This is called with
 // `hook, err := NewSyslogHook("udp", "localhost:514", syslog.LOG_DEBUG, "")`
 // `if err == nil { log.Hooks.Add(hook) }`
-func NewSyslogHook(network, raddr string, priority syslog.Priority, tag string) (*SyslogHook, error) {
+func NewSyslogHook(network, raddr string, priority sg.Priority, tag string) (*SyslogHook, error) {
 	w, err := syslog.Dial("ctcp" , raddr, priority, nil)
 	if err != nil {
 		return nil, err
