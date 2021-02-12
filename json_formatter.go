@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
+	"strings"
 )
 
 type fieldKey string
@@ -90,7 +91,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
 	}
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
-	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
+	data[f.FieldMap.resolve(FieldKeyLevel)] = strings.ToUpper(entry.Level.String())
 	if entry.HasCaller() {
 		funcVal := entry.Caller.Function
 		fileVal := fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line)

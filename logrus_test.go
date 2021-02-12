@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/sirupsen/logrus"
-	. "github.com/sirupsen/logrus/internal/testutils"
+	. "github.com/nandosuk/logrus"
+	. "github.com/nandosuk/logrus/internal/testutils"
 )
 
 // TestReportCaller verifies that when ReportCaller is set, the 'func' field
@@ -29,7 +29,7 @@ func TestReportCallerWhenConfigured(t *testing.T) {
 		log.Print("testNoCaller")
 	}, func(fields Fields) {
 		assert.Equal(t, "testNoCaller", fields["msg"])
-		assert.Equal(t, "info", fields["level"])
+		assert.Equal(t, "INFO", fields["level"])
 		assert.Equal(t, nil, fields["func"])
 	})
 
@@ -38,9 +38,9 @@ func TestReportCallerWhenConfigured(t *testing.T) {
 		log.Print("testWithCaller")
 	}, func(fields Fields) {
 		assert.Equal(t, "testWithCaller", fields["msg"])
-		assert.Equal(t, "info", fields["level"])
+		assert.Equal(t, "INFO", fields["level"])
 		assert.Equal(t,
-			"github.com/sirupsen/logrus_test.TestReportCallerWhenConfigured.func3", fields[FieldKeyFunc])
+			"github.com/nandosuk/logrus_test.TestReportCallerWhenConfigured.func3", fields[FieldKeyFunc])
 	})
 
 	LogAndAssertJSON(t, func(log *Logger) {
@@ -92,7 +92,7 @@ func TestReportCallerHelperDirect(t *testing.T) {
 	fields := logSomething(t, "direct")
 
 	assert.Equal(t, "direct", fields["msg"])
-	assert.Equal(t, "info", fields["level"])
+	assert.Equal(t, "INFO", fields["level"])
 	assert.Regexp(t, "github.com/.*/logrus_test.logSomething", fields["func"])
 }
 
@@ -102,7 +102,7 @@ func TestReportCallerHelperViaPointer(t *testing.T) {
 	fields := fptr(t, "via pointer")
 
 	assert.Equal(t, "via pointer", fields["msg"])
-	assert.Equal(t, "info", fields["level"])
+	assert.Equal(t, "INFO", fields["level"])
 	assert.Regexp(t, "github.com/.*/logrus_test.logSomething", fields["func"])
 }
 
@@ -111,7 +111,7 @@ func TestPrint(t *testing.T) {
 		log.Print("test")
 	}, func(fields Fields) {
 		assert.Equal(t, "test", fields["msg"])
-		assert.Equal(t, "info", fields["level"])
+		assert.Equal(t, "INFO", fields["level"])
 	})
 }
 
@@ -120,7 +120,7 @@ func TestInfo(t *testing.T) {
 		log.Info("test")
 	}, func(fields Fields) {
 		assert.Equal(t, "test", fields["msg"])
-		assert.Equal(t, "info", fields["level"])
+		assert.Equal(t, "INFO", fields["level"])
 	})
 }
 
@@ -129,7 +129,7 @@ func TestWarn(t *testing.T) {
 		log.Warn("test")
 	}, func(fields Fields) {
 		assert.Equal(t, "test", fields["msg"])
-		assert.Equal(t, "warning", fields["level"])
+		assert.Equal(t, "WARNING", fields["level"])
 	})
 }
 
@@ -138,7 +138,7 @@ func TestLog(t *testing.T) {
 		log.Log(WarnLevel, "test")
 	}, func(fields Fields) {
 		assert.Equal(t, "test", fields["msg"])
-		assert.Equal(t, "warning", fields["level"])
+		assert.Equal(t, "WARNING", fields["level"])
 	})
 }
 
@@ -249,7 +249,7 @@ func TestUserSuppliedLevelFieldHasPrefix(t *testing.T) {
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.WithField("level", 1).Info("test")
 	}, func(fields Fields) {
-		assert.Equal(t, "info", fields["level"])
+		assert.Equal(t, "INFO", fields["level"])
 		assert.Equal(t, 1.0, fields["fields.level"]) // JSON has floats only
 	})
 }
@@ -379,7 +379,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	assert.Equal(t, "looks delicious", fields["msg"])
 	assert.Equal(t, "eating raw fish", fields["context"])
 	assert.Equal(t,
-		"github.com/sirupsen/logrus_test.TestNestedLoggingReportsCorrectCaller", fields["func"])
+		"github.com/nandosuk/logrus_test.TestNestedLoggingReportsCorrectCaller", fields["func"])
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
 	assert.Equal(t, filepath.ToSlash(fmt.Sprintf("%s/logrus_test.go:%d", cwd, line-1)), filepath.ToSlash(fields["file"].(string)))
@@ -410,7 +410,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 	assert.Equal(t, "The hardest workin' man in show business", fields["msg"])
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
 	assert.Equal(t,
-		"github.com/sirupsen/logrus_test.TestNestedLoggingReportsCorrectCaller", fields["func"])
+		"github.com/nandosuk/logrus_test.TestNestedLoggingReportsCorrectCaller", fields["func"])
 	require.NoError(t, err)
 	assert.Equal(t, filepath.ToSlash(fmt.Sprintf("%s/logrus_test.go:%d", cwd, line-1)), filepath.ToSlash(fields["file"].(string)))
 
@@ -666,7 +666,7 @@ func TestEntryWriter(t *testing.T) {
 	err = json.Unmarshal(bs, &fields)
 	assert.Nil(t, err)
 	assert.Equal(t, fields["foo"], "bar")
-	assert.Equal(t, fields["level"], "warning")
+	assert.Equal(t, fields["level"], "WARNING")
 }
 
 func TestLogLevelEnabled(t *testing.T) {

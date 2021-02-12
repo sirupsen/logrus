@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/sirupsen/logrus"
+	"github.com/nandosuk/logrus"
 )
 
 func ExampleJSONFormatter_CallerPrettyfier() {
@@ -24,5 +24,5 @@ func ExampleJSONFormatter_CallerPrettyfier() {
 	}
 	l.Info("example of custom format caller")
 	// Output:
-	// {"file":"example_custom_caller_test.go","func":"ExampleJSONFormatter_CallerPrettyfier","level":"info","msg":"example of custom format caller"}
+	// {"file":"example_custom_caller_test.go","func":"ExampleJSONFormatter_CallerPrettyfier","level":"INFO","msg":"example of custom format caller"}
 }
