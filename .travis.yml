@@ -11,7 +11,4 @@ install:
 script:
   - go run mage.go -v crossBuild
   - go run mage.go lint
-  - export GOMAXPROCS=4
-  - export GORACE=halt_on_error=1
-  - go test -race -v ./...
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then go test -race -v -tags appengine ./... ; fi
+  - go run mage.go test

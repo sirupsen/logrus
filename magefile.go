@@ -12,7 +12,7 @@ import (
 	"github.com/magefile/mage/sh"
 )
 
-// GenBuildMatrix regenerates the build matrix from the current version of the go compiler
+// getBuildMatrix returns the build matrix from the current version of the go compiler
 func getBuildMatrix() (map[string][]string, error) {
 	jsonData, err := sh.Output("go", "tool", "dist", "list", "-json")
 	if err != nil {
@@ -68,4 +68,10 @@ func Lint() error {
 	}
 
 	return sh.Run(path.Join(gopath, "bin", "golangci-lint"), "run", "./...")
+}
+
+// Run the test suite
+func Test() error {
+	return sh.RunWith(map[string]string{"GORACE": "halt_on_error=1"},
+		"go", "test", "-race", "-v", "./...")
 }
