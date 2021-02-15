@@ -763,3 +763,15 @@ func TestSetReportCallerRace(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+func TestLevel(t *testing.T) {
+	l := New()
+	l.SetLevel(InfoLevel)
+
+	e := l.WithField("foo", "bar")
+
+	assert.Equal(t, l.Level, e.Level)
+	e.Debug("I shouldn't be printed")
+	e.Info("I should be printed")
+	assert.Equal(t, l.Level, e.Level)
+}
