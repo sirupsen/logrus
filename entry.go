@@ -222,6 +222,11 @@ func (entry Entry) HasCaller() (has bool) {
 		entry.Caller != nil
 }
 
+// Err returns an internal field formatting error.
+func (entry *Entry) Err() string {
+	return entry.err
+}
+
 // This function is not declared with a pointer value because otherwise
 // race conditions will occur when using multiple goroutines
 func (entry *Entry) log(level Level, msg string) {
