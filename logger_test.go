@@ -25,7 +25,7 @@ func TestFieldValueError(t *testing.T) {
 		t.Error("unexpected error", err)
 	}
 	_, ok := data[FieldKeyLogrusError]
-	require.True(t, ok)
+	require.True(t, ok, `cannot found expected "logrus_error" field: %v`, data)
 }
 
 func TestNoFieldValueError(t *testing.T) {
