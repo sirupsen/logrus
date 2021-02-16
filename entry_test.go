@@ -232,7 +232,7 @@ func TestEntryWithIncorrectField(t *testing.T) {
 
 	fn := func() {}
 
-	e := Entry{}
+	e := Entry{Logger: New()}
 	eWithFunc := e.WithFields(Fields{"func": fn})
 	eWithFuncPtr := e.WithFields(Fields{"funcPtr": &fn})
 

@@ -588,15 +588,48 @@ func TestLoggingRaceWithHooksOnEntry(t *testing.T) {
 	logger.AddHook(hook)
 	entry := logger.WithField("context", "clue")
 
-	var wg sync.WaitGroup
+	var (
+		wg    sync.WaitGroup
+		mtx   sync.Mutex
+		start bool
+	)
+
+	cond := sync.NewCond(&mtx)
+
 	wg.Add(100)
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 50; i++ {
 		go func() {
-			entry.Info("info")
+			cond.L.Lock()
+			for !start {
+				cond.Wait()
+			}
+			cond.L.Unlock()
+			for j := 0; j < 100; j++ {
+				entry.Info("info")
+			}
 			wg.Done()
 		}()
 	}
+
+	for i := 0; i < 50; i++ {
+		go func() {
+			cond.L.Lock()
+			for !start {
+				cond.Wait()
+			}
+			cond.L.Unlock()
+			for j := 0; j < 100; j++ {
+				entry.WithField("another field", "with some data").Info("info")
+			}
+			wg.Done()
+		}()
+	}
+
+	cond.L.Lock()
+	start = true
+	cond.L.Unlock()
+	cond.Broadcast()
 	wg.Wait()
 }
 
