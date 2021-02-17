@@ -3,6 +3,7 @@ package logrus_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"sync"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	. "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/test"
 	. "github.com/sirupsen/logrus/internal/testutils"
 )
 
@@ -189,6 +191,20 @@ func TestAddHookRace(t *testing.T) {
 		// before the hook was added, so we can't
 		// actually assert on the hook
 	})
+}
+
+func TestAddHookRace2(t *testing.T) {
+	t.Parallel()
+
+	for i := 0; i < 3; i++ {
+		testname := fmt.Sprintf("Test %d", i)
+		t.Run(testname, func(t *testing.T) {
+			t.Parallel()
+
+			_ = test.NewGlobal()
+			Info(testname)
+		})
+	}
 }
 
 type HookCallFunc struct {
