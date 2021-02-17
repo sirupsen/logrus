@@ -263,7 +263,7 @@ func (entry *Entry) log(level Level, msg string) {
 func (entry *Entry) fireHooks() {
 	err := entry.Logger.Hooks.Fire(entry.Level, entry)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to fire hooks: %v\n", err)
 	}
 }
 
