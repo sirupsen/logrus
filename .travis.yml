@@ -10,5 +10,5 @@ install:
   - ./travis/install.sh
 script:
   - go run mage.go -v crossBuild
-  - go run mage.go lint
-  - go run mage.go test
+  - go run mage.go -v lint
+  - go run mage.go -v test
