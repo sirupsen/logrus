@@ -120,7 +120,7 @@ func (logger *Logger) WithField(key string, value interface{}) *Entry {
 func (logger *Logger) WithFields(fields Fielder) *Entry {
 	entry := logger.newEntry()
 	defer logger.releaseEntry(entry)
-	return entry.WithFields(fields.Fields())
+	return entry.WithFields(fields)
 }
 
 // Add an error as single field to the log entry.  All it does is call
