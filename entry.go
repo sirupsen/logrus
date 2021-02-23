@@ -122,13 +122,13 @@ func (entry *Entry) WithField(key string, value interface{}) *Entry {
 }
 
 // Add a map of fields to the Entry.
-func (entry *Entry) WithFields(fields Fields) *Entry {
-	data := make(Fields, len(entry.Data)+len(fields))
+func (entry *Entry) WithFields(fields Fielder) *Entry {
+	data := make(Fields, len(entry.Data)+len(fields.Fields()))
 	for k, v := range entry.Data {
 		data[k] = v
 	}
 	fieldErr := entry.err
-	for k, v := range fields {
+	for k, v := range fields.Fields() {
 		isErrField := false
 		if t := reflect.TypeOf(v); t != nil {
 			switch {

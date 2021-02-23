@@ -6,8 +6,16 @@ import (
 	"strings"
 )
 
+type Fielder interface {
+	Fields() Fields
+}
+
 // Fields type, used to pass to `WithFields`.
 type Fields map[string]interface{}
+
+func (fields Fields) Fields() Fields {
+	return fields
+}
 
 // Level type
 type Level uint32
@@ -138,7 +146,7 @@ type StdLogger interface {
 // The FieldLogger interface generalizes the Entry and Logger types
 type FieldLogger interface {
 	WithField(key string, value interface{}) *Entry
-	WithFields(fields Fields) *Entry
+	WithFields(fields Fielder) *Entry
 	WithError(err error) *Entry
 
 	Debugf(format string, args ...interface{})
