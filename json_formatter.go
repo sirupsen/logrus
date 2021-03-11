@@ -75,7 +75,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		}
 	}
 
-	if f.DataKey != "" {
+	if f.DataKey != "" && len(entry.Data) > 0 {
 		newData := make(Fields, defaultFields+1)
 		newData[f.DataKey] = data
 		data = newData
