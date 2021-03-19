@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -121,6 +122,27 @@ func TestEntryWithTimeCopiesData(t *testing.T) {
 	val, exists = parentEntry.Data["childKey"]
 	assert.False(exists)
 	assert.Empty(val)
+}
+
+func TestEntryWithCallerAt(t *testing.T) {
+	assert := assert.New(t)
+
+	logger := New()
+	logger.Out = &bytes.Buffer{}
+
+	entry := func() *Entry {
+		return logger.WithCallerAt(0)
+	}()
+	assert.Equal(logger, entry.Logger)
+	assert.Nil(entry.Caller, "WithCallerAt shouldn't look when ReportCaller == false")
+
+	logger.SetReportCaller(true)
+	entry = func() *Entry {
+		return logger.WithCallerAt(1)
+	}()
+	assert.Equal(logger, entry.Logger)
+	assert.NotNil(entry.Caller)
+	assert.True(strings.HasSuffix(entry.Caller.Function, ".TestEntryWithCallerAt"))
 }
 
 func TestEntryPanicln(t *testing.T) {
