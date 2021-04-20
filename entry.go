@@ -232,6 +232,7 @@ func (entry *Entry) log(level Level, msg string) {
 
 	newEntry.Logger.mu.Lock()
 	reportCaller := newEntry.Logger.ReportCaller
+	bufPool := newEntry.getBufferPool()
 	newEntry.Logger.mu.Unlock()
 
 	if reportCaller {
@@ -239,11 +240,11 @@ func (entry *Entry) log(level Level, msg string) {
 	}
 
 	newEntry.fireHooks()
-
-	buffer = getBuffer()
+	buffer = bufPool.Get()
 	defer func() {
 		newEntry.Buffer = nil
-		putBuffer(buffer)
+		buffer.Reset()
+		bufPool.Put(buffer)
 	}()
 	buffer.Reset()
 	newEntry.Buffer = buffer
@@ -258,6 +259,13 @@ func (entry *Entry) log(level Level, msg string) {
 	if level <= PanicLevel {
 		panic(newEntry)
 	}
+}
+
+func (entry *Entry) getBufferPool() (pool BufferPool) {
+	if entry.Logger.BufferPool != nil {
+		return entry.Logger.BufferPool
+	}
+	return bufferPool
 }
 
 func (entry *Entry) fireHooks() {

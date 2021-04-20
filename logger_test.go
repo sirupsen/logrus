@@ -67,3 +67,31 @@ func TestWarninglnNotEqualToWarning(t *testing.T) {
 
 	assert.NotEqual(t, buf.String(), bufln.String(), "Warning() and Wantingln() should not be equal")
 }
+
+type testBufferPool struct {
+	buffers []*bytes.Buffer
+	get int
+}
+
+func (p *testBufferPool) Get() *bytes.Buffer {
+	p.get++
+	return new(bytes.Buffer)
+}
+
+func (p *testBufferPool) Put(buf *bytes.Buffer) {
+	p.buffers = append(p.buffers, buf)
+}
+
+func TestLogger_SetBufferPool(t *testing.T) {
+	out := &bytes.Buffer{}
+	l := New()
+	l.SetOutput(out)
+
+	pool := new(testBufferPool)
+	l.SetBufferPool(pool)
+
+	l.Info("test")
+
+	assert.Equal(t, pool.get, 1, "Logger.SetBufferPool(): The BufferPool.Get() must be called")
+	assert.Len(t, pool.buffers, 1, "Logger.SetBufferPool(): The BufferPool.Put() must be called")
+}
