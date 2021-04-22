@@ -9,6 +9,10 @@ on:
       - master
 
 jobs:
+  test_docker:
+    name: testing stuffs
+    container: golang:1.16
+    run: go version
 
   lint:
     name: Golang-CI Lint
