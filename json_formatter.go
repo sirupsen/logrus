@@ -69,7 +69,12 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 			// https://github.com/sirupsen/logrus/issues/137
 			data[k] = v.Error()
 		default:
-			data[k] = v
+			//data[k] = v
+			stringVal, ok := v.(string)
+			if !ok {
+				stringVal = fmt.Sprint(v)
+			}
+			data[k] = stringVal
 		}
 	}
 
