@@ -68,8 +68,19 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 			// Otherwise errors are ignored by `encoding/json`
 			// https://github.com/sirupsen/logrus/issues/137
 			data[k] = v.Error()
+		case string:
+			data[k] = v
+		case bool:
+			data[k] = bool(v)
+		case int, int8, int16, int32, int64:
+			data[k] = v.(int)
+		case uint, uint8, uint16, uint32, uint64:
+			data[k] = v.(uint)
+		case float32:
+			data[k] = float32(v)
+		case float64:
+			data[k] = float64(v)
 		default:
-			//data[k] = v
 			stringVal, ok := v.(string)
 			if !ok {
 				stringVal = fmt.Sprint(v)
