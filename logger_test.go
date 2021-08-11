@@ -132,8 +132,7 @@ func TestLogger_concurrentLock(t *testing.T) {
 			}()
 		}
 	}()
-	c := make(chan int)
-	<-c
+	time.Sleep(1 * time.Minute)
 }
 
 var traceLock = &sync.Mutex{}
