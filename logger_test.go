@@ -194,7 +194,7 @@ func (t TraceIdHook) Fire(entry *Entry) error {
 
 type LogFormatter struct{}
 
-//格式详情
+
 func (s *LogFormatter) Format(entry *Entry) ([]byte, error) {
 	timestamp := time.Now().Format("2006-01-02 15:04:05")
 	var file string
@@ -212,7 +212,6 @@ func (s *LogFormatter) Format(entry *Entry) ([]byte, error) {
 	return []byte(msg), nil
 }
 
-// 获取当前协程id
 func getGID() uint64 {
 	b := make([]byte, 64)
 	b = b[:runtime.Stack(b, false)]
