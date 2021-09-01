@@ -108,7 +108,6 @@ func TestLogger_concurrentLock(t *testing.T) {
 		for {
 			func() {
 				defer func() {
-					// 处理所有异常，防止panic导致程序关闭
 					if p := recover(); p != nil {
 					}
 				}()
@@ -122,7 +121,6 @@ func TestLogger_concurrentLock(t *testing.T) {
 		for {
 			func() {
 				defer func() {
-					// 处理所有异常，防止panic导致程序关闭
 					if p := recover(); p != nil {
 					}
 				}()
