@@ -370,3 +370,21 @@ func TestJSONEnableHTMLEscape(t *testing.T) {
 		t.Error("Message should be HTML escaped", s)
 	}
 }
+
+func TestPreprocessorHook(t *testing.T) {
+	formatter := &JSONFormatter{}
+	formatter.PreprocessorHook = func(f Fields) {
+		f["testme"] = "hello"
+	}
+	b, err := formatter.Format(&Entry{Message: "My Message"})
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+	s := string(b)
+	if !strings.Contains(s, `"testme"`) {
+		t.Error("Message should contain key added by preprocessor hook")
+	}
+	if !strings.Contains(s, `"hello"`) {
+		t.Error("Message should contain value added by preprocessor hook")
+	}
+}
