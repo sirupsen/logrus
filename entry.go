@@ -296,6 +296,9 @@ func (entry *Entry) write() {
 	}
 }
 
+// Log will log a message at the level given as parameter.
+// Warning: using Log at Panic or Fatal level will not respectively Panic nor Exit.
+// For this behaviour Entry.Panic or Entry.Fatal should be used instead.
 func (entry *Entry) Log(level Level, args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(level) {
 		entry.log(level, fmt.Sprint(args...))
