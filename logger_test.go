@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 
@@ -133,11 +132,7 @@ func TestLogger_concurrentLock(t *testing.T) {
 	time.Sleep(1 * time.Minute)
 }
 
-var traceLock = &sync.Mutex{}
-
 func AddTraceIdHook(traceId string) Hook {
-	defer traceLock.Unlock()
-	traceLock.Lock()
 	traceHook := newTraceIdHook(traceId)
 	if StandardLogger().Hooks == nil {
 		hooks := new(LevelHooks)
@@ -148,23 +143,7 @@ func AddTraceIdHook(traceId string) Hook {
 }
 
 func RemoveTraceHook(hook Hook) {
-	allHooks := StandardLogger().Hooks
-	func() {
-		defer Unlock()
-		Lock()
-		for key, hooks := range allHooks {
-			replaceHooks := hooks
-			for index, h := range hooks {
-				if h == hook {
-					replaceHooks = append(hooks[:index], hooks[index:]...)
-					break
-				}
-			}
-			allHooks[key] = replaceHooks
-		}
-	}()
-
-	StandardLogger().ReplaceHooks(allHooks)
+	StandardLogger().ReplaceHook(hook)
 }
 
 type TraceIdHook struct {
@@ -191,7 +170,6 @@ func (t TraceIdHook) Fire(entry *Entry) error {
 }
 
 type LogFormatter struct{}
-
 
 func (s *LogFormatter) Format(entry *Entry) ([]byte, error) {
 	timestamp := time.Now().Format("2006-01-02 15:04:05")

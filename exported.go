@@ -268,15 +268,3 @@ func Panicln(args ...interface{}) {
 func Fatalln(args ...interface{}) {
 	std.Fatalln(args...)
 }
-
-func Lock() {
-	if !std.mu.disabled {
-		std.mu.Lock()
-	}
-}
-
-func Unlock() {
-	if !std.mu.disabled {
-		std.mu.Unlock()
-	}
-}

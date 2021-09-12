@@ -406,6 +406,24 @@ func (logger *Logger) ReplaceHooks(hooks LevelHooks) LevelHooks {
 	return oldHooks
 }
 
+// ReplaceHook replaces the logger hook and returns hook exists or not
+func (logger *Logger) ReplaceHook(hook Hook) bool {
+	logger.mu.Lock()
+	oldHooks := logger.Hooks
+	hasReplaced := false
+	for _, level := range hook.Levels() {
+		for index, h := range oldHooks[level] {
+			if h == hook {
+				oldHooks[level] = append(oldHooks[level][:index], oldHooks[level][index+1:]...)
+				hasReplaced = true
+				break
+			}
+		}
+	}
+	logger.mu.Unlock()
+	return hasReplaced
+}
+
 // SetBufferPool sets the logger buffer pool.
 func (logger *Logger) SetBufferPool(pool BufferPool) {
 	logger.mu.Lock()
