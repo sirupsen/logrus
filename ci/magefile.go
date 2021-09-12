@@ -1,4 +1,4 @@
-// +build mage
+//go:build mage
 
 package main
 
@@ -7,13 +7,34 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"sort"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 )
 
+func intersect(a, b []string) []string {
+	sort.Strings(a)
+	sort.Strings(b)
+
+	res := make([]string, 0, func() int {
+		if len(a) < len(b) {
+			return len(a)
+		}
+		return len(b)
+	}())
+
+	for _, v := range a {
+		idx := sort.SearchStrings(b, v)
+		if idx < len(b) && b[idx] == v {
+			res = append(res, v)
+		}
+	}
+	return res
+}
+
 // getBuildMatrix returns the build matrix from the current version of the go compiler
-func getBuildMatrix() (map[string][]string, error) {
+func getFullBuildMatrix() (map[string][]string, error) {
 	jsonData, err := sh.Output("go", "tool", "dist", "list", "-json")
 	if err != nil {
 		return nil, err
@@ -36,6 +57,31 @@ func getBuildMatrix() (map[string][]string, error) {
 	}
 
 	return matrix, nil
+}
+
+func getBuildMatrix() (map[string][]string, error) {
+	minimalMatrix := map[string][]string{
+		"linux":   []string{"amd64"},
+		"darwin":  []string{"amd64", "arm64"},
+		"freebsd": []string{"amd64"},
+		"js":      []string{"wasm"},
+		"solaris": []string{"amd64"},
+		"windows": []string{"amd64", "arm64"},
+	}
+
+	fullMatrix, err := getFullBuildMatrix()
+	if err != nil {
+		return nil, err
+	}
+
+	for os, arches := range minimalMatrix {
+		if fullV, ok := fullMatrix[os]; !ok {
+			delete(minimalMatrix, os)
+		} else {
+			minimalMatrix[os] = intersect(arches, fullV)
+		}
+	}
+	return minimalMatrix, nil
 }
 
 func CrossBuild() error {
