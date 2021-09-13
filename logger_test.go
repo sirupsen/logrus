@@ -129,7 +129,7 @@ func TestLogger_concurrentLock(t *testing.T) {
 			}()
 		}
 	}()
-	time.Sleep(1 * time.Minute)
+	time.Sleep(5 * time.Second)
 }
 
 func AddTraceIdHook(traceId string) Hook {
