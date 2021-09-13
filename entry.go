@@ -269,18 +269,14 @@ func (entry *Entry) getBufferPool() (pool BufferPool) {
 }
 
 func (entry *Entry) fireHooks() {
-	var tmpHooks LevelHooks
+	//Replication can indeed improve performance, but it will lead to this instant.
+	//If a new hook is added, the hook may not be triggered
 	entry.Logger.mu.Lock()
-	tmpHooks = make(LevelHooks, len(entry.Logger.Hooks))
-	for k, v := range entry.Logger.Hooks {
-		tmpHooks[k] = v
-	}
-	entry.Logger.mu.Unlock()
-
-	err := tmpHooks.Fire(entry.Level, entry)
+	err := entry.Logger.Hooks.Fire(entry.Level, entry)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
 	}
+	entry.Logger.mu.Unlock()
 }
 
 func (entry *Entry) write() {
