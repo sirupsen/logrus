@@ -44,7 +44,7 @@ With `log.SetFormatter(&log.JSONFormatter{})`, for easy parsing by logstash
 or Splunk:
 
 ```json
-{"animal":"walrus","level":"info","msg":"A group of walrus emerges from the
+{"animal":"walrus","level":"info","msg":"A huddle of walruses emerges from the
 ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 
 {"level":"warning","msg":"The group's number increased tremendously!",
@@ -66,7 +66,7 @@ attached, the output is compatible with the
 
 ```text
 time="2015-03-26T01:27:38-04:00" level=debug msg="Started observing beach" animal=walrus number=8
-time="2015-03-26T01:27:38-04:00" level=info msg="A group of walrus emerges from the ocean" animal=walrus size=10
+time="2015-03-26T01:27:38-04:00" level=info msg="A huddle of walruses emerges from the ocean" animal=walrus size=10
 time="2015-03-26T01:27:38-04:00" level=warning msg="The group's number increased tremendously!" number=122 omg=true
 time="2015-03-26T01:27:38-04:00" level=debug msg="Temperature changes" temperature=-4
 time="2015-03-26T01:27:38-04:00" level=panic msg="It's over 9000!" animal=orca size=9009
@@ -158,7 +158,7 @@ func main() {
   log.WithFields(log.Fields{
     "animal": "walrus",
     "size":   10,
-  }).Info("A group of walrus emerges from the ocean")
+  }).Info("A huddle of walruses emerges from the ocean")
 
   log.WithFields(log.Fields{
     "omg":    true,
@@ -212,7 +212,7 @@ func main() {
   log.WithFields(logrus.Fields{
     "animal": "walrus",
     "size":   10,
-  }).Info("A group of walrus emerges from the ocean")
+  }).Info("A huddle of walruses emerges from the ocean")
 }
 ```
 
