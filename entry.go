@@ -176,7 +176,7 @@ func getPackageName(f string) string {
 }
 
 // getCaller retrieves the name of the first non-logrus calling function
-func getCaller() *runtime.Frame {
+func getCaller(skip int) *runtime.Frame {
 	// cache this package's fully-qualified name
 	callerInitOnce.Do(func() {
 		pcs := make([]uintptr, maximumCallerDepth)
@@ -199,12 +199,22 @@ func getCaller() *runtime.Frame {
 	depth := runtime.Callers(minimumCallerDepth, pcs)
 	frames := runtime.CallersFrames(pcs[:depth])
 
+	var skippedAllLogrus bool
 	for f, again := frames.Next(); again; f, again = frames.Next() {
-		pkg := getPackageName(f.Function)
+		if !skippedAllLogrus {
+			pkg := getPackageName(f.Function)
+			// If the caller isn't part of this package, we're done skilled all logrus frames
+			if pkg != logrusPackage {
+				skippedAllLogrus = true
+			}
+		}
 
-		// If the caller isn't part of this package, we're done
-		if pkg != logrusPackage {
-			return &f //nolint:scopelint
+		// skip non-logurs frames
+		if skippedAllLogrus {
+			if skip <= 0 {
+				return &f //nolint:scopelint
+			}
+			skip--
 		}
 	}
 
@@ -218,7 +228,7 @@ func (entry Entry) HasCaller() (has bool) {
 		entry.Caller != nil
 }
 
-func (entry *Entry) log(level Level, msg string) {
+func (entry *Entry) log(level Level, skip int, msg string) {
 	var buffer *bytes.Buffer
 
 	newEntry := entry.Dup()
@@ -235,8 +245,8 @@ func (entry *Entry) log(level Level, msg string) {
 	bufPool := newEntry.getBufferPool()
 	newEntry.Logger.mu.Unlock()
 
-	if reportCaller {
-		newEntry.Caller = getCaller()
+	if reportCaller && newEntry.Caller == nil {
+		newEntry.Caller = getCaller(skip)
 	}
 
 	newEntry.fireHooks()
@@ -301,7 +311,7 @@ func (entry *Entry) write() {
 // For this behaviour Entry.Panic or Entry.Fatal should be used instead.
 func (entry *Entry) Log(level Level, args ...interface{}) {
 	if entry.Logger.IsLevelEnabled(level) {
-		entry.log(level, fmt.Sprint(args...))
+		entry.log(level, 0, fmt.Sprint(args...))
 	}
 }
 
@@ -430,6 +440,71 @@ func (entry *Entry) Fatalln(args ...interface{}) {
 
 func (entry *Entry) Panicln(args ...interface{}) {
 	entry.Logln(PanicLevel, args...)
+}
+
+// Entry PrintDepth family functions
+
+// LogDepth acts as Info but uses depth to determine which call frame to log.
+// LogDepth(InfoLevel, 0, "msg") is the same as Log(InfoLevel, "msg").
+func (entry *Entry) LogDepth(level Level, depth int, args ...interface{}) {
+	if entry.Logger.IsLevelEnabled(level) {
+		entry.log(level, depth, fmt.Sprint(args...))
+	}
+}
+
+// TraceDepth acts as Trace but uses depth to determine which call frame to log.
+// TraceDepth(0, "msg") is the same as Trace("msg").
+func (entry *Entry) TraceDepth(depth int, args ...interface{}) {
+	entry.LogDepth(TraceLevel, depth+1, args...)
+}
+
+// DebugDepth acts as Debug but uses depth to determine which call frame to log.
+// DebugDepth(0, "msg") is the same as Debug("msg").
+func (entry *Entry) DebugDepth(depth int, args ...interface{}) {
+	entry.LogDepth(DebugLevel, depth+1, args...)
+}
+
+// PrintDepth acts as Print but uses depth to determine which call frame to log.
+// PrintDepth(0, "msg") is the same as Print("msg").
+func (entry *Entry) PrintDepth(depth int, args ...interface{}) {
+	entry.InfoDepth(depth+1, args...)
+}
+
+// InfoDepth acts as Info but uses depth to determine which call frame to log.
+// InfoDepth(0, "msg") is the same as Info("msg").
+func (entry *Entry) InfoDepth(depth int, args ...interface{}) {
+	entry.LogDepth(InfoLevel, depth+1, args...)
+}
+
+// WarnDepth acts as Warn but uses depth to determine which call frame to log.
+// WarnDepth(0, "msg") is the same as Warn("msg").
+func (entry *Entry) WarnDepth(depth int, args ...interface{}) {
+	entry.LogDepth(WarnLevel, depth+1, args...)
+}
+
+// WarningDepth acts as Warning but uses depth to determine which call frame to log.
+// WarningDepth(0, "msg") is the same as Warning("msg").
+func (entry *Entry) WarningDepth(depth int, args ...interface{}) {
+	entry.WarnDepth(depth+1, args...)
+}
+
+// ErrorDepth acts as Trace but uses depth to determine which call frame to log.
+// ErrorDepth(0, "msg") is the same as Error("msg").
+func (entry *Entry) ErrorDepth(depth int, args ...interface{}) {
+	entry.LogDepth(ErrorLevel, depth+1, args...)
+}
+
+// FatalDepth acts as Fatal but uses depth to determine which call frame to log.
+// FatalDepth(0, "msg") is the same as Fatal("msg").
+func (entry *Entry) FatalDepth(depth int, args ...interface{}) {
+	entry.LogDepth(FatalLevel, depth+1, args...)
+	entry.Logger.Exit(1)
+}
+
+// PanicDepth acts as Panic but uses depth to determine which call frame to log.
+// PanicDepth(0, "msg") is the same as Trace("msg").
+func (entry *Entry) PanicDepth(depth int, args ...interface{}) {
+	entry.LogDepth(PanicLevel, depth+1, args...)
 }
 
 // Sprintlnn => Sprint no newline. This is to get the behavior of how
