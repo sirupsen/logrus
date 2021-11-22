@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -275,4 +276,84 @@ func TestEntryReportCallerRace(t *testing.T) {
 	go func() {
 		entry.Info("should not race")
 	}()
+}
+
+func TestEntryLogDepthLevel(t *testing.T) {
+	logger := New()
+	buffer := &bytes.Buffer{}
+	logger.Out = buffer
+	logger.SetLevel(InfoLevel)
+	logger.SetReportCaller(true)
+	entry := NewEntry(logger)
+
+	entry.LogDepth(DebugLevel, 0, "debug")
+	assert.NotContains(t, buffer.String(), "debug")
+	assert.NotContains(t, buffer.String(), "testing.tRunner")
+
+	buffer.Reset()
+	entry.LogDepth(WarnLevel, 0, "warn")
+	assert.Contains(t, buffer.String(), "warn")
+	assert.Contains(t, buffer.String(), "testing.tRunner")
+
+	{
+		var once sync.Once
+		once.Do(func() {
+			buffer.Reset()
+			entry.LogDepth(WarnLevel, 0, "warn")
+		})
+		assert.Contains(t, buffer.String(), "warn")
+		assert.NotContains(t, buffer.String(), "testing.tRunner")
+		assert.Contains(t, buffer.String(), "sync.(*Once).doSlow")
+	}
+	{
+		// (0) sync.(*Once).doSlow at once.go:68
+		// (1) sync.(*Once).Do at once.go:59
+		// (2) github.com/sirupsen/logrus.TestEntryLogDepthLevel at entry_test.go:321
+		// (3) testing.tRunner at testing.go:1259
+		// (4) testing.(*T).Run·dwrap·21 at testing.go:1306
+		// (5) runtime.goexit at asm_amd64.s:1581
+		var once sync.Once
+		once.Do(func() {
+			buffer.Reset()
+			entry.LogDepth(WarnLevel, 1, "warn")
+		})
+		assert.Contains(t, buffer.String(), "warn")
+		assert.Contains(t, buffer.String(), "sync.(*Once).Do")
+		assert.NotContains(t, buffer.String(), "testing.tRunner")
+	}
+
+	{
+		// (0) sync.(*Once).doSlow at once.go:68
+		// (1) sync.(*Once).Do at once.go:59
+		// (2) github.com/sirupsen/logrus.TestEntryLogDepthLevel at entry_test.go:321
+		// (3) testing.tRunner at testing.go:1259
+		// (4) testing.(*T).Run·dwrap·21 at testing.go:1306
+		// (5) runtime.goexit at asm_amd64.s:1581
+		var once sync.Once
+		once.Do(func() {
+			buffer.Reset()
+			entry.LogDepth(WarnLevel, 1, "warn")
+		})
+		assert.Contains(t, buffer.String(), "warn")
+		assert.Contains(t, buffer.String(), "sync.(*Once).Do")
+		assert.NotContains(t, buffer.String(), "testing.tRunner")
+	}
+
+	{
+		// (0) sync.(*Once).doSlow at once.go:68
+		// (1) sync.(*Once).Do at once.go:59
+		// (2) github.com/sirupsen/logrus.TestEntryLogDepthLevel at entry_test.go:321
+		// (3) testing.tRunner at testing.go:1259
+		// (4) testing.(*T).Run·dwrap·21 at testing.go:1306
+		// (5) runtime.goexit at asm_amd64.s:1581
+		var once sync.Once
+		once.Do(func() {
+			buffer.Reset()
+			entry.LogDepth(WarnLevel, 2, "warn")
+		})
+		assert.Contains(t, buffer.String(), "warn")
+		assert.Contains(t, buffer.String(), "TestEntryLogDepthLevel")
+		assert.NotContains(t, buffer.String(), "testing.tRunner")
+	}
+
 }
