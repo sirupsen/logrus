@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -70,7 +71,7 @@ func TestWarninglnNotEqualToWarning(t *testing.T) {
 
 type testBufferPool struct {
 	buffers []*bytes.Buffer
-	get int
+	get     int
 }
 
 func (p *testBufferPool) Get() *bytes.Buffer {
@@ -94,4 +95,24 @@ func TestLogger_SetBufferPool(t *testing.T) {
 
 	assert.Equal(t, pool.get, 1, "Logger.SetBufferPool(): The BufferPool.Get() must be called")
 	assert.Len(t, pool.buffers, 1, "Logger.SetBufferPool(): The BufferPool.Put() must be called")
+}
+
+func TestOutputRace(t *testing.T) {
+	l := New()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_ = l.Output()
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		out := &bytes.Buffer{}
+		l.SetOutput(out)
+	}()
+
+	wg.Wait()
 }
