@@ -387,6 +387,13 @@ func (logger *Logger) SetFormatter(formatter Formatter) {
 	logger.Formatter = formatter
 }
 
+// Output returns the IO writer for this logger in a concurrency safe manner.
+func (logger *Logger) Output() io.Writer {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	return logger.Out
+}
+
 // SetOutput sets the logger output.
 func (logger *Logger) SetOutput(output io.Writer) {
 	logger.mu.Lock()
