@@ -13,14 +13,13 @@ import (
 )
 
 var (
-
-	// qualified package name, cached at first use
+	// Qualified package name which is cached at first use.
 	logrusPackage string
 
-	// Positions in the call stack when tracing to report the calling method
+	// Positions in the call stack when tracing to report the calling method.
 	minimumCallerDepth int
 
-	// Used for caller information initialisation
+	// Used for caller information initialisation.
 	callerInitOnce sync.Once
 )
 
@@ -47,26 +46,26 @@ type Entry struct {
 	// Contains all the fields set by the user.
 	Data Fields
 
-	// Time at which the log entry was created
+	// Time at which the log entry was created.
 	Time time.Time
 
-	// Level the log entry was logged at: Trace, Debug, Info, Warn, Error, Fatal or Panic
+	// Level the log entry was logged at: Trace, Debug, Info, Warn, Error, Fatal or Panic.
 	// This field will be set on entry firing and the value will be equal to the one in Logger struct field.
 	Level Level
 
-	// Calling method, with package name
+	// Calling method with package name.
 	Caller *runtime.Frame
 
-	// Message passed to Trace, Debug, Info, Warn, Error, Fatal or Panic
+	// Message passed to Trace, Debug, Info, Warn, Error, Fatal or Panic.
 	Message string
 
-	// When formatter is called in entry.log(), a Buffer may be set to entry
+	// When formatter is called in entry.log(), a Buffer may be set to entry.
 	Buffer *bytes.Buffer
 
 	// Contains the context set by the user. Useful for hook processing etc.
 	Context context.Context
 
-	// err may contain a field formatting error
+	// err may contain a field formatting error.
 	err string
 }
 
@@ -78,12 +77,19 @@ func NewEntry(logger *Logger) *Entry {
 	}
 }
 
-func (entry *Entry) Dup() *Entry {
-	data := make(Fields, len(entry.Data))
+// dupData returns a new Fields with duplicate Data.
+func (entry *Entry) dupData() Fields {
+	dup := make(Fields, len(entry.Data))
 	for k, v := range entry.Data {
-		data[k] = v
+		dup[k] = v
 	}
-	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, Context: entry.Context, err: entry.err}
+	return dup
+}
+
+// Dup returns a new Entry with duplicate Data.
+func (entry *Entry) Dup() *Entry {
+	dataCopy := entry.dupData()
+	return &Entry{Logger: entry.Logger, Data: dataCopy, Time: entry.Time, Context: entry.Context, err: entry.err}
 }
 
 // Returns the bytes representation of this entry from the formatter.
@@ -109,10 +115,7 @@ func (entry *Entry) WithError(err error) *Entry {
 
 // Add a context to the Entry.
 func (entry *Entry) WithContext(ctx context.Context) *Entry {
-	dataCopy := make(Fields, len(entry.Data))
-	for k, v := range entry.Data {
-		dataCopy[k] = v
-	}
+	dataCopy := entry.dupData()
 	return &Entry{Logger: entry.Logger, Data: dataCopy, Time: entry.Time, err: entry.err, Context: ctx}
 }
 
@@ -150,12 +153,9 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, err: fieldErr, Context: entry.Context}
 }
 
-// Overrides the time of the Entry.
+// WithTime overrides the time of the Entry.
 func (entry *Entry) WithTime(t time.Time) *Entry {
-	dataCopy := make(Fields, len(entry.Data))
-	for k, v := range entry.Data {
-		dataCopy[k] = v
-	}
+	dataCopy := entry.dupData()
 	return &Entry{Logger: entry.Logger, Data: dataCopy, Time: t, err: entry.err, Context: entry.Context}
 }
 
@@ -277,8 +277,7 @@ func (entry *Entry) fireHooks() {
 	}
 	entry.Logger.mu.Unlock()
 
-	err := tmpHooks.Fire(entry.Level, entry)
-	if err != nil {
+	if err := tmpHooks.Fire(entry.Level, entry); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
 	}
 }
