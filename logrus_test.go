@@ -45,6 +45,27 @@ func TestReportCallerWhenConfigured(t *testing.T) {
 
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.ReportCaller = true
+		log.ReportCallerLevel = InfoLevel
+		log.Print("testWithCallerAndCallerLevel")
+	}, func(fields Fields) {
+		assert.Equal(t, "testWithCallerAndCallerLevel", fields[FieldKeyMsg])
+		assert.Equal(t, "info", fields[FieldKeyLevel])
+		assert.Equal(t,
+			"github.com/sirupsen/logrus_test.TestReportCallerWhenConfigured.func5", fields[FieldKeyFunc])
+	})
+
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.ReportCaller = true
+		log.ReportCallerLevel = ErrorLevel
+		log.Print("testWithCallerAndCallerLevelNotMatch")
+	}, func(fields Fields) {
+		assert.Equal(t, "testWithCallerAndCallerLevelNotMatch", fields[FieldKeyMsg])
+		assert.Equal(t, "info", fields[FieldKeyLevel])
+		assert.Equal(t, nil, fields[FieldKeyFunc])
+	})
+
+	LogAndAssertJSON(t, func(log *Logger) {
+		log.ReportCaller = true
 		log.Formatter.(*JSONFormatter).CallerPrettyfier = func(f *runtime.Frame) (string, string) {
 			return "somekindoffunc", "thisisafilename"
 		}

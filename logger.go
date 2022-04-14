@@ -33,7 +33,9 @@ type Logger struct {
 
 	// Flag for whether to log caller info (off by default)
 	ReportCaller bool
-
+	// The level reportCaller work at. Like Level if ReportCaller is true and ReportCallerLevel is logrus.Error,
+	// Error() and Fatal() will log caller info (Debug by default)
+	ReportCallerLevel Level
 	// The logging level the logger should log at. This is typically (and defaults
 	// to) `logrus.Info`, which allows Info(), Warn(), Error() and Fatal() to be
 	// logged.
@@ -86,12 +88,13 @@ func (mw *MutexWrap) Disable() {
 // It's recommended to make this a global instance called `log`.
 func New() *Logger {
 	return &Logger{
-		Out:          os.Stderr,
-		Formatter:    new(TextFormatter),
-		Hooks:        make(LevelHooks),
-		Level:        InfoLevel,
-		ExitFunc:     os.Exit,
-		ReportCaller: false,
+		Out:               os.Stderr,
+		Formatter:         new(TextFormatter),
+		Hooks:             make(LevelHooks),
+		Level:             InfoLevel,
+		ExitFunc:          os.Exit,
+		ReportCaller:      false,
+		ReportCallerLevel: DebugLevel,
 	}
 }
 
@@ -398,6 +401,12 @@ func (logger *Logger) SetReportCaller(reportCaller bool) {
 	logger.mu.Lock()
 	defer logger.mu.Unlock()
 	logger.ReportCaller = reportCaller
+}
+
+func (logger *Logger) SetReportCallerLevel(level Level) {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	logger.ReportCallerLevel = level
 }
 
 // ReplaceHooks replaces the logger hooks and returns the old ones
