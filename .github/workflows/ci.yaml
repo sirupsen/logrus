@@ -22,7 +22,7 @@ jobs:
       - uses: golangci/golangci-lint-action@v2
         with:
           # must be specified without patch version
-          version: v1.36
+          version: v1.46
   cross:
     name: Cross
     timeout-minutes: 10
