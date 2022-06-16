@@ -43,7 +43,7 @@ plain text):
 With `log.SetFormatter(&log.JSONFormatter{})`, for easy parsing by logstash
 or Splunk:
 
-```json
+```text
 {"animal":"walrus","level":"info","msg":"A group of walrus emerges from the
 ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 
