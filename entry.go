@@ -14,8 +14,8 @@ import (
 
 var (
 
-	// qualified package name, cached at first use
-	logrusPackage string
+	// logrus package skipper, cached at first use
+	logrusSkipper Skipper
 
 	// Positions in the call stack when tracing to report the calling method
 	minimumCallerDepth int
@@ -159,24 +159,8 @@ func (entry *Entry) WithTime(t time.Time) *Entry {
 	return &Entry{Logger: entry.Logger, Data: dataCopy, Time: t, err: entry.err, Context: entry.Context}
 }
 
-// getPackageName reduces a fully qualified function name to the package name
-// There really ought to be to be a better way...
-func getPackageName(f string) string {
-	for {
-		lastPeriod := strings.LastIndex(f, ".")
-		lastSlash := strings.LastIndex(f, "/")
-		if lastPeriod > lastSlash {
-			f = f[:lastPeriod]
-		} else {
-			break
-		}
-	}
-
-	return f
-}
-
 // getCaller retrieves the name of the first non-logrus calling function
-func getCaller() *runtime.Frame {
+func getCaller(skippers CallerSkippers) *runtime.Frame {
 	// cache this package's fully-qualified name
 	callerInitOnce.Do(func() {
 		pcs := make([]uintptr, maximumCallerDepth)
@@ -186,7 +170,7 @@ func getCaller() *runtime.Frame {
 		for i := 0; i < maximumCallerDepth; i++ {
 			funcName := runtime.FuncForPC(pcs[i]).Name()
 			if strings.Contains(funcName, "getCaller") {
-				logrusPackage = getPackageName(funcName)
+				logrusSkipper = NewPackageSkipper(funcName)
 				break
 			}
 		}
@@ -200,10 +184,7 @@ func getCaller() *runtime.Frame {
 	frames := runtime.CallersFrames(pcs[:depth])
 
 	for f, again := frames.Next(); again; f, again = frames.Next() {
-		pkg := getPackageName(f.Function)
-
-		// If the caller isn't part of this package, we're done
-		if pkg != logrusPackage {
+		if !skippers.with(logrusSkipper).shouldSkip(&f) {
 			return &f //nolint:scopelint
 		}
 	}
@@ -236,7 +217,7 @@ func (entry *Entry) log(level Level, msg string) {
 	newEntry.Logger.mu.Unlock()
 
 	if reportCaller {
-		newEntry.Caller = getCaller()
+		newEntry.Caller = getCaller(entry.Logger.Skippers)
 	}
 
 	newEntry.fireHooks()
