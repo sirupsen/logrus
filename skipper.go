@@ -1,9 +1,11 @@
 package logrus
 
 import (
+	"regexp"
 	"runtime"
-	"strings"
 )
+
+var pkgRegex = regexp.MustCompile(`^(.+\/)?[^\. ]+\.?`)
 
 // Skipper defines a behaviour to determine if a Frame should be skipped from
 // the logs.
@@ -48,18 +50,17 @@ func (ps *PackageSkipper) ShouldSkip(f *runtime.Frame) bool {
 	return pkgName == ps.pkgName
 }
 
-// extractPackageName reduces a fully qualified function name to the package name
-// There really ought to be to be a better way...
+// extractPackageName reduces a fully qualified function name to the package
+// name.
 func extractPackageName(fn string) string {
-	for {
-		lastPeriod := strings.LastIndex(fn, ".")
-		lastSlash := strings.LastIndex(fn, "/")
-		if lastPeriod > lastSlash {
-			fn = fn[:lastPeriod]
-		} else {
-			break
-		}
+	pkgName := pkgRegex.FindString(fn)
+	if pkgName == "" {
+		return fn
 	}
 
-	return fn
+	if pkgName[len(pkgName)-1] == '.' {
+		return pkgName[:len(pkgName)-1]
+	}
+
+	return pkgName
 }
