@@ -48,24 +48,18 @@ func (ps *PackageSkipper) ShouldSkip(f *runtime.Frame) bool {
 	return pkgName == ps.pkgName
 }
 
-// extractPackageName reduces a fully qualified function name to the package
-// name, or returns the given string as package name.
+// extractPackageName reduces a fully qualified function name to the package name
+// There really ought to be to be a better way...
 func extractPackageName(fn string) string {
-	lastPeriod := strings.LastIndex(fn, ".")
-	lastSlash := strings.LastIndex(fn, "/")
-	if lastPeriod < lastSlash {
-		return fn
+	for {
+		lastPeriod := strings.LastIndex(fn, ".")
+		lastSlash := strings.LastIndex(fn, "/")
+		if lastPeriod > lastSlash {
+			fn = fn[:lastPeriod]
+		} else {
+			break
+		}
 	}
 
-	parts := strings.Split(fn, ".")
-	pl := len(parts)
-	packageName := ""
-
-	if parts[pl-2][0] == '(' {
-		packageName = strings.Join(parts[0:pl-2], ".")
-	} else {
-		packageName = strings.Join(parts[0:pl-1], ".")
-	}
-
-	return packageName
+	return fn
 }
