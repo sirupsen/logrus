@@ -27,7 +27,7 @@ const (
 )
 
 // Formatter is implemented by types that format log entries. It receives an
-// [*Entry], which contains all fields, including the standard ones:
+// [*Entry], which contains:
 //
 //   - entry.Message: the message passed to logging methods such as [Info], [Warn], [Error]
 //   - entry.Time: the timestamp
