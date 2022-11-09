@@ -9,7 +9,7 @@ the last thing you want from your Logging library (again...).
 
 This does not mean Logrus is dead. Logrus will continue to be maintained for
 security, (backwards compatible) bug fixes, and performance (where we are
-limited by the interface). 
+limited by the interface).
 
 I believe Logrus' biggest contribution is to have played a part in today's
 widespread use of structured logging in Golang. There doesn't seem to be a
@@ -72,21 +72,24 @@ time="2015-03-26T01:27:38-04:00" level=debug msg="Temperature changes" temperatu
 time="2015-03-26T01:27:38-04:00" level=panic msg="It's over 9000!" animal=orca size=9009
 time="2015-03-26T01:27:38-04:00" level=fatal msg="The ice breaks!" err=&{0x2082280c0 map[animal:orca size:9009] 2015-03-26 01:27:38.441574009 -0400 EDT panic It's over 9000!} number=100 omg=true
 ```
+
 To ensure this behaviour even if a TTY is attached, set your formatter as follows:
 
 ```go
-	log.SetFormatter(&log.TextFormatter{
-		DisableColors: true,
-		FullTimestamp: true,
-	})
+ log.SetFormatter(&log.TextFormatter{
+  DisableColors: true,
+  FullTimestamp: true,
+ })
 ```
 
 #### Logging Method Name
 
 If you wish to add the calling method as a field, instruct the logger via:
+
 ```go
 log.SetReportCaller(true)
 ```
+
 This adds the caller as 'method' like so:
 
 ```json
@@ -97,13 +100,14 @@ This adds the caller as 'method' like so:
 ```text
 time="2015-03-26T01:27:38-04:00" level=fatal method=github.com/sirupsen/arcticcreatures.migrate msg="a penguin swims by" animal=penguin
 ```
+
 Note that this does add measurable overhead - the cost will depend on the version of Go, but is
 between 20 and 40% in recent tests with 1.6 and 1.7.  You can validate this in your
-environment via benchmarks: 
-```
+environment via benchmarks:
+
+```bash
 go test -bench=.*CallerTracing
 ```
-
 
 #### Case-sensitivity
 
@@ -285,10 +289,10 @@ func init() {
   }
 }
 ```
+
 Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/var/run/syslog" or "/var/run/log"). For the detail, please check the [syslog hook README](hooks/syslog/README.md).
 
 A list of currently known service hooks can be found in this wiki [page](https://github.com/sirupsen/logrus/wiki/Hooks)
-
 
 #### Level logging
 
@@ -363,7 +367,7 @@ The built-in logging formatters are:
 
 * `logrus.TextFormatter`. Logs the event in colors if stdout is a tty, otherwise
   without colors.
-  * *Note:* to force colored output when there is no TTY, set the `ForceColors`
+  * _Note:_ to force colored output when there is no TTY, set the `ForceColors`
     field to `true`.  To force no colored output even if there is a TTY  set the
     `DisableColors` field to `true`. For Windows, see
     [github.com/mattn/go-colorable](https://github.com/mattn/go-colorable).
@@ -486,7 +490,7 @@ level message is logged. The registered handlers will be executed before
 logrus performs an `os.Exit(1)`. This behavior may be helpful if callers need
 to gracefully shutdown. Unlike a `panic("Something went wrong...")` call which can be intercepted with a deferred `recover` a call to `os.Exit(1)` can not be intercepted.
 
-```
+```go
 ...
 handler := func() {
   // gracefully shutdown something...
@@ -510,4 +514,4 @@ Situation when locking is not needed includes:
 
   2) logger.Out is an os.File handler opened with `O_APPEND` flag, and every write is smaller than 4k. (This allows multi-thread/multi-process writing)
 
-     (Refer to http://www.notthewizard.com/2014/06/17/are-files-appends-really-atomic/)
+     (Refer to <http://www.notthewizard.com/2014/06/17/are-files-appends-really-atomic/>)
