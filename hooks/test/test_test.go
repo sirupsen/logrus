@@ -83,3 +83,22 @@ func TestFatalWithAlternateExit(t *testing.T) {
 	assert.Equal("something went very wrong", hook.LastEntry().Message)
 	assert.Equal(1, len(hook.Entries))
 }
+
+func TestNewLocal(t *testing.T) {
+	assert := assert.New(t)
+	logger := logrus.New()
+
+	var wg sync.WaitGroup
+	defer wg.Wait()
+
+	wg.Add(10)
+	for i := 0; i < 10; i++ {
+		go func(i int) {
+			logger.Info("info")
+			wg.Done()
+		}(i)
+	}
+
+	hook := NewLocal(logger)
+	assert.NotNil(hook)
+}
