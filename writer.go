@@ -75,7 +75,8 @@ func (entry *Entry) writerScanner(reader *io.PipeReader, printFunc func(args ...
 		if len(data) > chunkSize {
 			return chunkSize, data[:chunkSize], nil
 		}
-		return 0, nil, nil
+
+		return len(data), data, nil
 	}
 
 	//Use the custom split function to split the input
