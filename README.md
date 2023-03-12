@@ -9,7 +9,7 @@ the last thing you want from your Logging library (again...).
 
 This does not mean Logrus is dead. Logrus will continue to be maintained for
 security, (backwards compatible) bug fixes, and performance (where we are
-limited by the interface). 
+limited by the interface).
 
 I believe Logrus' biggest contribution is to have played a part in today's
 widespread use of structured logging in Golang. There doesn't seem to be a
@@ -99,7 +99,7 @@ time="2015-03-26T01:27:38-04:00" level=fatal method=github.com/sirupsen/arcticcr
 ```
 Note that this does add measurable overhead - the cost will depend on the version of Go, but is
 between 20 and 40% in recent tests with 1.6 and 1.7.  You can validate this in your
-environment via benchmarks: 
+environment via benchmarks:
 ```
 go test -bench=.*CallerTracing
 ```
@@ -316,6 +316,8 @@ log.SetLevel(log.InfoLevel)
 
 It may be useful to set `log.Level = logrus.DebugLevel` in a debug or verbose
 environment if your application has that.
+
+Note: If you want different log levels for global (`log.SetLevel(...)`) and syslog logging, please check the [syslog hook README](hooks/syslog/README.md#different-log-levels-for-local-and-remote-logging).
 
 #### Entries
 
