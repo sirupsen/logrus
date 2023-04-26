@@ -7,16 +7,13 @@ on:
   pull_request:
     branches:
       - master
-
+  
 jobs:
 
   lint:
     name: Golang-CI Lint
     timeout-minutes: 10
-    strategy:
-      matrix:
-        platform: [ubuntu-latest]
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -31,16 +28,12 @@ jobs:
   test:
     name: Unit test
     timeout-minutes: 10
-    strategy:
-      matrix:
-        go-version: [1.20.x]
-        platform: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     steps:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: ${{ matrix.go-version }}
+        go-version: 1.20.x
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Test
