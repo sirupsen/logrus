@@ -1,3 +1,4 @@
+//go:build !windows && !nacl && !plan9
 // +build !windows,!nacl,!plan9
 
 package syslog
@@ -6,7 +7,7 @@ import (
 	"log/syslog"
 	"testing"
 
-	"github.com/sirupsen/logrus"
+	"github.com/BillHeroInc/logrus"
 )
 
 func TestLocalhostAddAndPrint(t *testing.T) {

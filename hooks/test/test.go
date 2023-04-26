@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"sync"
 
-	"github.com/sirupsen/logrus"
+	"github.com/BillHeroInc/logrus"
 )
 
 // Hook is a hook designed for dealing with logs in test scenarios.
