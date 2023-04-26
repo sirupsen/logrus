@@ -11,15 +11,15 @@ logs of  normal execution to `Stdout`, you could do it like this:
 package main
 
 import (
-	"io/ioutil"
+	"os"
 	"os"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/sirupsen/logrus/hooks/writer"
+	log "github.com/BillHeroInc/logrus"
+	"github.com/BillHeroInc/logrus/hooks/writer"
 )
 
 func main() {
-	log.SetOutput(ioutil.Discard) // Send all logs to nowhere by default
+	log.SetOutput(io.Discard) // Send all logs to nowhere by default
 
 	log.AddHook(&writer.Hook{ // Send logs with level higher than warning to stderr
 		Writer: os.Stderr,

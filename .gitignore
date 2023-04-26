@@ -2,3 +2,4 @@ logrus
 vendor
 
 .idea/
+.vscode

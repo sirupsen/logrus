@@ -1,7 +1,6 @@
 package logrus
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -76,14 +75,14 @@ func TestHandler(t *testing.T) {
 	testprog := testprogleader
 	testprog = append(testprog, getPackage()...)
 	testprog = append(testprog, testprogtrailer...)
-	tempDir, err := ioutil.TempDir("", "test_handler")
+	tempDir, err := os.MkdirTemp("", "test_handler")
 	if err != nil {
 		log.Fatalf("can't create temp dir. %q", err)
 	}
 	defer os.RemoveAll(tempDir)
 
 	gofile := filepath.Join(tempDir, "gofile.go")
-	if err := ioutil.WriteFile(gofile, testprog, 0666); err != nil {
+	if err := os.WriteFile(gofile, testprog, 0666); err != nil {
 		t.Fatalf("can't create go file. %q", err)
 	}
 
@@ -94,7 +93,7 @@ func TestHandler(t *testing.T) {
 		t.Fatalf("completed normally, should have failed")
 	}
 
-	data, err := ioutil.ReadFile(outfile)
+	data, err := os.ReadFile(outfile)
 	if err != nil {
 		t.Fatalf("can't read output file %s. %q", outfile, err)
 	}
@@ -124,14 +123,14 @@ var testprogtrailer = []byte(
 	`"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 var outfile = ""
 var data = ""
 
 func handler() {
-	ioutil.WriteFile(outfile, []byte(data), 0666)
+	os.WriteFile(outfile, []byte(data), 0666)
 }
 
 func badHandler() {
