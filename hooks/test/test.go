@@ -3,7 +3,7 @@
 package test
 
 import (
-	"io/ioutil"
+	"os"
 	"sync"
 
 	"github.com/BillHeroInc/logrus"
