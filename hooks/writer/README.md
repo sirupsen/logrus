@@ -11,7 +11,7 @@ logs of  normal execution to `Stdout`, you could do it like this:
 package main
 
 import (
-	"io/ioutil"
+	"os"
 	"os"
 
 	log "github.com/BillHeroInc/logrus"

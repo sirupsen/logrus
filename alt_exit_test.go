@@ -124,7 +124,7 @@ var testprogtrailer = []byte(
 	`"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 var outfile = ""
