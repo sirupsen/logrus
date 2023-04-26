@@ -42,7 +42,7 @@ func NewLocal(logger *logrus.Logger) *Hook {
 func NewNullLogger() (*logrus.Logger, *Hook) {
 
 	logger := logrus.New()
-	logger.Out = ioutil.Discard
+	logger.Out = os.Discard
 
 	return logger, NewLocal(logger)
 

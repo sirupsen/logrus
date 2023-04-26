@@ -2,7 +2,7 @@ package writer
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	log "github.com/BillHeroInc/logrus"
@@ -16,7 +16,7 @@ func TestDifferentLevelsGoToDifferentWriters(t *testing.T) {
 		DisableTimestamp: true,
 		DisableColors:    true,
 	})
-	log.SetOutput(ioutil.Discard) // Send all logs to nowhere by default
+	log.SetOutput(os.Discard) // Send all logs to nowhere by default
 
 	log.AddHook(&Hook{
 		Writer: &a,
