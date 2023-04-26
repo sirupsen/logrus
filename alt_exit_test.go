@@ -75,7 +75,7 @@ func TestHandler(t *testing.T) {
 	testprog := testprogleader
 	testprog = append(testprog, getPackage()...)
 	testprog = append(testprog, testprogtrailer...)
-	tempDir, err := os.TempDir("", "test_handler")
+	tempDir, err := os.MkdirTemp("", "test_handler")
 	if err != nil {
 		log.Fatalf("can't create temp dir. %q", err)
 	}

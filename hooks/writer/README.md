@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	log.SetOutput(os.Discard) // Send all logs to nowhere by default
+	log.SetOutput(io.Discard) // Send all logs to nowhere by default
 
 	log.AddHook(&writer.Hook{ // Send logs with level higher than warning to stderr
 		Writer: os.Stderr,
