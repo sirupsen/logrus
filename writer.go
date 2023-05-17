@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"io"
 	"runtime"
+	"strings"
 )
 
 // Writer at INFO level. See WriterLevel for details.
@@ -54,14 +55,37 @@ func (entry *Entry) WriterLevel(level Level) *io.PipeWriter {
 	return writer
 }
 
+// writerScanner scans the input from the reader and writes it to the logger
 func (entry *Entry) writerScanner(reader *io.PipeReader, printFunc func(args ...interface{})) {
 	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		printFunc(scanner.Text())
+
+	// Set the buffer size to the maximum token size to avoid buffer overflows
+	scanner.Buffer(make([]byte, bufio.MaxScanTokenSize), bufio.MaxScanTokenSize)
+
+	// Define a split function to split the input into chunks of up to 64KB
+	chunkSize := bufio.MaxScanTokenSize // 64KB
+	splitFunc := func(data []byte, atEOF bool) (int, []byte, error) {
+		if len(data) >= chunkSize {
+			return chunkSize, data[:chunkSize], nil
+		}
+
+		return bufio.ScanLines(data, atEOF)
 	}
+
+	// Use the custom split function to split the input
+	scanner.Split(splitFunc)
+
+	// Scan the input and write it to the logger using the specified print function
+	for scanner.Scan() {
+		printFunc(strings.TrimRight(scanner.Text(), "\r\n"))
+	}
+
+	// If there was an error while scanning the input, log an error
 	if err := scanner.Err(); err != nil {
 		entry.Errorf("Error while reading from Writer: %s", err)
 	}
+
+	// Close the reader when we are done
 	reader.Close()
 }
 
