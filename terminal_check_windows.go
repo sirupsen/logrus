@@ -1,4 +1,5 @@
-// +build !appengine,!js,windows
+//go:build !appengine && !js && !tinygo && windows
+// +build !appengine,!js,!tinygo,windows
 
 package logrus
 

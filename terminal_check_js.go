@@ -1,4 +1,5 @@
-// +build js
+//go:build js || tinygo
+// +build js tinygo
 
 package logrus
 

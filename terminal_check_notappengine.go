@@ -1,4 +1,5 @@
-// +build !appengine,!js,!windows,!nacl,!plan9
+//go:build !appengine && !js && !windows && !nacl && !plan9 && !tinygo
+// +build !appengine,!js,!windows,!nacl,!plan9,!tinygo
 
 package logrus
 

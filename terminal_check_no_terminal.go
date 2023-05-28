@@ -1,4 +1,5 @@
-// +build js nacl plan9
+//go:build js || nacl || plan9 || tinygo
+// +build js nacl plan9 tinygo
 
 package logrus
 

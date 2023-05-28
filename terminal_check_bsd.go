@@ -1,5 +1,6 @@
+//go:build (darwin || dragonfly || freebsd || netbsd || openbsd) && (!js || !tinygo)
 // +build darwin dragonfly freebsd netbsd openbsd
-// +build !js
+// +build !js !tinygo
 
 package logrus
 
