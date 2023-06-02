@@ -93,6 +93,6 @@ func TestWriterSplitsMax64KB(t *testing.T) {
 	time.Sleep(500 * time.Millisecond)
 
 	lines := strings.Split(strings.TrimRight(buf.String(), "\n"), "\n")
-	// we should have 4 lines because we wrote more than 64 KB each time
-	assert.Len(t, lines, 4, "logger printed incorrect number of lines")
+	// we should have 6 lines because we wrote more than 64 KB each time
+	assert.Len(t, lines, 6, "logger printed incorrect number of lines")
 }
