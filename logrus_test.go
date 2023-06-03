@@ -544,8 +544,7 @@ func TestParseLevel(t *testing.T) {
 }
 
 func TestLevelString(t *testing.T) {
-	var loggerlevel Level
-	loggerlevel = 32000
+	var loggerlevel Level = 32000
 
 	_ = loggerlevel.String()
 }
