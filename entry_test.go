@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type contextKeyType string
+
 func TestEntryWithError(t *testing.T) {
 
 	assert := assert.New(t)
@@ -36,7 +38,8 @@ func TestEntryWithError(t *testing.T) {
 
 func TestEntryWithContext(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.WithValue(context.Background(), "foo", "bar")
+	var contextKey contextKeyType = "foo"
+	ctx := context.WithValue(context.Background(), contextKey, "bar")
 
 	assert.Equal(ctx, WithContext(ctx).Context)
 
@@ -56,11 +59,13 @@ func TestEntryWithContextCopiesData(t *testing.T) {
 	parentEntry := NewEntry(logger).WithField("parentKey", "parentValue")
 
 	// Create two children Entry objects from the parent in different contexts
-	ctx1 := context.WithValue(context.Background(), "foo", "bar")
+	var contextKey1 contextKeyType = "foo"
+	ctx1 := context.WithValue(context.Background(), contextKey1, "bar")
 	childEntry1 := parentEntry.WithContext(ctx1)
 	assert.Equal(ctx1, childEntry1.Context)
 
-	ctx2 := context.WithValue(context.Background(), "bar", "baz")
+	var contextKey2 contextKeyType = "bar"
+	ctx2 := context.WithValue(context.Background(), contextKey2, "baz")
 	childEntry2 := parentEntry.WithContext(ctx2)
 	assert.Equal(ctx2, childEntry2.Context)
 	assert.NotEqual(ctx1, ctx2)
