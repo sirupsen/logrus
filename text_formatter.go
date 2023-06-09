@@ -131,6 +131,8 @@ func (f *TextFormatter) isColored() bool {
 
 // Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
+	f.terminalInitOnce.Do(func() { f.init(entry) })
+
 	data := make(Fields)
 	for k, v := range entry.Data {
 		data[k] = v
@@ -192,8 +194,6 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	} else {
 		b = &bytes.Buffer{}
 	}
-
-	f.terminalInitOnce.Do(func() { f.init(entry) })
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
