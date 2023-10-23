@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"reflect"
 	"runtime"
 	"sort"
 	"strconv"
@@ -26,8 +27,43 @@ func init() {
 	baseTimestamp = time.Now()
 }
 
+type LevelColors struct {
+	Trace, Debug, Warn, Error, Fatal, Panic, Info, Default int
+}
+
+func DefaultLevelColors(custom *LevelColors) *LevelColors {
+	levelColors := &LevelColors{
+		Trace:   gray,
+		Debug:   gray,
+		Warn:    yellow,
+		Error:   red,
+		Fatal:   red,
+		Panic:   red,
+		Info:    blue,
+		Default: blue,
+	}
+
+	if custom != nil {
+		dstVal := reflect.ValueOf(levelColors).Elem()
+		srcVal := reflect.ValueOf(custom).Elem()
+		for i := 0; i < dstVal.NumField(); i++ {
+			dstField := dstVal.Field(i)
+			srcField := srcVal.Field(i)
+
+			if dstField.Kind() == reflect.Int && srcField.Int() != 0 {
+				dstField.SetInt(srcField.Int())
+			}
+		}
+	}
+
+	return levelColors
+}
+
 // TextFormatter formats logs into text
 type TextFormatter struct {
+	// Set level colors
+	LevelColors *LevelColors
+
 	// Set to true to bypass checking for a TTY before outputting colors.
 	ForceColors bool
 
@@ -230,18 +266,28 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 }
 
 func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, data Fields, timestampFormat string) {
+	if f.LevelColors == nil {
+		f.LevelColors = DefaultLevelColors(nil)
+	}
+
 	var levelColor int
 	switch entry.Level {
-	case DebugLevel, TraceLevel:
-		levelColor = gray
+	case DebugLevel:
+		levelColor = f.LevelColors.Debug
+	case TraceLevel:
+		levelColor = f.LevelColors.Trace
 	case WarnLevel:
-		levelColor = yellow
-	case ErrorLevel, FatalLevel, PanicLevel:
-		levelColor = red
+		levelColor = f.LevelColors.Warn
+	case ErrorLevel:
+		levelColor = f.LevelColors.Error
+	case FatalLevel:
+		levelColor = f.LevelColors.Fatal
+	case PanicLevel:
+		levelColor = f.LevelColors.Panic
 	case InfoLevel:
-		levelColor = blue
+		levelColor = f.LevelColors.Info
 	default:
-		levelColor = blue
+		levelColor = f.LevelColors.Default
 	}
 
 	levelText := strings.ToUpper(entry.Level.String())
