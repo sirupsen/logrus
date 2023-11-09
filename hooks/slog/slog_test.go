@@ -15,9 +15,10 @@ import (
 
 func TestSlogHook(t *testing.T) {
 	tests := []struct {
-		name string
-		fn   func(*logrus.Logger)
-		want []string
+		name   string
+		mapper LevelMapper
+		fn     func(*logrus.Logger)
+		want   []string
 	}{
 		{
 			name: "defaults",
@@ -39,6 +40,20 @@ func TestSlogHook(t *testing.T) {
 				"level=ERROR msg=error chicken=cluck",
 			},
 		},
+		{
+			name: "level mapper",
+			mapper: func(logrus.Level) slog.Leveler {
+				return slog.LevelInfo
+			},
+			fn: func(log *logrus.Logger) {
+				log.WithFields(logrus.Fields{
+					"chicken": "cluck",
+				}).Error("error")
+			},
+			want: []string{
+				"level=INFO msg=error chicken=cluck",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -55,7 +70,9 @@ func TestSlogHook(t *testing.T) {
 			}))
 			log := logrus.New()
 			log.Out = io.Discard
-			log.AddHook(NewSlogHook(slogLogger))
+			hook := NewSlogHook(slogLogger)
+			hook.LevelMapper = tt.mapper
+			log.AddHook(hook)
 			tt.fn(log)
 			got := strings.Split(strings.TrimSpace(buf.String()), "\n")
 			if len(got) != len(tt.want) {
