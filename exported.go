@@ -134,6 +134,27 @@ func Fatal(args ...interface{}) {
 	std.Fatal(args...)
 }
 
+// Useful function for any log level that logs at that level
+func (level Level) Log(args ...interface{}) {
+
+	switch level {
+	case PanicLevel:
+		Panic(args...)
+	case FatalLevel:
+		Fatal(args...)
+	case ErrorLevel:
+		Error(args...)
+	case WarnLevel:
+		Warn(args...)
+	case InfoLevel:
+		Info(args...)
+	case DebugLevel:
+		Debug(args...)
+	case TraceLevel:
+		Trace(args...)
+	}
+}
+
 // TraceFn logs a message from a func at level Trace on the standard logger.
 func TraceFn(fn LogFunction) {
 	std.TraceFn(fn)
@@ -177,6 +198,27 @@ func PanicFn(fn LogFunction) {
 // FatalFn logs a message from a func at level Fatal on the standard logger then the process will exit with status set to 1.
 func FatalFn(fn LogFunction) {
 	std.FatalFn(fn)
+}
+
+// Useful function for any log level that logs at that level
+func (level Level) LogFn(fn LogFunction) {
+
+	switch level {
+	case PanicLevel:
+		PanicFn(fn)
+	case FatalLevel:
+		FatalFn(fn)
+	case ErrorLevel:
+		ErrorFn(fn)
+	case WarnLevel:
+		WarnFn(fn)
+	case InfoLevel:
+		InfoFn(fn)
+	case DebugLevel:
+		DebugFn(fn)
+	case TraceLevel:
+		TraceFn(fn)
+	}
 }
 
 // Tracef logs a message at level Trace on the standard logger.
@@ -224,6 +266,27 @@ func Fatalf(format string, args ...interface{}) {
 	std.Fatalf(format, args...)
 }
 
+// Useful function for any log level that logs at that level
+func (level Level) Logf(format string, args ...interface{}) {
+
+	switch level {
+	case PanicLevel:
+		Panicf(format, args...)
+	case FatalLevel:
+		Fatalf(format, args...)
+	case ErrorLevel:
+		Errorf(format, args...)
+	case WarnLevel:
+		Warnf(format, args...)
+	case InfoLevel:
+		Infof(format, args...)
+	case DebugLevel:
+		Debugf(format, args...)
+	case TraceLevel:
+		Tracef(format, args...)
+	}
+}
+
 // Traceln logs a message at level Trace on the standard logger.
 func Traceln(args ...interface{}) {
 	std.Traceln(args...)
@@ -267,4 +330,25 @@ func Panicln(args ...interface{}) {
 // Fatalln logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
 func Fatalln(args ...interface{}) {
 	std.Fatalln(args...)
+}
+
+// Useful function for any log level that logs at that level
+func (level Level) Logln(args ...interface{}) {
+
+	switch level {
+	case PanicLevel:
+		Panicln(args...)
+	case FatalLevel:
+		Fatalln(args...)
+	case ErrorLevel:
+		Errorln(args...)
+	case WarnLevel:
+		Warnln(args...)
+	case InfoLevel:
+		Infoln(args...)
+	case DebugLevel:
+		Debugln(args...)
+	case TraceLevel:
+		Traceln(args...)
+	}
 }
