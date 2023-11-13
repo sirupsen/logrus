@@ -1,7 +1,6 @@
 package logrus
 
 import (
-	"encoding/json"
 	"strings"
 
 	cases "golang.org/x/text/cases"
@@ -54,14 +53,4 @@ func (x *Fields) AddFields(extraFields map[string]interface{}) {
 	for key, val := range extraFields {
 		(*x)[toCamelCase(key)] = val
 	}
-}
-
-func (x *Fields) Json(pretty bool) string {
-	var bytes []byte
-	if pretty {
-		bytes, _ = json.MarshalIndent(x, "", " ")
-	} else {
-		bytes, _ = json.Marshal(x)
-	}
-	return string(bytes)
 }
