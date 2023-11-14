@@ -136,9 +136,15 @@ func Fatal(args ...interface{}) {
 
 // If error is non-nil, print error log via Error
 func PrintOnError(err error, args ...interface{}) {
-
 	if err != nil {
 		Error(args...)
+	}
+}
+
+// If error is non-nil, panic via Panic
+func PanicOnError(err error, args ...interface{}) {
+	if err != nil {
+		Panic(args...)
 	}
 }
 
@@ -189,9 +195,15 @@ func FatalFn(fn LogFunction) {
 
 // If error is non-nil, print error log via ErrorFn
 func PrintOnErrorFn(err error, fn LogFunction) {
-
 	if err != nil {
 		ErrorFn(fn)
+	}
+}
+
+// If error is non-nil, panic via PanicFn
+func PanicOnErrorFn(err error, fn LogFunction) {
+	if err != nil {
+		PanicFn(fn)
 	}
 }
 
@@ -242,9 +254,15 @@ func Fatalf(format string, args ...interface{}) {
 
 // If error is non-nil, print error log via Errorf
 func PrintOnErrorf(err error, format string, args ...interface{}) {
-
 	if err != nil {
 		Errorf(format, args...)
+	}
+}
+
+// If error is non-nil, panic via Panicf
+func PanicOnErrorf(err error, format string, args ...interface{}) {
+	if err != nil {
+		Panicf(format, args...)
 	}
 }
 
@@ -295,8 +313,14 @@ func Fatalln(args ...interface{}) {
 
 // If error is non-nil, print error log via Errorln
 func PrintOnErrorln(err error, args ...interface{}) {
-
 	if err != nil {
 		Errorln(args...)
+	}
+}
+
+// If error is non-nil, print error log via Errorln
+func PanicOnErrorln(err error, args ...interface{}) {
+	if err != nil {
+		Panicln(args...)
 	}
 }
