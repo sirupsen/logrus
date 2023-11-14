@@ -2,6 +2,7 @@ package logrus
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 )
@@ -137,6 +138,7 @@ func Fatal(args ...interface{}) {
 // If error is non-nil, print error log via Error
 func PrintOnError(err error, args ...interface{}) {
 	if err != nil {
+		args[0] = fmt.Sprintf("%v (error: %v)", args[0], err.Error())
 		Error(args...)
 	}
 }
@@ -144,6 +146,7 @@ func PrintOnError(err error, args ...interface{}) {
 // If error is non-nil, panic via Panic
 func PanicOnError(err error, args ...interface{}) {
 	if err != nil {
+		args[0] = fmt.Sprintf("%v (error: %v)", args[0], err.Error())
 		Panic(args...)
 	}
 }
@@ -196,6 +199,7 @@ func FatalFn(fn LogFunction) {
 // If error is non-nil, print error log via ErrorFn
 func PrintOnErrorFn(err error, fn LogFunction) {
 	if err != nil {
+		Errorf("Object returned error: %v", err.Error())
 		ErrorFn(fn)
 	}
 }
@@ -203,6 +207,7 @@ func PrintOnErrorFn(err error, fn LogFunction) {
 // If error is non-nil, panic via PanicFn
 func PanicOnErrorFn(err error, fn LogFunction) {
 	if err != nil {
+		Errorf("Object returned error: %v", err.Error())
 		PanicFn(fn)
 	}
 }
@@ -255,6 +260,7 @@ func Fatalf(format string, args ...interface{}) {
 // If error is non-nil, print error log via Errorf
 func PrintOnErrorf(err error, format string, args ...interface{}) {
 	if err != nil {
+		args[0] = fmt.Sprintf("%v (error: %v)", args[0], err.Error())
 		Errorf(format, args...)
 	}
 }
@@ -262,6 +268,7 @@ func PrintOnErrorf(err error, format string, args ...interface{}) {
 // If error is non-nil, panic via Panicf
 func PanicOnErrorf(err error, format string, args ...interface{}) {
 	if err != nil {
+		args[0] = fmt.Sprintf("%v (error: %v)", args[0], err.Error())
 		Panicf(format, args...)
 	}
 }
@@ -314,6 +321,7 @@ func Fatalln(args ...interface{}) {
 // If error is non-nil, print error log via Errorln
 func PrintOnErrorln(err error, args ...interface{}) {
 	if err != nil {
+		args[0] = fmt.Sprintf("%v (error: %v)", args[0], err.Error())
 		Errorln(args...)
 	}
 }
@@ -321,6 +329,7 @@ func PrintOnErrorln(err error, args ...interface{}) {
 // If error is non-nil, print error log via Errorln
 func PanicOnErrorln(err error, args ...interface{}) {
 	if err != nil {
+		args[0] = fmt.Sprintf("%v (error: %v)", args[0], err.Error())
 		Panicln(args...)
 	}
 }
