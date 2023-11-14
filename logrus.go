@@ -77,6 +77,90 @@ func (level Level) MarshalText() ([]byte, error) {
 	return nil, fmt.Errorf("not a valid logrus level %d", level)
 }
 
+// Useful function for any log level that logs at that level
+func (level Level) Print(args ...interface{}) {
+
+	switch level {
+	case PanicLevel:
+		Panic(args...)
+	case FatalLevel:
+		Fatal(args...)
+	case ErrorLevel:
+		Error(args...)
+	case WarnLevel:
+		Warn(args...)
+	case InfoLevel:
+		Info(args...)
+	case DebugLevel:
+		Debug(args...)
+	case TraceLevel:
+		Trace(args...)
+	}
+}
+
+// Useful function for any log level that logs at that level
+func (level Level) PrintFn(fn LogFunction) {
+
+	switch level {
+	case PanicLevel:
+		PanicFn(fn)
+	case FatalLevel:
+		FatalFn(fn)
+	case ErrorLevel:
+		ErrorFn(fn)
+	case WarnLevel:
+		WarnFn(fn)
+	case InfoLevel:
+		InfoFn(fn)
+	case DebugLevel:
+		DebugFn(fn)
+	case TraceLevel:
+		TraceFn(fn)
+	}
+}
+
+// Useful function for any log level that logs at that level
+func (level Level) Printf(format string, args ...interface{}) {
+
+	switch level {
+	case PanicLevel:
+		Panicf(format, args...)
+	case FatalLevel:
+		Fatalf(format, args...)
+	case ErrorLevel:
+		Errorf(format, args...)
+	case WarnLevel:
+		Warnf(format, args...)
+	case InfoLevel:
+		Infof(format, args...)
+	case DebugLevel:
+		Debugf(format, args...)
+	case TraceLevel:
+		Tracef(format, args...)
+	}
+}
+
+// Useful function for any log level that logs at that level
+func (level Level) Println(args ...interface{}) {
+
+	switch level {
+	case PanicLevel:
+		Panicln(args...)
+	case FatalLevel:
+		Fatalln(args...)
+	case ErrorLevel:
+		Errorln(args...)
+	case WarnLevel:
+		Warnln(args...)
+	case InfoLevel:
+		Infoln(args...)
+	case DebugLevel:
+		Debugln(args...)
+	case TraceLevel:
+		Traceln(args...)
+	}
+}
+
 // A constant exposing all logging levels
 var AllLevels = []Level{
 	PanicLevel,

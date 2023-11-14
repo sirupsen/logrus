@@ -134,24 +134,11 @@ func Fatal(args ...interface{}) {
 	std.Fatal(args...)
 }
 
-// Useful function for any log level that logs at that level
-func (level Level) Log(args ...interface{}) {
+// If error is non-nil, print error log via Error
+func PrintOnError(err error, args ...interface{}) {
 
-	switch level {
-	case PanicLevel:
-		Panic(args...)
-	case FatalLevel:
-		Fatal(args...)
-	case ErrorLevel:
+	if err != nil {
 		Error(args...)
-	case WarnLevel:
-		Warn(args...)
-	case InfoLevel:
-		Info(args...)
-	case DebugLevel:
-		Debug(args...)
-	case TraceLevel:
-		Trace(args...)
 	}
 }
 
@@ -200,24 +187,11 @@ func FatalFn(fn LogFunction) {
 	std.FatalFn(fn)
 }
 
-// Useful function for any log level that logs at that level
-func (level Level) LogFn(fn LogFunction) {
+// If error is non-nil, print error log via ErrorFn
+func PrintOnErrorFn(err error, fn LogFunction) {
 
-	switch level {
-	case PanicLevel:
-		PanicFn(fn)
-	case FatalLevel:
-		FatalFn(fn)
-	case ErrorLevel:
+	if err != nil {
 		ErrorFn(fn)
-	case WarnLevel:
-		WarnFn(fn)
-	case InfoLevel:
-		InfoFn(fn)
-	case DebugLevel:
-		DebugFn(fn)
-	case TraceLevel:
-		TraceFn(fn)
 	}
 }
 
@@ -266,24 +240,11 @@ func Fatalf(format string, args ...interface{}) {
 	std.Fatalf(format, args...)
 }
 
-// Useful function for any log level that logs at that level
-func (level Level) Logf(format string, args ...interface{}) {
+// If error is non-nil, print error log via Errorf
+func PrintOnErrorf(err error, format string, args ...interface{}) {
 
-	switch level {
-	case PanicLevel:
-		Panicf(format, args...)
-	case FatalLevel:
-		Fatalf(format, args...)
-	case ErrorLevel:
+	if err != nil {
 		Errorf(format, args...)
-	case WarnLevel:
-		Warnf(format, args...)
-	case InfoLevel:
-		Infof(format, args...)
-	case DebugLevel:
-		Debugf(format, args...)
-	case TraceLevel:
-		Tracef(format, args...)
 	}
 }
 
@@ -332,23 +293,10 @@ func Fatalln(args ...interface{}) {
 	std.Fatalln(args...)
 }
 
-// Useful function for any log level that logs at that level
-func (level Level) Logln(args ...interface{}) {
+// If error is non-nil, print error log via Errorln
+func PrintOnErrorln(err error, args ...interface{}) {
 
-	switch level {
-	case PanicLevel:
-		Panicln(args...)
-	case FatalLevel:
-		Fatalln(args...)
-	case ErrorLevel:
+	if err != nil {
 		Errorln(args...)
-	case WarnLevel:
-		Warnln(args...)
-	case InfoLevel:
-		Infoln(args...)
-	case DebugLevel:
-		Debugln(args...)
-	case TraceLevel:
-		Traceln(args...)
 	}
 }
