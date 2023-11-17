@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"time"
+
+	errors "github.com/go-errors/errors"
 )
 
 var (
@@ -138,16 +140,24 @@ func Fatal(args ...interface{}) {
 // If error is non-nil, print error log via Error
 func PrintOnError(err error, args ...interface{}) {
 	if err != nil {
-		args[0] = fmt.Sprintf("%v (error: %v)", args[0], err.Error())
-		Error(args...)
+		if len(args) > 0 {
+			args[0] = fmt.Sprintf("Error: %v (%v)", errorText(err), args[0])
+			Error(args...)
+		} else {
+			Error("Error: " + errorText(err))
+		}
 	}
 }
 
 // If error is non-nil, panic via Panic
 func PanicOnError(err error, args ...interface{}) {
 	if err != nil {
-		args[0] = fmt.Sprintf("%v (error: %v)", args[0], err.Error())
-		Panic(args...)
+		if len(args) > 0 {
+			args[0] = fmt.Sprintf("Error: %v (%v)", errorText(err), args[0])
+			Panic(args...)
+		} else {
+			Panic("Error: " + errorText(err))
+		}
 	}
 }
 
@@ -199,7 +209,7 @@ func FatalFn(fn LogFunction) {
 // If error is non-nil, print error log via ErrorFn
 func PrintOnErrorFn(err error, fn LogFunction) {
 	if err != nil {
-		Errorf("Object returned error: %v", err.Error())
+		Errorf("Error: %v", errorText(err))
 		ErrorFn(fn)
 	}
 }
@@ -207,7 +217,7 @@ func PrintOnErrorFn(err error, fn LogFunction) {
 // If error is non-nil, panic via PanicFn
 func PanicOnErrorFn(err error, fn LogFunction) {
 	if err != nil {
-		Errorf("Object returned error: %v", err.Error())
+		Errorf("Error: %v", errorText(err))
 		PanicFn(fn)
 	}
 }
@@ -260,7 +270,7 @@ func Fatalf(format string, args ...interface{}) {
 // If error is non-nil, print error log via Errorf
 func PrintOnErrorf(err error, format string, args ...interface{}) {
 	if err != nil {
-		args[0] = fmt.Sprintf("%v (error: %v)", args[0], err.Error())
+		format = "Error: " + errorText(err) + " (" + format + ")"
 		Errorf(format, args...)
 	}
 }
@@ -268,7 +278,7 @@ func PrintOnErrorf(err error, format string, args ...interface{}) {
 // If error is non-nil, panic via Panicf
 func PanicOnErrorf(err error, format string, args ...interface{}) {
 	if err != nil {
-		args[0] = fmt.Sprintf("%v (error: %v)", args[0], err.Error())
+		format = "Error: " + errorText(err) + " (" + format + ")"
 		Panicf(format, args...)
 	}
 }
@@ -321,15 +331,36 @@ func Fatalln(args ...interface{}) {
 // If error is non-nil, print error log via Errorln
 func PrintOnErrorln(err error, args ...interface{}) {
 	if err != nil {
-		args[0] = fmt.Sprintf("%v (error: %v)", args[0], err.Error())
-		Errorln(args...)
+		if len(args) > 0 {
+			args[0] = fmt.Sprintf("Error: %v (%v)", errorText(err), args[0])
+			Errorln(args...)
+		} else {
+			Errorln("Error: " + errorText(err))
+		}
 	}
 }
 
 // If error is non-nil, print error log via Errorln
 func PanicOnErrorln(err error, args ...interface{}) {
 	if err != nil {
-		args[0] = fmt.Sprintf("%v (error: %v)", args[0], err.Error())
-		Panicln(args...)
+		if len(args) > 0 {
+			args[0] = fmt.Sprintf("Error: %v (%v)", errorText(err), args[0])
+			Panicln(args...)
+		} else {
+			Panicln("Error: " + errorText(err))
+		}
+	}
+}
+
+func errorText(err error) string {
+	if errorWithStack, ok := err.(interface{ StackFrames() []errors.StackFrame }); ok {
+		errorText := err.Error() + "\n"
+		for _, frame := range errorWithStack.StackFrames() {
+			errorText += frame.String()
+		}
+		return errorText + "\n"
+
+	} else {
+		return err.Error()
 	}
 }
