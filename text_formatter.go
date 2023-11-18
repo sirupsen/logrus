@@ -247,9 +247,9 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	levelText := strings.ToUpper(entry.Level.String())
 	if !f.DisableLevelTruncation && !f.PadLevelText {
 		switch entry.Level {
-		case logrus.DebugLevel, logrus.TraceLevel, logrus.ErrorLevel, logrus.FatalLevel, logrus.PanicLevel:
+		case DebugLevel, TraceLevel, ErrorLevel, FatalLevel, PanicLevel:
 			levelText = levelText[0:5]
-		case logrus.WarnLevel, logrus.InfoLevel:
+		case WarnLevel, InfoLevel:
 			levelText = levelText[0:4]
 		default:
 			levelText = "UNKNOWN"
