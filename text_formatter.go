@@ -246,7 +246,14 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 
 	levelText := strings.ToUpper(entry.Level.String())
 	if !f.DisableLevelTruncation && !f.PadLevelText {
-		levelText = levelText[0:4]
+		switch entry.Level {
+		case logrus.DebugLevel, logrus.TraceLevel, logrus.ErrorLevel, logrus.FatalLevel, logrus.PanicLevel:
+			levelText = levelText[0:5]
+		case logrus.WarnLevel, logrus.InfoLevel:
+			levelText = levelText[0:4]
+		default:
+			levelText = "UNKNOWN"
+		}
 	}
 	if f.PadLevelText {
 		// Generates the format string used in the next line, for example "%-6s" or "%-7s".
