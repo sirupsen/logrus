@@ -364,12 +364,6 @@ func errorText(err error) string {
 	if errorWithStack, ok := err.(interface{ StackFrames() []errors.StackFrame }); ok {
 		return errorTextWithStackTrace(err, errorWithStack)
 	} else {
-		newError := errors.New(err)
-		if errorWithStack, ok := newError.(interface{ StackFrames() []errors.StackFrame }); ok {
-			return errorTextWithStackTrace(newError, errorWithStack)
-		} else {
-			return err.Error()
-
-		}
+		return errorTextWithStackTrace(errors.New(err), errorWithStack)
 	}
 }
