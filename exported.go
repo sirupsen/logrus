@@ -352,8 +352,8 @@ func PanicOnErrorln(err error, args ...interface{}) {
 	}
 }
 
-func errorTextWithStackTrace(err error, errorWithStack interface{ StackFrames() []errors.StackFrame }) string {
-	errorText := err.Error() + "\n"
+func errorTextWithStackTrace(errorString string, errorWithStack interface{ StackFrames() []errors.StackFrame }) string {
+	errorText := errorString + "\n"
 	for _, frame := range errorWithStack.StackFrames() {
 		errorText += frame.String()
 	}
@@ -362,8 +362,8 @@ func errorTextWithStackTrace(err error, errorWithStack interface{ StackFrames() 
 
 func errorText(err error) string {
 	if errorWithStack, ok := err.(interface{ StackFrames() []errors.StackFrame }); ok {
-		return errorTextWithStackTrace(err, errorWithStack)
+		return errorTextWithStackTrace(err.Error(), errorWithStack)
 	} else {
-		return errorTextWithStackTrace(errors.New(err), errorWithStack)
+		return errorTextWithStackTrace(err.Error(), errors.New(err))
 	}
 }
