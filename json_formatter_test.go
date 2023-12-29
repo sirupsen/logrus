@@ -24,7 +24,37 @@ func TestErrorNotLost(t *testing.T) {
 	}
 
 	if entry["error"] != "wild walrus" {
-		t.Fatal("Error field not set")
+		t.Fatal("Error field not correct: ", entry["error"])
+	}
+}
+
+func TestErrorsNotLost(t *testing.T) {
+	formatter := &JSONFormatter{}
+
+	b, err := formatter.Format(
+		WithField("errors", []error{
+			errors.New("wild walrus"),
+			errors.New("mild wombat"),
+		}),
+	)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	entry := make(map[string]interface{})
+	err = json.Unmarshal(b, &entry)
+	if err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	fmt.Println(string(b))
+
+	errs, ok := entry["errors"].([]interface{})
+	if !ok {
+		t.Fatalf("Errors field type not correct: %T", entry["errors"])
+	}
+	if errs[0] != "wild walrus" || errs[1] != "mild wombat" {
+		t.Fatal("Error field not correct: ", entry["errors"])
 	}
 }
 
