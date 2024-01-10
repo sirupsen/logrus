@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"runtime/debug"
 	"time"
 
 	errors "github.com/go-errors/errors"
@@ -365,5 +366,17 @@ func errorText(err error) string {
 		return errorTextWithStackTrace(err.Error(), errorWithStack)
 	} else {
 		return errorTextWithStackTrace(err.Error(), errors.New(err))
+	}
+}
+
+func CatchPanics() {
+	// Panic handling - make sure panic gets reported in logs
+	if err := recover(); err != nil {
+		logEntry, ok := err.(*Entry)
+		if ok { // Only report this to the user if it is of a type other than *BailInfo
+			Fatalf("%s \n %v", logEntry.Message, string(debug.Stack()))
+		} else {
+			Fatalf("%s \n %v", err, string(debug.Stack()))
+		}
 	}
 }
