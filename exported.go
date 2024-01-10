@@ -12,8 +12,24 @@ import (
 
 var (
 	// std is the name of the standard logger in stdlib `log`
-	std = New()
+	std         = New()
+	logPanicErr *panicErr
 )
+
+type logF func()
+
+type panicErr struct {
+	caughtError error
+	logCaller   logF
+}
+
+func (p panicErr) Error() string {
+	return fmt.Sprintf("Caught Error: %v\n", p.caughtError)
+}
+
+func (p panicErr) LogCaller() {
+	p.logCaller()
+}
 
 func StandardLogger() *Logger {
 	return std
@@ -369,14 +385,33 @@ func errorText(err error) string {
 	}
 }
 
-func CatchPanics() {
+func CatchPanics() (logF, error) {
+	var logCaller logF
+	/* This means we already have panicked once in the program
+	so we don't need to check for recover again */
+	if logPanicErr != nil {
+		logPanicErr.LogCaller()
+		return logCaller, nil
+	}
 	// Panic handling - make sure panic gets reported in logs
 	if err := recover(); err != nil {
 		logEntry, ok := err.(*Entry)
 		if ok { // Only report this to the user if it is of a type other than *BailInfo
-			Fatalf("%s \n %v", logEntry.Message, string(debug.Stack()))
+			logCaller = func() {
+				Fatalf("%s \n %v", logEntry.Message, string(debug.Stack()))
+			}
 		} else {
-			Fatalf("%s \n %v", err, string(debug.Stack()))
+			logCaller = func() {
+				Fatalf("%s \n %v", err, string(debug.Stack()))
+			}
 		}
+		/* We initialise the logPanic err and return it*/
+		logPanicErr = &panicErr{
+			caughtError: err.(error),
+			logCaller:   logCaller,
+		}
+		/* We return the log caller as well in case the user wants to call it himself*/
+		return logCaller, logPanicErr
 	}
+	return logCaller, nil
 }
