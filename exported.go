@@ -157,6 +157,14 @@ func Fatal(args ...interface{}) {
 // If error is non-nil, print error log via Error
 func PrintOnError(err error, args ...interface{}) {
 	if err != nil {
+		if panicErr, ok := err.(panicErr); ok {
+			panicErr.LogCaller()
+		}
+
+		if logPanicErr != nil {
+			logPanicErr.LogCaller()
+		}
+
 		if len(args) > 0 {
 			args[0] = fmt.Sprintf("Error: %v (%v)", errorText(err), args[0])
 			Error(args...)
