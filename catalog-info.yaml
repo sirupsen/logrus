@@ -1,0 +1,23 @@
+apiVersion: backstage.io/v1beta1
+kind: System
+metadata:
+  name: cp-utils
+  description: This library is for common utils most or all content platform AWS workers will require.
+  annotations:
+    github.com/project-slug: EconomistDigitalSolutions/cp-utils
+  namespace: the-economist
+spec:
+  owner: group:the-economist/sunsetting
+---
+apiVersion: backstage.io/v1beta1
+kind: Component
+metadata:
+  name: cp-utils
+  namespace: the-economist
+  annotations:
+    github.com/project-slug: EconomistDigitalSolutions/cp-utils
+spec:
+  type: library
+  lifecycle: production
+  system: system:the-economist/cp-utils
+  owner: group:the-economist/sunsetting
