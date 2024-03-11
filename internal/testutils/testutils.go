@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/sirupsen/logrus"
-
 	"github.com/stretchr/testify/require"
+
+	. "github.com/sirupsen/logrus"
 )
 
 func LogAndAssertJSON(t *testing.T, log func(*Logger), assertions func(fields Fields)) {
@@ -23,7 +23,7 @@ func LogAndAssertJSON(t *testing.T, log func(*Logger), assertions func(fields Fi
 	log(logger)
 
 	err := json.Unmarshal(buffer.Bytes(), &fields)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	assertions(fields)
 }
