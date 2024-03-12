@@ -70,7 +70,7 @@ func TestWarninglnNotEqualToWarning(t *testing.T) {
 
 type testBufferPool struct {
 	buffers []*bytes.Buffer
-	get int
+	get     int
 }
 
 func (p *testBufferPool) Get() *bytes.Buffer {
@@ -92,6 +92,6 @@ func TestLogger_SetBufferPool(t *testing.T) {
 
 	l.Info("test")
 
-	assert.Equal(t, pool.get, 1, "Logger.SetBufferPool(): The BufferPool.Get() must be called")
+	assert.Equal(t, 1, pool.get, "Logger.SetBufferPool(): The BufferPool.Get() must be called")
 	assert.Len(t, pool.buffers, 1, "Logger.SetBufferPool(): The BufferPool.Put() must be called")
 }

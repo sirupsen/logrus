@@ -33,6 +33,6 @@ func TestDifferentLevelsGoToDifferentWriters(t *testing.T) {
 	log.Warn("send to a")
 	log.Info("send to b")
 
-	assert.Equal(t, a.String(), "level=warning msg=\"send to a\"\n")
-	assert.Equal(t, b.String(), "level=info msg=\"send to b\"\n")
+	assert.Equal(t, "level=warning msg=\"send to a\"\n", a.String())
+	assert.Equal(t, "level=info msg=\"send to b\"\n", b.String())
 }
