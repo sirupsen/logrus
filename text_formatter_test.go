@@ -598,3 +598,22 @@ func TestCustomSorting(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, strings.HasPrefix(string(b), "prefix="), "format output is %q", string(b))
 }
+
+func TestFormattingNotContainStartingKey(t *testing.T) {
+	tf := &TextFormatter{ExcludeKey: true}
+
+	testCases := []struct {
+		value    string
+		expected string
+	}{
+		{`foo`, "0001-01-01T00:00:00Z panic foo\n"},
+	}
+
+	for _, tc := range testCases {
+		b, _ := tf.Format(WithField("test", tc.value))
+
+		if string(b) != tc.expected {
+			t.Errorf("formatting expected for %q (result was %q instead of %q)", tc.value, string(b), tc.expected)
+		}
+	}
+}
