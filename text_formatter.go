@@ -28,6 +28,10 @@ func init() {
 
 // TextFormatter formats logs into text
 type TextFormatter struct {
+	// Set to true if want the log not to contain the startingKey, e.g.
+	// 0001-01-01T00:00:00Z warning message
+	ExcludeKey bool
+
 	// Set to true to bypass checking for a TTY before outputting colors.
 	ForceColors bool
 
@@ -320,8 +324,10 @@ func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interf
 	if b.Len() > 0 {
 		b.WriteByte(' ')
 	}
-	b.WriteString(key)
-	b.WriteByte('=')
+	if !f.ExcludeKey {
+		b.WriteString(key)
+		b.WriteByte('=')
+	}
 	f.appendValue(b, value)
 }
 
@@ -331,9 +337,14 @@ func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {
 		stringVal = fmt.Sprint(value)
 	}
 
-	if !f.needsQuoting(stringVal) {
+	// write value without quoting directly when ExcludeKey is true
+	if f.ExcludeKey {
 		b.WriteString(stringVal)
 	} else {
-		b.WriteString(fmt.Sprintf("%q", stringVal))
+		if !f.needsQuoting(stringVal) {
+			b.WriteString(stringVal)
+		} else {
+			b.WriteString(fmt.Sprintf("%q", stringVal))
+		}
 	}
 }
