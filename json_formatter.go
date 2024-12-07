@@ -49,6 +49,8 @@ type JSONFormatter struct {
 	// }
 	FieldMap FieldMap
 
+	PreprocessorHook func(Fields)
+
 	// CallerPrettyfier can be set by the user to modify the content
 	// of the function and file keys in the json data when ReportCaller is
 	// activated. If any of the returned value is the empty string the
@@ -106,6 +108,10 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		if fileVal != "" {
 			data[f.FieldMap.resolve(FieldKeyFile)] = fileVal
 		}
+	}
+
+	if f.PreprocessorHook != nil {
+		f.PreprocessorHook(data)
 	}
 
 	var b *bytes.Buffer
