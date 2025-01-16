@@ -273,6 +273,7 @@ func TestEntryLogfLevel(t *testing.T) {
 
 func TestEntryReportCallerRace(t *testing.T) {
 	logger := New()
+	logger.Out = &bytes.Buffer{}
 	entry := NewEntry(logger)
 
 	// logging before SetReportCaller has the highest chance of causing a race condition
