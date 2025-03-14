@@ -59,6 +59,7 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(false, "foo@bar")
 	checkQuoting(false, "foobar^")
 	checkQuoting(false, "+/-_^@f.oobar")
+	checkQuoting(true, "foo\n\rbar")
 	checkQuoting(true, "foobar$")
 	checkQuoting(true, "&foobar")
 	checkQuoting(true, "x y")
@@ -70,7 +71,30 @@ func TestQuoting(t *testing.T) {
 	tf.QuoteEmptyFields = true
 	checkQuoting(true, "")
 	checkQuoting(false, "abcd")
+	checkQuoting(true, "foo\n\rbar")
 	checkQuoting(true, errors.New("invalid argument"))
+
+	// Test forcing quotes.
+	tf.ForceQuote = true
+	checkQuoting(true, "")
+	checkQuoting(true, "abcd")
+	checkQuoting(true, "foo\n\rbar")
+	checkQuoting(true, errors.New("invalid argument"))
+
+	// Test forcing quotes when also disabling them.
+	tf.DisableQuote = true
+	checkQuoting(true, "")
+	checkQuoting(true, "abcd")
+	checkQuoting(true, "foo\n\rbar")
+	checkQuoting(true, errors.New("invalid argument"))
+
+	// Test disabling quotes
+	tf.ForceQuote = false
+	tf.QuoteEmptyFields = false
+	checkQuoting(false, "")
+	checkQuoting(false, "abcd")
+	checkQuoting(false, "foo\n\rbar")
+	checkQuoting(false, errors.New("invalid argument"))
 }
 
 func TestEscaping(t *testing.T) {
@@ -170,6 +194,97 @@ func TestDisableLevelTruncation(t *testing.T) {
 	checkDisableTruncation(true, InfoLevel)
 	checkDisableTruncation(false, ErrorLevel)
 	checkDisableTruncation(false, InfoLevel)
+}
+
+func TestPadLevelText(t *testing.T) {
+	// A note for future maintainers / committers:
+	//
+	// This test denormalizes the level text as a part of its assertions.
+	// Because of that, its not really a "unit test" of the PadLevelText functionality.
+	// So! Many apologies to the potential future person who has to rewrite this test
+	// when they are changing some completely unrelated functionality.
+	params := []struct {
+		name            string
+		level           Level
+		paddedLevelText string
+	}{
+		{
+			name:            "PanicLevel",
+			level:           PanicLevel,
+			paddedLevelText: "PANIC  ", // 2 extra spaces
+		},
+		{
+			name:            "FatalLevel",
+			level:           FatalLevel,
+			paddedLevelText: "FATAL  ", // 2 extra spaces
+		},
+		{
+			name:            "ErrorLevel",
+			level:           ErrorLevel,
+			paddedLevelText: "ERROR  ", // 2 extra spaces
+		},
+		{
+			name:  "WarnLevel",
+			level: WarnLevel,
+			// WARNING is already the max length, so we don't need to assert a paddedLevelText
+		},
+		{
+			name:            "DebugLevel",
+			level:           DebugLevel,
+			paddedLevelText: "DEBUG  ", // 2 extra spaces
+		},
+		{
+			name:            "TraceLevel",
+			level:           TraceLevel,
+			paddedLevelText: "TRACE  ", // 2 extra spaces
+		},
+		{
+			name:            "InfoLevel",
+			level:           InfoLevel,
+			paddedLevelText: "INFO   ", // 3 extra spaces
+		},
+	}
+
+	// We create a "default" TextFormatter to do a control test.
+	// We also create a TextFormatter with PadLevelText, which is the parameter we want to do our most relevant assertions against.
+	tfDefault := TextFormatter{}
+	tfWithPadding := TextFormatter{PadLevelText: true}
+
+	for _, val := range params {
+		t.Run(val.name, func(t *testing.T) {
+			// TextFormatter writes into these bytes.Buffers, and we make assertions about their contents later
+			var bytesDefault bytes.Buffer
+			var bytesWithPadding bytes.Buffer
+
+			// The TextFormatter instance and the bytes.Buffer instance are different here
+			// all the other arguments are the same. We also initialize them so that they
+			// fill in the value of levelTextMaxLength.
+			tfDefault.init(&Entry{})
+			tfDefault.printColored(&bytesDefault, &Entry{Level: val.level}, []string{}, nil, "")
+			tfWithPadding.init(&Entry{})
+			tfWithPadding.printColored(&bytesWithPadding, &Entry{Level: val.level}, []string{}, nil, "")
+
+			// turn the bytes back into a string so that we can actually work with the data
+			logLineDefault := (&bytesDefault).String()
+			logLineWithPadding := (&bytesWithPadding).String()
+
+			// Control: the level text should not be padded by default
+			if val.paddedLevelText != "" && strings.Contains(logLineDefault, val.paddedLevelText) {
+				t.Errorf("log line %q should not contain the padded level text %q by default", logLineDefault, val.paddedLevelText)
+			}
+
+			// Assertion: the level text should still contain the string representation of the level
+			if !strings.Contains(strings.ToLower(logLineWithPadding), val.level.String()) {
+				t.Errorf("log line %q should contain the level text %q when padding is enabled", logLineWithPadding, val.level.String())
+			}
+
+			// Assertion: the level text should be in its padded form now
+			if val.paddedLevelText != "" && !strings.Contains(logLineWithPadding, val.paddedLevelText) {
+				t.Errorf("log line %q should contain the padded level text %q when padding is enabled", logLineWithPadding, val.paddedLevelText)
+			}
+
+		})
+	}
 }
 
 func TestDisableTimestampWithColoredOutput(t *testing.T) {

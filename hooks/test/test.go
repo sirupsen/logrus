@@ -1,6 +1,5 @@
-// The Test package is used for testing logrus. It is here for backwards
-// compatibility from when logrus' organization was upper-case. Please use
-// lower-case logrus and the `null` package instead of this one.
+// The Test package is used for testing logrus.
+// It provides a simple hooks which register logged messages.
 package test
 
 import (
@@ -33,7 +32,7 @@ func NewGlobal() *Hook {
 func NewLocal(logger *logrus.Logger) *Hook {
 
 	hook := new(Hook)
-	logger.Hooks.Add(hook)
+	logger.AddHook(hook)
 
 	return hook
 

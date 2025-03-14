@@ -3,6 +3,7 @@ package logrus_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"sync"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	. "github.com/17media/logrus"
+	"github.com/17media/logrus/hooks/test"
 	. "github.com/17media/logrus/internal/testutils"
 )
 
@@ -191,6 +193,20 @@ func TestAddHookRace(t *testing.T) {
 	})
 }
 
+func TestAddHookRace2(t *testing.T) {
+	t.Parallel()
+
+	for i := 0; i < 3; i++ {
+		testname := fmt.Sprintf("Test %d", i)
+		t.Run(testname, func(t *testing.T) {
+			t.Parallel()
+
+			_ = test.NewGlobal()
+			Info(testname)
+		})
+	}
+}
+
 type HookCallFunc struct {
 	F func()
 }
@@ -211,6 +227,8 @@ func TestHookFireOrder(t *testing.T) {
 	h.Add(&HookCallFunc{F: func() { checkers = append(checkers, "second hook") }})
 	h.Add(&HookCallFunc{F: func() { checkers = append(checkers, "third hook") }})
 
-	h.Fire(InfoLevel, &Entry{})
+	if err := h.Fire(InfoLevel, &Entry{}); err != nil {
+		t.Error("unexpected error:", err)
+	}
 	require.Equal(t, []string{"first hook", "second hook", "third hook"}, checkers)
 }
