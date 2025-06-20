@@ -52,7 +52,7 @@ jobs:
     strategy:
       matrix:
         go-version: [stable, oldstable, 1.17.x]
-        platform: [ubuntu-latest, windows-latest]
+        platform: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go

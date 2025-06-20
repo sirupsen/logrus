@@ -1,5 +1,5 @@
 module github.com/sirupsen/logrus/ci
 
-go 1.15
+go 1.17
 
-require github.com/magefile/mage v1.11.0
+require github.com/magefile/mage v1.15.0
