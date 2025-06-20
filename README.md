@@ -62,7 +62,7 @@ ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 
 With the default `log.SetFormatter(&log.TextFormatter{})` when a TTY is not
 attached, the output is compatible with the
-[logfmt](http://godoc.org/github.com/kr/logfmt) format:
+[logfmt](https://pkg.go.dev/github.com/kr/logfmt) format:
 
 ```text
 time="2015-03-26T01:27:38-04:00" level=debug msg="Started observing beach" animal=walrus number=8
@@ -372,9 +372,9 @@ The built-in logging formatters are:
   * When colors are enabled, levels are truncated to 4 characters by default. To disable
     truncation set the `DisableLevelTruncation` field to `true`.
   * When outputting to a TTY, it's often helpful to visually scan down a column where all the levels are the same width. Setting the `PadLevelText` field to `true` enables this behavior, by adding padding to the level text.
-  * All options are listed in the [generated docs](https://godoc.org/github.com/sirupsen/logrus#TextFormatter).
+  * All options are listed in the [generated docs](https://pkg.go.dev/github.com/sirupsen/logrus#TextFormatter).
 * `logrus.JSONFormatter`. Logs fields as JSON.
-  * All options are listed in the [generated docs](https://godoc.org/github.com/sirupsen/logrus#JSONFormatter).
+  * All options are listed in the [generated docs](https://pkg.go.dev/github.com/sirupsen/logrus#JSONFormatter).
 
 Third party logging formatters:
 
