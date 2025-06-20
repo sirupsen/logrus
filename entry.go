@@ -41,6 +41,8 @@ var ErrorKey = "error"
 // the fields passed with WithField{,s}. It's finally logged when Trace, Debug,
 // Info, Warn, Error, Fatal or Panic is called on it. These objects can be
 // reused and passed around as much as you wish to avoid field duplication.
+//
+//nolint:recvcheck // the methods of "Entry" use pointer receiver and non-pointer receiver.
 type Entry struct {
 	Logger *Logger
 
@@ -204,7 +206,7 @@ func getCaller() *runtime.Frame {
 
 		// If the caller isn't part of this package, we're done
 		if pkg != logrusPackage {
-			return &f //nolint:scopelint
+			return &f
 		}
 	}
 
