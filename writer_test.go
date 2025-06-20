@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -39,8 +40,33 @@ func ExampleLogger_Writer_stdlib() {
 	log.SetOutput(logger.Writer())
 }
 
+type bufferWithMu struct {
+	buf *bytes.Buffer
+	mu  sync.RWMutex
+}
+
+func (b *bufferWithMu) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
+}
+
+func (b *bufferWithMu) Read(p []byte) (int, error) {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	return b.buf.Read(p)
+}
+
+func (b *bufferWithMu) String() string {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	return b.buf.String()
+}
+
 func TestWriterSplitNewlines(t *testing.T) {
-	buf := bytes.NewBuffer(nil)
+	buf := &bufferWithMu{
+		buf: bytes.NewBuffer(nil),
+	}
 	logger := logrus.New()
 	logger.Formatter = &logrus.TextFormatter{
 		DisableColors:    true,
@@ -65,7 +91,9 @@ func TestWriterSplitNewlines(t *testing.T) {
 }
 
 func TestWriterSplitsMax64KB(t *testing.T) {
-	buf := bytes.NewBuffer(nil)
+	buf := &bufferWithMu{
+		buf: bytes.NewBuffer(nil),
+	}
 	logger := logrus.New()
 	logger.Formatter = &logrus.TextFormatter{
 		DisableColors:    true,
