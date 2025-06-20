@@ -10,6 +10,8 @@ import (
 type Fields map[string]interface{}
 
 // Level type
+//
+//nolint:recvcheck // the methods of "Entry" use pointer receiver and non-pointer receiver.
 type Level uint32
 
 // Convert the Level to a string. E.g. PanicLevel becomes "panic".
