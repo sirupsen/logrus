@@ -285,7 +285,7 @@ func init() {
   }
 }
 ```
-Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/var/run/syslog" or "/var/run/log"). For the detail, please check the [syslog hook README](hooks/syslog/README.md).
+Note: Syslog hooks also support connecting to local syslog (Ex. "/dev/log" or "/var/run/syslog" or "/var/run/log"). For the detail, please check the [syslog hook README](hooks/syslog/README.md).
 
 A list of currently known service hooks can be found in this wiki [page](https://github.com/sirupsen/logrus/wiki/Hooks)
 
@@ -376,7 +376,7 @@ The built-in logging formatters are:
 * `logrus.JSONFormatter`. Logs fields as JSON.
   * All options are listed in the [generated docs](https://pkg.go.dev/github.com/sirupsen/logrus#JSONFormatter).
 
-Third party logging formatters:
+Third-party logging formatters:
 
 * [`FluentdFormatter`](https://github.com/joonix/log). Formats entries that can be parsed by Kubernetes and Google Container Engine.
 * [`GELF`](https://github.com/fabienm/go-logrus-formatters). Formats entries so they comply to Graylog's [GELF 1.1 specification](http://docs.graylog.org/en/2.4/pages/gelf.html).
@@ -455,7 +455,7 @@ entries. It should not be a feature of the application-level logger.
 
 #### Testing
 
-Logrus has a built in facility for asserting the presence of log messages. This is implemented through the `test` hook and provides:
+Logrus has a built-in facility for asserting the presence of log messages. This is implemented through the `test` hook and provides:
 
 * decorators for existing logger (`test.NewLocal` and `test.NewGlobal`) which basically just adds the `test` hook
 * a test logger (`test.NewNullLogger`) that just records log messages (and does not output any):
@@ -486,12 +486,12 @@ func TestSomething(t*testing.T){
 Logrus can register one or more functions that will be called when any `fatal`
 level message is logged. The registered handlers will be executed before
 logrus performs an `os.Exit(1)`. This behavior may be helpful if callers need
-to gracefully shutdown. Unlike a `panic("Something went wrong...")` call which can be intercepted with a deferred `recover` a call to `os.Exit(1)` can not be intercepted.
+to gracefully shut down. Unlike a `panic("Something went wrong...")` call which can be intercepted with a deferred `recover` a call to `os.Exit(1)` can not be intercepted.
 
 ```
 ...
 handler := func() {
-  // gracefully shutdown something...
+  // gracefully shut down something...
 }
 logrus.RegisterExitHandler(handler)
 ...
@@ -502,7 +502,7 @@ logrus.RegisterExitHandler(handler)
 By default, Logger is protected by a mutex for concurrent writes. The mutex is held when calling hooks and writing logs.
 If you are sure such locking is not needed, you can call logger.SetNoLock() to disable the locking.
 
-Situation when locking is not needed includes:
+Situations when locking is not needed include:
 
 * You have no hooks registered, or hooks calling is already thread-safe.
 
