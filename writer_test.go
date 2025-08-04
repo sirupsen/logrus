@@ -10,8 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/sirupsen/logrus"
 )
 
 func ExampleLogger_Writer_httpServer() {
@@ -79,7 +81,7 @@ func TestWriterSplitNewlines(t *testing.T) {
 
 	for i := 0; i < logNum; i++ {
 		_, err := writer.Write([]byte("bar\nfoo\n"))
-		assert.NoError(t, err, "writer.Write failed")
+		require.NoError(t, err, "writer.Write failed")
 	}
 	writer.Close()
 	// Test is flaky because it writes in another goroutine,
@@ -112,7 +114,7 @@ func TestWriterSplitsMax64KB(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		len, err := writer.Write(output)
-		assert.NoError(t, err, "writer.Write failed")
+		require.NoError(t, err, "writer.Write failed")
 		assert.Equal(t, bigWriteLen, len, "bytes written")
 	}
 	writer.Close()
