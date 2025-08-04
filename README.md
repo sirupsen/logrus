@@ -395,7 +395,7 @@ Third-party logging formatters:
 
 You can define your formatter by implementing the `Formatter` interface,
 requiring a `Format` method. `Format` takes an `*Entry`. `entry.Data` is a
-`Fields` type (`map[string]interface{}`) with all your fields as well as the
+`Fields` type (`map[string]any`) with all your fields as well as the
 default ones (see Entries section above):
 
 ```go
