@@ -40,7 +40,7 @@ plain text):
 
 ![Colored](http://i.imgur.com/PY7qMwd.png)
 
-With `log.SetFormatter(&log.JSONFormatter{})`, for easy parsing by logstash
+With `logrus.SetFormatter(&logrus.JSONFormatter{})`, for easy parsing by logstash
 or Splunk:
 
 ```text
@@ -60,7 +60,7 @@ ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 "time":"2014-03-10 19:57:38.562543128 -0400 EDT"}
 ```
 
-With the default `log.SetFormatter(&log.TextFormatter{})` when a TTY is not
+With the default `logrus.SetFormatter(&logrus.TextFormatter{})` when a TTY is not
 attached, the output is compatible with the
 [logfmt](https://pkg.go.dev/github.com/kr/logfmt) format:
 
@@ -75,17 +75,18 @@ time="2015-03-26T01:27:38-04:00" level=fatal msg="The ice breaks!" err=&{0x20822
 To ensure this behaviour even if a TTY is attached, set your formatter as follows:
 
 ```go
-	log.SetFormatter(&log.TextFormatter{
-		DisableColors: true,
-		FullTimestamp: true,
-	})
+logrus.SetFormatter(&logrus.TextFormatter{
+    DisableColors: true,
+    FullTimestamp: true,
+})
 ```
 
 #### Logging Method Name
 
 If you wish to add the calling method as a field, instruct the logger via:
+
 ```go
-log.SetReportCaller(true)
+logrus.SetReportCaller(true)
 ```
 This adds the caller as 'method' like so:
 
@@ -100,10 +101,10 @@ time="2015-03-26T01:27:38-04:00" level=fatal method=github.com/sirupsen/arcticcr
 Note that this does add measurable overhead - the cost will depend on the version of Go, but is
 between 20 and 40% in recent tests with 1.6 and 1.7.  You can validate this in your
 environment via benchmarks:
-```
+
+```bash
 go test -bench=.*CallerTracing
 ```
-
 
 #### Case-sensitivity
 
@@ -118,12 +119,10 @@ The simplest way to use Logrus is simply the package-level exported logger:
 ```go
 package main
 
-import (
-  log "github.com/sirupsen/logrus"
-)
+import "github.com/sirupsen/logrus"
 
 func main() {
-  log.WithFields(log.Fields{
+  logrus.WithFields(logrus.Fields{
     "animal": "walrus",
   }).Info("A walrus appears")
 }
@@ -139,6 +138,7 @@ package main
 
 import (
   "os"
+
   log "github.com/sirupsen/logrus"
 )
 
@@ -190,26 +190,27 @@ package main
 
 import (
   "os"
+
   "github.com/sirupsen/logrus"
 )
 
 // Create a new instance of the logger. You can have any number of instances.
-var log = logrus.New()
+var logger = logrus.New()
 
 func main() {
   // The API for setting attributes is a little different than the package level
-  // exported logger. See Godoc.
-  log.Out = os.Stdout
+  // exported logger. See Godoc. 
+  logger.Out = os.Stdout
 
   // You could set this to any `io.Writer` such as a file
   // file, err := os.OpenFile("logrus.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
   // if err == nil {
-  //  log.Out = file
+  //  logger.Out = file
   // } else {
-  //  log.Info("Failed to log to file, using default stderr")
+  //  logger.Info("Failed to log to file, using default stderr")
   // }
 
-  log.WithFields(logrus.Fields{
+  logger.WithFields(logrus.Fields{
     "animal": "walrus",
     "size":   10,
   }).Info("A group of walrus emerges from the ocean")
@@ -219,12 +220,12 @@ func main() {
 #### Fields
 
 Logrus encourages careful, structured logging through logging fields instead of
-long, unparseable error messages. For example, instead of: `log.Fatalf("Failed
+long, unparseable error messages. For example, instead of: `logrus.Fatalf("Failed
 to send event %s to topic %s with key %d")`, you should log the much more
 discoverable:
 
 ```go
-log.WithFields(log.Fields{
+logrus.WithFields(logrus.Fields{
   "event": event,
   "topic": topic,
   "key": key,
@@ -245,12 +246,12 @@ seen as a hint you should add a field, however, you can still use the
 Often it's helpful to have fields _always_ attached to log statements in an
 application or parts of one. For example, you may want to always log the
 `request_id` and `user_ip` in the context of a request. Instead of writing
-`log.WithFields(log.Fields{"request_id": request_id, "user_ip": user_ip})` on
+`logger.WithFields(logrus.Fields{"request_id": request_id, "user_ip": user_ip})` on
 every line, you can create a `logrus.Entry` to pass around instead:
 
 ```go
-requestLogger := log.WithFields(log.Fields{"request_id": request_id, "user_ip": user_ip})
-requestLogger.Info("something happened on that request") # will log request_id and user_ip
+requestLogger := logger.WithFields(logrus.Fields{"request_id": request_id, "user_ip": user_ip})
+requestLogger.Info("something happened on that request") // will log request_id and user_ip
 requestLogger.Warn("something not great happened")
 ```
 
@@ -264,24 +265,27 @@ Logrus comes with [built-in hooks](hooks/). Add those, or your custom hook, in
 `init`:
 
 ```go
+package main
+
 import (
-  log "github.com/sirupsen/logrus"
-  "gopkg.in/gemnasium/logrus-airbrake-hook.v2" // the package is named "airbrake"
-  logrus_syslog "github.com/sirupsen/logrus/hooks/syslog"
   "log/syslog"
+
+  "github.com/sirupsen/logrus"
+  airbrake "gopkg.in/gemnasium/logrus-airbrake-hook.v2"
+  logrus_syslog "github.com/sirupsen/logrus/hooks/syslog"
 )
 
 func init() {
 
   // Use the Airbrake hook to report errors that have Error severity or above to
   // an exception tracker. You can create custom hooks, see the Hooks section.
-  log.AddHook(airbrake.NewHook(123, "xyz", "production"))
+  logrus.AddHook(airbrake.NewHook(123, "xyz", "production"))
 
   hook, err := logrus_syslog.NewSyslogHook("udp", "localhost:514", syslog.LOG_INFO, "")
   if err != nil {
-    log.Error("Unable to connect to local syslog daemon")
+    logrus.Error("Unable to connect to local syslog daemon")
   } else {
-    log.AddHook(hook)
+    logrus.AddHook(hook)
   }
 }
 ```
@@ -295,15 +299,15 @@ A list of currently known service hooks can be found in this wiki [page](https:/
 Logrus has seven logging levels: Trace, Debug, Info, Warning, Error, Fatal and Panic.
 
 ```go
-log.Trace("Something very low level.")
-log.Debug("Useful debugging information.")
-log.Info("Something noteworthy happened!")
-log.Warn("You should probably take a look at this.")
-log.Error("Something failed but I'm not quitting.")
+logrus.Trace("Something very low level.")
+logrus.Debug("Useful debugging information.")
+logrus.Info("Something noteworthy happened!")
+logrus.Warn("You should probably take a look at this.")
+logrus.Error("Something failed but I'm not quitting.")
 // Calls os.Exit(1) after logging
-log.Fatal("Bye.")
+logrus.Fatal("Bye.")
 // Calls panic() after logging
-log.Panic("I'm bailing.")
+logrus.Panic("I'm bailing.")
 ```
 
 You can set the logging level on a `Logger`, then it will only log entries with
@@ -311,13 +315,13 @@ that severity or anything above it:
 
 ```go
 // Will log anything that is info or above (warn, error, fatal, panic). Default.
-log.SetLevel(log.InfoLevel)
+logrus.SetLevel(logrus.InfoLevel)
 ```
 
-It may be useful to set `log.Level = logrus.DebugLevel` in a debug or verbose
+It may be useful to set `logrus.Level = logrus.DebugLevel` in a debug or verbose
 environment if your application has that.
 
-Note: If you want different log levels for global (`log.SetLevel(...)`) and syslog logging, please check the [syslog hook README](hooks/syslog/README.md#different-log-levels-for-local-and-remote-logging).
+Note: If you want different log levels for global (`logrus.SetLevel(...)`) and syslog logging, please check the [syslog hook README](hooks/syslog/README.md#different-log-levels-for-local-and-remote-logging).
 
 #### Entries
 
@@ -340,17 +344,17 @@ could do:
 
 ```go
 import (
-  log "github.com/sirupsen/logrus"
+  "github.com/sirupsen/logrus"
 )
 
 func init() {
   // do something here to set environment depending on an environment variable
   // or command-line flag
   if Environment == "production" {
-    log.SetFormatter(&log.JSONFormatter{})
+    logrus.SetFormatter(&logrus.JSONFormatter{})
   } else {
     // The TextFormatter is default, you don't actually have to do this.
-    log.SetFormatter(&log.TextFormatter{})
+    logrus.SetFormatter(&logrus.TextFormatter{})
   }
 }
 ```
@@ -393,10 +397,9 @@ requiring a `Format` method. `Format` takes an `*Entry`. `entry.Data` is a
 default ones (see Entries section above):
 
 ```go
-type MyJSONFormatter struct {
-}
+type MyJSONFormatter struct{}
 
-log.SetFormatter(new(MyJSONFormatter))
+logrus.SetFormatter(new(MyJSONFormatter))
 
 func (f *MyJSONFormatter) Format(entry *Entry) ([]byte, error) {
   // Note this doesn't include Time, Level and Message which are available on
@@ -462,10 +465,11 @@ Logrus has a built-in facility for asserting the presence of log messages. This 
 
 ```go
 import(
+  "testing"
+
   "github.com/sirupsen/logrus"
   "github.com/sirupsen/logrus/hooks/test"
   "github.com/stretchr/testify/assert"
-  "testing"
 )
 
 func TestSomething(t*testing.T){
@@ -488,13 +492,13 @@ level message is logged. The registered handlers will be executed before
 logrus performs an `os.Exit(1)`. This behavior may be helpful if callers need
 to gracefully shut down. Unlike a `panic("Something went wrong...")` call which can be intercepted with a deferred `recover` a call to `os.Exit(1)` can not be intercepted.
 
-```
-...
+```go
+// ...
 handler := func() {
   // gracefully shut down something...
 }
 logrus.RegisterExitHandler(handler)
-...
+// ...
 ```
 
 #### Thread safety
