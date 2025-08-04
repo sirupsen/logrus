@@ -41,8 +41,8 @@ func TestAllHooks(t *testing.T) {
 
 func TestLoggingWithHooksRace(t *testing.T) {
 
-	rand.Seed(time.Now().Unix())
-	unlocker := rand.Int() % 100
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	unlocker := r.Intn(100)
 
 	assert := assert.New(t)
 	logger, hook := NewNullLogger()
