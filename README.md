@@ -323,6 +323,40 @@ environment if your application has that.
 
 Note: If you want different log levels for global (`logrus.SetLevel(...)`) and syslog logging, please check the [syslog hook README](hooks/syslog/README.md#different-log-levels-for-local-and-remote-logging).
 
+#### Level colors
+
+The `TextFormatter` level colors itself can be customized as follows:
+
+Individual overrides:
+
+```go
+	log.SetFormatter(&log.TextFormatter{
+		LevelColors: log.DefaultLevelColors(&log.LevelColors{
+			Debug:   31, // Red
+      Default: 36, // Blue
+		}),
+		ForceColors: true, // Optional
+	})
+```
+
+Or you can provide a complete `log.LevelColors` struct: 
+
+```go
+	log.SetFormatter(&log.TextFormatter{
+		LevelColors: &log.LevelColors{
+			Trace:   37, // Gray
+			Debug:   37, // Gray
+			Warn:    33, // Yellow
+			Error:   31, // Red
+			Fatal:   31, // Red
+			Panic:   31, // Red
+			Info:    36, // Blue
+			Default: 36, // Blue
+		},
+		ForceColors: true, // Optional
+	})
+```
+
 #### Entries
 
 Besides the fields added with `WithField` or `WithFields` some fields are
