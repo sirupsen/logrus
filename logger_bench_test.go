@@ -1,7 +1,7 @@
 package logrus
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 )
@@ -65,7 +65,7 @@ func doLoggerBenchmarkWithFormatter(b *testing.B, f Formatter) {
 	b.SetParallelism(100)
 	log := New()
 	log.Formatter = f
-	log.Out = ioutil.Discard
+	log.Out = io.Discard
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			log.

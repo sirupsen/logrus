@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -636,7 +636,7 @@ func TestReplaceHooks(t *testing.T) {
 	old, cur := &TestHook{}, &TestHook{}
 
 	logger := New()
-	logger.SetOutput(ioutil.Discard)
+	logger.SetOutput(io.Discard)
 	logger.AddHook(old)
 
 	hooks := make(LevelHooks)
@@ -781,7 +781,7 @@ func TestReportCallerOnTextFormatter(t *testing.T) {
 
 func TestSetReportCallerRace(t *testing.T) {
 	l := New()
-	l.Out = ioutil.Discard
+	l.Out = io.Discard
 	l.SetReportCaller(true)
 
 	var wg sync.WaitGroup
