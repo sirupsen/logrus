@@ -4,7 +4,10 @@
 package slog
 
 import (
+	"context"
 	"log/slog"
+	"runtime"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -66,15 +69,13 @@ func (h *SlogHook) Levels() []logrus.Level {
 // Fire sends entry to the underlying slog logger. The Time and Caller fields
 // of entry are ignored.
 func (h *SlogHook) Fire(entry *logrus.Entry) error {
-	attrs := make([]interface{}, 0, len(entry.Data))
+	attrs := make([]any, 0, len(entry.Data))
 	for k, v := range entry.Data {
 		attrs = append(attrs, slog.Any(k, v))
 	}
-	h.logger.Log(
-		entry.Context,
-		h.toSlogLevel(entry.Level).Level(),
-		entry.Message,
-		attrs...,
-	)
-	return nil
+	var pcs [1]uintptr
+	runtime.Callers(3, pcs[:])
+	r := slog.NewRecord(time.Now(), h.toSlogLevel(entry.Level).Level(), entry.Message, pcs[0])
+	r.Add(attrs...)
+	return h.logger.Handler().Handle(context.Background(), r)
 }

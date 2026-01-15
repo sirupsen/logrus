@@ -5,8 +5,11 @@ package slog
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"io"
 	"log/slog"
+	"os"
 	"strings"
 	"testing"
 
@@ -85,5 +88,50 @@ func TestSlogHook(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+type errorHandler struct{}
+
+var _ slog.Handler = (*errorHandler)(nil)
+
+func (h *errorHandler) Enabled(context.Context, slog.Level) bool {
+	return true
+}
+
+func (h *errorHandler) Handle(context.Context, slog.Record) error {
+	return errors.New("boom")
+}
+
+func (h *errorHandler) WithAttrs([]slog.Attr) slog.Handler {
+	return h
+}
+
+func (h *errorHandler) WithGroup(string) slog.Handler {
+	return h
+}
+
+func TestSlogHook_error_propagates(t *testing.T) {
+	stderr := os.Stderr
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("failed to create pipe: %v", err)
+	}
+	os.Stderr = w
+	t.Cleanup(func() {
+		os.Stderr = stderr
+		_ = r.Close()
+		_ = w.Close()
+	})
+
+	slogLogger := slog.New(&errorHandler{})
+	log := logrus.New()
+	log.Out = io.Discard
+	log.AddHook(NewSlogHook(slogLogger))
+	log.WithField("key", "value").Error("test error")
+	_ = w.Close()
+	gotStderr, _ := io.ReadAll(r)
+	if !bytes.Contains(gotStderr, []byte("boom")) {
+		t.Errorf("expected stderr to contain 'boom', got: %s", string(gotStderr))
 	}
 }
