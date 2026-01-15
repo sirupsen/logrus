@@ -150,6 +150,7 @@ func TestSlogHook_source(t *testing.T) {
 	}))
 	log := logrus.New()
 	log.Out = io.Discard
+	log.ReportCaller = true
 	log.AddHook(NewSlogHook(slogLogger))
 	log.Info("info with source")
 	got := strings.TrimSpace(buf.String())
