@@ -1,4 +1,4 @@
-package slog
+package slog_test
 
 import (
 	"bytes"
@@ -12,12 +12,13 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	lslog "github.com/sirupsen/logrus/hooks/slog"
 )
 
 func TestSlogHook(t *testing.T) {
 	tests := []struct {
 		name   string
-		mapper LevelMapper
+		mapper lslog.LevelMapper
 		fn     func(*logrus.Logger)
 		want   []string
 	}{
@@ -71,7 +72,7 @@ func TestSlogHook(t *testing.T) {
 			}))
 			log := logrus.New()
 			log.Out = io.Discard
-			hook := NewSlogHook(slogLogger)
+			hook := lslog.NewSlogHook(slogLogger)
 			hook.LevelMapper = tt.mapper
 			log.AddHook(hook)
 			tt.fn(log)
@@ -123,7 +124,7 @@ func TestSlogHook_error_propagates(t *testing.T) {
 	slogLogger := slog.New(&errorHandler{})
 	log := logrus.New()
 	log.SetOutput(io.Discard)
-	log.AddHook(NewSlogHook(slogLogger))
+	log.AddHook(lslog.NewSlogHook(slogLogger))
 	log.WithField("key", "value").Error("test error")
 
 	// Restore stderr before closing the pipe writer to avoid leaving os.Stderr
@@ -150,7 +151,7 @@ func TestSlogHook_source(t *testing.T) {
 	log := logrus.New()
 	log.Out = io.Discard
 	log.ReportCaller = true
-	log.AddHook(NewSlogHook(slogLogger))
+	log.AddHook(lslog.NewSlogHook(slogLogger))
 	log.Info("info with source")
 	got := strings.TrimSpace(buf.String())
 	wantRE := regexp.MustCompile(`source=.*hooks[\\/]+slog[\\/]+slog_test\.go:\d+`)
