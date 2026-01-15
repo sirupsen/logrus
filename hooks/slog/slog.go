@@ -3,6 +3,7 @@ package slog
 import (
 	"context"
 	"log/slog"
+	"runtime"
 
 	"github.com/sirupsen/logrus"
 )
@@ -67,18 +68,23 @@ func (h *SlogHook) Levels() []logrus.Level {
 	return logrus.AllLevels
 }
 
-// Fire sends entry to the underlying slog logger. The Time and Caller fields
-// of entry are ignored.
+// Fire forwards the provided logrus Entry to the underlying slog.Logger's
+// Handler, mapping it to a slog.Record. Time and caller information are
+// preserved when available, and Entry.Data is converted to attributes.
+// If Entry.Context is nil, context.Background() is used.
 func (h *SlogHook) Fire(entry *logrus.Entry) error {
 	ctx := entry.Context
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	lvl := h.toSlogLevel(entry.Level).Level()
-	attrs := make([]any, 0, len(entry.Data))
+	attrs := make([]slog.Attr, 0, len(entry.Data))
 	for k, v := range entry.Data {
 		attrs = append(attrs, slog.Any(k, v))
 	}
-	h.logger.Log(ctx, lvl, entry.Message, attrs...)
-	return nil
+	var pcs [1]uintptr
+	runtime.Callers(3, pcs[:])
+	r := slog.NewRecord(entry.Time, lvl, entry.Message, pcs[0])
+	r.AddAttrs(attrs...)
+	return h.logger.Handler().Handle(ctx, r)
 }
