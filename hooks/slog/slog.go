@@ -83,7 +83,8 @@ func (h *SlogHook) Fire(entry *logrus.Entry) error {
 		attrs = append(attrs, slog.Any(k, v))
 	}
 	var pcs [1]uintptr
-	runtime.Callers(3, pcs[:])
+	// skip 8 callers to get to the original logrus caller
+	runtime.Callers(8, pcs[:])
 	r := slog.NewRecord(entry.Time, lvl, entry.Message, pcs[0])
 	r.AddAttrs(attrs...)
 	return h.logger.Handler().Handle(ctx, r)

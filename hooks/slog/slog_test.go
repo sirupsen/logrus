@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -116,19 +117,44 @@ func TestSlogHook_error_propagates(t *testing.T) {
 	}
 	os.Stderr = w
 	t.Cleanup(func() {
-		os.Stderr = stderr
 		_ = r.Close()
-		_ = w.Close()
 	})
 
 	slogLogger := slog.New(&errorHandler{})
 	log := logrus.New()
-	log.Out = io.Discard
+	log.SetOutput(io.Discard)
 	log.AddHook(NewSlogHook(slogLogger))
 	log.WithField("key", "value").Error("test error")
+
+	// Restore stderr before closing the pipe writer to avoid leaving os.Stderr
+	// pointing at a closed file descriptor.
+	os.Stderr = stderr
 	_ = w.Close()
 	gotStderr, _ := io.ReadAll(r)
 	if !bytes.Contains(gotStderr, []byte("boom")) {
 		t.Errorf("expected stderr to contain 'boom', got: %s", string(gotStderr))
+	}
+}
+
+func TestSlogHook_source(t *testing.T) {
+	buf := &bytes.Buffer{}
+	slogLogger := slog.New(slog.NewTextHandler(buf, &slog.HandlerOptions{
+		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.TimeKey {
+				return slog.Attr{}
+			}
+			return a
+		},
+		AddSource: true,
+	}))
+	log := logrus.New()
+	log.Out = io.Discard
+	log.ReportCaller = true
+	log.AddHook(NewSlogHook(slogLogger))
+	log.Info("info with source")
+	got := strings.TrimSpace(buf.String())
+	wantRE := regexp.MustCompile(`source=.*hooks[\\/]+slog[\\/]+slog_test\.go:\d+`)
+	if !wantRE.MatchString(got) {
+		t.Errorf("expected log to contain source attribute matching %q, got: %s", wantRE.String(), got)
 	}
 }
