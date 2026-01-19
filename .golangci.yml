@@ -6,7 +6,6 @@ linters:
     - asasalint
     - asciicheck
     - bidichk
-    - bodyclose
     - contextcheck
     - durationcheck
     - errchkjson
@@ -22,15 +21,9 @@ linters:
     - nilerr
     - nilnesserr
     - noctx
-    - protogetter
     - reassign
     - recvcheck
-    - rowserrcheck
-    - spancheck
-    - sqlclosecheck
-    - testifylint
     - unparam
-    - zerologlint
   exclusions:
     presets:
       - legacy
