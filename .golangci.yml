@@ -31,10 +31,6 @@ linters:
     - testifylint
     - unparam
     - zerologlint
-  settings:
-    errcheck:
-      check-type-assertions: false
-      check-blank: false
   exclusions:
     generated: lax
     presets:
