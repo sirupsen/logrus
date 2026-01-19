@@ -35,12 +35,6 @@ linters:
     errcheck:
       check-type-assertions: false
       check-blank: false
-    lll:
-      line-length: 100
-      tab-width: 4
-    whitespace:
-      multi-if: false
-      multi-func: false
   exclusions:
     generated: lax
     presets:
