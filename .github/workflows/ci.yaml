@@ -30,21 +30,20 @@ jobs:
   cross:
     name: Cross
     timeout-minutes: 10
-    strategy:
-      matrix:
-        go-version: [stable]
-        platform: [ubuntu-latest]
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     steps:
       - name: Install Go
         uses: actions/setup-go@v6
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: stable
       - name: Checkout code
         uses: actions/checkout@v6
-      - name: Cross
-        working-directory: ci
-        run: go run mage.go -v -w ../ crossBuild
+      - name: Build
+        run: |
+          for target in linux/amd64 darwin/amd64 darwin/arm64 freebsd/amd64 js/wasm solaris/amd64 windows/amd64 windows/arm64; do
+            echo "Building for $target"
+            GOOS=${target%/*} GOARCH=${target#*/} go build ./...
+          done
 
   test:
     name: Unit test
