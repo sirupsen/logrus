@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v6
       - name: Build
         run: |
-          for target in linux/amd64 darwin/amd64 darwin/arm64 freebsd/amd64 js/wasm solaris/amd64 windows/amd64 windows/arm64; do
+          for target in $(go tool dist list); do
             echo "Building for $target"
             GOOS=${target%/*} GOARCH=${target#*/} go build ./...
           done
