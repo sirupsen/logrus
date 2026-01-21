@@ -15,28 +15,28 @@ func TestAllHooks(t *testing.T) {
 
 	logger, hook := NewNullLogger()
 	assert.Nil(hook.LastEntry())
-	assert.Equal(0, len(hook.Entries))
+	assert.Empty(hook.Entries)
 
 	logger.Error("Hello error")
 	assert.Equal(logrus.ErrorLevel, hook.LastEntry().Level)
 	assert.Equal("Hello error", hook.LastEntry().Message)
-	assert.Equal(1, len(hook.Entries))
+	assert.Len(hook.Entries, 1)
 
 	logger.Warn("Hello warning")
 	assert.Equal(logrus.WarnLevel, hook.LastEntry().Level)
 	assert.Equal("Hello warning", hook.LastEntry().Message)
-	assert.Equal(2, len(hook.Entries))
+	assert.Len(hook.Entries, 2)
 
 	hook.Reset()
 	assert.Nil(hook.LastEntry())
-	assert.Equal(0, len(hook.Entries))
+	assert.Empty(hook.Entries)
 
 	hook = NewGlobal()
 
 	logrus.Error("Hello error")
 	assert.Equal(logrus.ErrorLevel, hook.LastEntry().Level)
 	assert.Equal("Hello error", hook.LastEntry().Message)
-	assert.Equal(1, len(hook.Entries))
+	assert.Len(hook.Entries, 1)
 }
 
 func TestLoggingWithHooksRace(t *testing.T) {
@@ -69,7 +69,7 @@ func TestLoggingWithHooksRace(t *testing.T) {
 	wgAll.Wait()
 
 	entries := hook.AllEntries()
-	assert.Equal(100, len(entries))
+	assert.Len(entries, 100)
 }
 
 // nolint:staticcheck // linter assumes logger.Fatal exits, resulting in false SA4006 warnings.
@@ -82,7 +82,7 @@ func TestFatalWithAlternateExit(t *testing.T) {
 	logger.Fatal("something went very wrong")
 	assert.Equal(logrus.FatalLevel, hook.LastEntry().Level)
 	assert.Equal("something went very wrong", hook.LastEntry().Message)
-	assert.Equal(1, len(hook.Entries))
+	assert.Len(hook.Entries, 1)
 }
 
 func TestNewLocal(t *testing.T) {

@@ -21,6 +21,7 @@ linters:
     - noctx
     - reassign
     - recvcheck
+    - testifylint
     - unparam
   exclusions:
     presets:

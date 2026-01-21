@@ -250,7 +250,7 @@ func TestUserSuppliedLevelFieldHasPrefix(t *testing.T) {
 		log.WithField("level", 1).Info("test")
 	}, func(fields Fields) {
 		assert.Equal(t, "info", fields["level"])
-		assert.Equal(t, 1.0, fields["fields.level"]) // JSON has floats only
+		assert.InDelta(t, 1.0, fields["fields.level"], 0.0001) // JSON has floats only
 	})
 }
 
@@ -342,7 +342,7 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	err := json.Unmarshal(buffer.Bytes(), &fields)
 	require.NoError(t, err, "should have decoded first message")
-	assert.Equal(t, 4, len(fields), "should only have msg/time/level/context fields")
+	assert.Len(t, fields, 4, "should only have msg/time/level/context fields")
 	assert.Equal(t, "looks delicious", fields["msg"])
 	assert.Equal(t, "eating raw fish", fields["context"])
 
@@ -352,7 +352,7 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	err = json.Unmarshal(buffer.Bytes(), &fields)
 	require.NoError(t, err, "should have decoded second message")
-	assert.Equal(t, 4, len(fields), "should only have msg/time/level/context fields")
+	assert.Len(t, fields, 4, "should only have msg/time/level/context fields")
 	assert.Equal(t, "omg it is!", fields["msg"])
 	assert.Equal(t, "eating raw fish", fields["context"])
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
@@ -375,7 +375,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 
 	err := json.Unmarshal(buffer.Bytes(), &fields)
 	require.NoError(t, err, "should have decoded first message")
-	assert.Equal(t, 6, len(fields), "should have msg/time/level/func/context fields")
+	assert.Len(t, fields, 6, "should have msg/time/level/func/context fields")
 	assert.Equal(t, "looks delicious", fields["msg"])
 	assert.Equal(t, "eating raw fish", fields["context"])
 	assert.Equal(t,
@@ -401,7 +401,7 @@ func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
 
 	err = json.Unmarshal(buffer.Bytes(), &fields)
 	require.NoError(t, err, "should have decoded second message")
-	assert.Equal(t, 11, len(fields), "should have all builtin fields plus foo,bar,baz,...")
+	assert.Len(t, fields, 11, "should have all builtin fields plus foo,bar,baz,...")
 	assert.Equal(t, "Stubblefield", fields["Clyde"])
 	assert.Equal(t, "Starks", fields["Jab'o"])
 	assert.Equal(t, "https://www.youtube.com/watch?v=V5DTznu-9v0", fields["uri"])
