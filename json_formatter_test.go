@@ -229,7 +229,7 @@ func TestJSONMessageKey(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 	s := string(b)
-	if !(strings.Contains(s, "message") && strings.Contains(s, "oh hai")) {
+	if !strings.Contains(s, `"message":"oh hai"`) {
 		t.Fatal("Expected JSON to format message key")
 	}
 }
@@ -366,7 +366,7 @@ func TestJSONEnableHTMLEscape(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 	s := string(b)
-	if !(strings.Contains(s, "u0026") && strings.Contains(s, "u003e") && strings.Contains(s, "u003c")) {
+	if !strings.Contains(s, `\u0026 \u003c \u003e`) {
 		t.Error("Message should be HTML escaped", s)
 	}
 }

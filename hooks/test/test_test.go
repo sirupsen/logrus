@@ -72,6 +72,7 @@ func TestLoggingWithHooksRace(t *testing.T) {
 	assert.Equal(100, len(entries))
 }
 
+// nolint:staticcheck // linter assumes logger.Fatal exits, resulting in false SA4006 warnings.
 func TestFatalWithAlternateExit(t *testing.T) {
 	assert := assert.New(t)
 
@@ -93,10 +94,10 @@ func TestNewLocal(t *testing.T) {
 
 	wg.Add(10)
 	for i := 0; i < 10; i++ {
-		go func(i int) {
+		go func() {
 			logger.Info("info")
 			wg.Done()
-		}(i)
+		}()
 	}
 
 	hook := NewLocal(logger)
