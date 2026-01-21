@@ -22,11 +22,11 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: stable
-      - uses: actions/checkout@v4
-      - uses: golangci/golangci-lint-action@v8
+      - uses: actions/checkout@v6
+      - uses: golangci/golangci-lint-action@v9
   cross:
     name: Cross
     timeout-minutes: 10
@@ -37,11 +37,11 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Cross
         working-directory: ci
         run: go run mage.go -v -w ../ crossBuild
@@ -56,10 +56,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version: ${{ matrix.go-version }}
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Test
       run: go test -race -v ./...
