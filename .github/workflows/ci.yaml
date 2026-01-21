@@ -32,12 +32,12 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
       - name: Install Go
         uses: actions/setup-go@v6
         with:
           go-version: stable
-      - name: Checkout code
-        uses: actions/checkout@v6
       - name: Build
         run: |
           for target in $(go tool dist list); do
