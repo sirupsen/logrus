@@ -88,6 +88,7 @@ func TestHandler(t *testing.T) {
 
 	outfile := filepath.Join(tempDir, "outfile.out")
 	arg := time.Now().UTC().String()
+	// TODO: change to exec.CommandContext(t.Context(), ...) once we switch to Go 1.24+.
 	err = exec.Command("go", "run", gofile, outfile, arg).Run()
 	if err == nil {
 		t.Fatalf("completed normally, should have failed")
