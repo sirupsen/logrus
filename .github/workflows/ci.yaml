@@ -30,21 +30,20 @@ jobs:
   cross:
     name: Cross
     timeout-minutes: 10
-    strategy:
-      matrix:
-        go-version: [stable]
-        platform: [ubuntu-latest]
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
       - name: Install Go
         uses: actions/setup-go@v6
         with:
-          go-version: ${{ matrix.go-version }}
-      - name: Checkout code
-        uses: actions/checkout@v6
-      - name: Cross
-        working-directory: ci
-        run: go run mage.go -v -w ../ crossBuild
+          go-version: stable
+      - name: Build
+        run: |
+          for target in $(go tool dist list); do
+            echo "Building for $target"
+            GOOS=${target%/*} GOARCH=${target#*/} go build ./...
+          done
 
   test:
     name: Unit test
