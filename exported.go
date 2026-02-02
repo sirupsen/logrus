@@ -41,7 +41,7 @@ func GetLevel() Level {
 	return std.GetLevel()
 }
 
-// IsLevelEnabled checks if the log level of the standard logger is greater than the level param
+// IsLevelEnabled checks if logging for the given level is enabled for the standard logger.
 func IsLevelEnabled(level Level) bool {
 	return std.IsLevelEnabled(level)
 }
