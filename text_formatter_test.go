@@ -560,7 +560,7 @@ func TestTextFormatterIsColored(t *testing.T) {
 			}
 			res := tf.isColored()
 			if runtime.GOOS == "windows" && !tf.ForceColors && !val.clicolorForceIsSet {
-				assert.Equal(subT, false, res)
+				assert.False(subT, res)
 			} else {
 				assert.Equal(subT, val.expectedResult, res)
 			}

@@ -1,6 +1,4 @@
 version: "2"
-run:
-  tests: false
 linters:
   enable:
     - asasalint
@@ -23,8 +21,16 @@ linters:
     - noctx
     - reassign
     - recvcheck
+    - testifylint
     - unparam
   exclusions:
     presets:
       - legacy
       - std-error-handling
+    rules:
+      # Exclude some linters from running on tests files.
+      - path: _test\.go
+        linters:
+          - gosec
+          - musttag
+          - noctx # TODO: enable once we switch to Go 1.24+.
