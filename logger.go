@@ -375,7 +375,7 @@ func (logger *Logger) AddHook(hook Hook) {
 	logger.Hooks.Add(hook)
 }
 
-// IsLevelEnabled checks if the log level of the logger is greater than the level param
+// IsLevelEnabled checks if logging for the given level is enabled.
 func (logger *Logger) IsLevelEnabled(level Level) bool {
 	return logger.level() >= level
 }
