@@ -287,14 +287,24 @@ func (entry *Entry) fireHooks() {
 }
 
 func (entry *Entry) write() {
+	// Snapshot the formatter and output under the lock to protect against
+	// concurrent SetFormatter/SetOutput calls, then release the lock before
+	// formatting. This avoids a deadlock when Format() triggers reentrant
+	// logging (e.g., a field's MarshalJSON calls logrus). See #1448, #1440.
 	entry.Logger.mu.Lock()
-	defer entry.Logger.mu.Unlock()
-	serialized, err := entry.Logger.Formatter.Format(entry)
+	formatter := entry.Logger.Formatter
+	out := entry.Logger.Out
+	entry.Logger.mu.Unlock()
+
+	serialized, err := formatter.Format(entry)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v\n", err)
 		return
 	}
-	if _, err := entry.Logger.Out.Write(serialized); err != nil {
+
+	entry.Logger.mu.Lock()
+	defer entry.Logger.mu.Unlock()
+	if _, err := out.Write(serialized); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
 	}
 }
