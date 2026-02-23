@@ -240,6 +240,8 @@ func (entry *Entry) log(level Level, msg string) {
 
 	if reportCaller {
 		newEntry.Caller = getCaller()
+	} else {
+		newEntry.Caller = entry.Caller
 	}
 
 	newEntry.fireHooks()
