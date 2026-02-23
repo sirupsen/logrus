@@ -1,4 +1,4 @@
-// +build js nacl plan9
+//go:build js || nacl || plan9
 
 package logrus
 

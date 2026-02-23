@@ -51,7 +51,7 @@ func TestLoggingWithHooksRace(t *testing.T) {
 	wgOne.Add(1)
 	wgAll.Add(100)
 
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		go func(i int) {
 			logger.Info("info")
 			wgAll.Done()
@@ -93,7 +93,7 @@ func TestNewLocal(t *testing.T) {
 	defer wg.Wait()
 
 	wg.Add(10)
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		go func() {
 			logger.Info("info")
 			wg.Done()

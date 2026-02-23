@@ -66,7 +66,7 @@ func WithContext(ctx context.Context) *Entry {
 //
 // Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal
 // or Panic on the Entry it returns.
-func WithField(key string, value interface{}) *Entry {
+func WithField(key string, value any) *Entry {
 	return std.WithField(key, value)
 }
 
@@ -90,47 +90,47 @@ func WithTime(t time.Time) *Entry {
 }
 
 // Trace logs a message at level Trace on the standard logger.
-func Trace(args ...interface{}) {
+func Trace(args ...any) {
 	std.Trace(args...)
 }
 
 // Debug logs a message at level Debug on the standard logger.
-func Debug(args ...interface{}) {
+func Debug(args ...any) {
 	std.Debug(args...)
 }
 
 // Print logs a message at level Info on the standard logger.
-func Print(args ...interface{}) {
+func Print(args ...any) {
 	std.Print(args...)
 }
 
 // Info logs a message at level Info on the standard logger.
-func Info(args ...interface{}) {
+func Info(args ...any) {
 	std.Info(args...)
 }
 
 // Warn logs a message at level Warn on the standard logger.
-func Warn(args ...interface{}) {
+func Warn(args ...any) {
 	std.Warn(args...)
 }
 
 // Warning logs a message at level Warn on the standard logger.
-func Warning(args ...interface{}) {
+func Warning(args ...any) {
 	std.Warning(args...)
 }
 
 // Error logs a message at level Error on the standard logger.
-func Error(args ...interface{}) {
+func Error(args ...any) {
 	std.Error(args...)
 }
 
 // Panic logs a message at level Panic on the standard logger.
-func Panic(args ...interface{}) {
+func Panic(args ...any) {
 	std.Panic(args...)
 }
 
 // Fatal logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
-func Fatal(args ...interface{}) {
+func Fatal(args ...any) {
 	std.Fatal(args...)
 }
 
@@ -180,91 +180,91 @@ func FatalFn(fn LogFunction) {
 }
 
 // Tracef logs a message at level Trace on the standard logger.
-func Tracef(format string, args ...interface{}) {
+func Tracef(format string, args ...any) {
 	std.Tracef(format, args...)
 }
 
 // Debugf logs a message at level Debug on the standard logger.
-func Debugf(format string, args ...interface{}) {
+func Debugf(format string, args ...any) {
 	std.Debugf(format, args...)
 }
 
 // Printf logs a message at level Info on the standard logger.
-func Printf(format string, args ...interface{}) {
+func Printf(format string, args ...any) {
 	std.Printf(format, args...)
 }
 
 // Infof logs a message at level Info on the standard logger.
-func Infof(format string, args ...interface{}) {
+func Infof(format string, args ...any) {
 	std.Infof(format, args...)
 }
 
 // Warnf logs a message at level Warn on the standard logger.
-func Warnf(format string, args ...interface{}) {
+func Warnf(format string, args ...any) {
 	std.Warnf(format, args...)
 }
 
 // Warningf logs a message at level Warn on the standard logger.
-func Warningf(format string, args ...interface{}) {
+func Warningf(format string, args ...any) {
 	std.Warningf(format, args...)
 }
 
 // Errorf logs a message at level Error on the standard logger.
-func Errorf(format string, args ...interface{}) {
+func Errorf(format string, args ...any) {
 	std.Errorf(format, args...)
 }
 
 // Panicf logs a message at level Panic on the standard logger.
-func Panicf(format string, args ...interface{}) {
+func Panicf(format string, args ...any) {
 	std.Panicf(format, args...)
 }
 
 // Fatalf logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
-func Fatalf(format string, args ...interface{}) {
+func Fatalf(format string, args ...any) {
 	std.Fatalf(format, args...)
 }
 
 // Traceln logs a message at level Trace on the standard logger.
-func Traceln(args ...interface{}) {
+func Traceln(args ...any) {
 	std.Traceln(args...)
 }
 
 // Debugln logs a message at level Debug on the standard logger.
-func Debugln(args ...interface{}) {
+func Debugln(args ...any) {
 	std.Debugln(args...)
 }
 
 // Println logs a message at level Info on the standard logger.
-func Println(args ...interface{}) {
+func Println(args ...any) {
 	std.Println(args...)
 }
 
 // Infoln logs a message at level Info on the standard logger.
-func Infoln(args ...interface{}) {
+func Infoln(args ...any) {
 	std.Infoln(args...)
 }
 
 // Warnln logs a message at level Warn on the standard logger.
-func Warnln(args ...interface{}) {
+func Warnln(args ...any) {
 	std.Warnln(args...)
 }
 
 // Warningln logs a message at level Warn on the standard logger.
-func Warningln(args ...interface{}) {
+func Warningln(args ...any) {
 	std.Warningln(args...)
 }
 
 // Errorln logs a message at level Error on the standard logger.
-func Errorln(args ...interface{}) {
+func Errorln(args ...any) {
 	std.Errorln(args...)
 }
 
 // Panicln logs a message at level Panic on the standard logger.
-func Panicln(args ...interface{}) {
+func Panicln(args ...any) {
 	std.Panicln(args...)
 }
 
 // Fatalln logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
-func Fatalln(args ...interface{}) {
+func Fatalln(args ...any) {
 	std.Fatalln(args...)
 }

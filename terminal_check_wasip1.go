@@ -1,5 +1,4 @@
 //go:build wasip1
-// +build wasip1
 
 package logrus
 

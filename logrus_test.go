@@ -425,7 +425,7 @@ func logLoop(iterations int, reportCaller bool) {
 	logger.Formatter = new(JSONFormatter)
 	logger.ReportCaller = reportCaller
 
-	for i := 0; i < iterations; i++ {
+	for i := range iterations {
 		logger.Infof("round %d of %d", i, iterations)
 	}
 }
@@ -551,7 +551,7 @@ func TestLevelString(t *testing.T) {
 
 func TestGetSetLevelRace(t *testing.T) {
 	wg := sync.WaitGroup{}
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
@@ -572,7 +572,7 @@ func TestLoggingRace(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(100)
 
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		go func() {
 			logger.Info("info")
 			wg.Done()
@@ -597,28 +597,28 @@ func TestLoggingRaceWithHooksOnEntry(t *testing.T) {
 
 	wg.Add(100)
 
-	for i := 0; i < 50; i++ {
+	for range 50 {
 		go func() {
 			cond.L.Lock()
 			for !start {
 				cond.Wait()
 			}
 			cond.L.Unlock()
-			for j := 0; j < 100; j++ {
+			for range 100 {
 				entry.Info("info")
 			}
 			wg.Done()
 		}()
 	}
 
-	for i := 0; i < 50; i++ {
+	for range 50 {
 		go func() {
 			cond.L.Lock()
 			for !start {
 				cond.Wait()
 			}
 			cond.L.Unlock()
-			for j := 0; j < 100; j++ {
+			for range 100 {
 				entry.WithField("another field", "with some data").Info("info")
 			}
 			wg.Done()
@@ -787,7 +787,7 @@ func TestSetReportCallerRace(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(100)
 
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		go func() {
 			l.Error("Some Error")
 			wg.Done()

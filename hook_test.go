@@ -196,7 +196,7 @@ func TestAddHookRace(t *testing.T) {
 func TestAddHookRace2(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		testname := fmt.Sprintf("Test %d", i)
 		t.Run(testname, func(t *testing.T) {
 			t.Parallel()

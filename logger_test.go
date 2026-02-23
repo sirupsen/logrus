@@ -20,7 +20,7 @@ func TestFieldValueError(t *testing.T) {
 	}
 	l.WithField("func", func() {}).Info("test")
 	fmt.Println(buf.String())
-	var data map[string]interface{}
+	var data map[string]any
 	if err := json.Unmarshal(buf.Bytes(), &data); err != nil {
 		t.Error("unexpected error", err)
 	}
@@ -38,7 +38,7 @@ func TestNoFieldValueError(t *testing.T) {
 	}
 	l.WithField("str", "str").Info("test")
 	fmt.Println(buf.String())
-	var data map[string]interface{}
+	var data map[string]any
 	if err := json.Unmarshal(buf.Bytes(), &data); err != nil {
 		t.Error("unexpected error", err)
 	}

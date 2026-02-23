@@ -1,4 +1,4 @@
-// +build !windows,!nacl,!plan9
+//go:build !windows && !nacl && !plan9
 
 package syslog
 

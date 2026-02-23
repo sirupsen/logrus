@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"maps"
 	"os"
 	"reflect"
 	"runtime"
@@ -82,9 +83,7 @@ func NewEntry(logger *Logger) *Entry {
 
 func (entry *Entry) Dup() *Entry {
 	data := make(Fields, len(entry.Data))
-	for k, v := range entry.Data {
-		data[k] = v
-	}
+	maps.Copy(data, entry.Data)
 	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, Context: entry.Context, err: entry.err}
 }
 
@@ -113,29 +112,25 @@ func (entry *Entry) WithError(err error) *Entry {
 // WithContext adds a context to the Entry.
 func (entry *Entry) WithContext(ctx context.Context) *Entry {
 	dataCopy := make(Fields, len(entry.Data))
-	for k, v := range entry.Data {
-		dataCopy[k] = v
-	}
+	maps.Copy(dataCopy, entry.Data)
 	return &Entry{Logger: entry.Logger, Data: dataCopy, Time: entry.Time, err: entry.err, Context: ctx}
 }
 
 // WithField adds a single field to the Entry.
-func (entry *Entry) WithField(key string, value interface{}) *Entry {
+func (entry *Entry) WithField(key string, value any) *Entry {
 	return entry.WithFields(Fields{key: value})
 }
 
 // WithFields adds a map of fields to the Entry.
 func (entry *Entry) WithFields(fields Fields) *Entry {
 	data := make(Fields, len(entry.Data)+len(fields))
-	for k, v := range entry.Data {
-		data[k] = v
-	}
+	maps.Copy(data, entry.Data)
 	fieldErr := entry.err
 	for k, v := range fields {
 		isErrField := false
 		if t := reflect.TypeOf(v); t != nil {
 			switch {
-			case t.Kind() == reflect.Func, t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Func:
+			case t.Kind() == reflect.Func, t.Kind() == reflect.Pointer && t.Elem().Kind() == reflect.Func:
 				isErrField = true
 			}
 		}
@@ -156,9 +151,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 // WithTime overrides the time of the Entry.
 func (entry *Entry) WithTime(t time.Time) *Entry {
 	dataCopy := make(Fields, len(entry.Data))
-	for k, v := range entry.Data {
-		dataCopy[k] = v
-	}
+	maps.Copy(dataCopy, entry.Data)
 	return &Entry{Logger: entry.Logger, Data: dataCopy, Time: t, err: entry.err, Context: entry.Context}
 }
 
@@ -186,7 +179,7 @@ func getCaller() *runtime.Frame {
 		_ = runtime.Callers(0, pcs)
 
 		// dynamic get the package name and the minimum caller depth
-		for i := 0; i < maximumCallerDepth; i++ {
+		for i := range maximumCallerDepth {
 			funcName := runtime.FuncForPC(pcs[i]).Name()
 			if strings.Contains(funcName, "getCaller") {
 				logrusPackage = getPackageName(funcName)
@@ -275,9 +268,7 @@ func (entry *Entry) fireHooks() {
 	var tmpHooks LevelHooks
 	entry.Logger.mu.Lock()
 	tmpHooks = make(LevelHooks, len(entry.Logger.Hooks))
-	for k, v := range entry.Logger.Hooks {
-		tmpHooks[k] = v
-	}
+	maps.Copy(tmpHooks, entry.Logger.Hooks)
 	entry.Logger.mu.Unlock()
 
 	err := tmpHooks.Fire(entry.Level, entry)
@@ -302,136 +293,136 @@ func (entry *Entry) write() {
 // Log will log a message at the level given as parameter.
 // Warning: using Log at Panic or Fatal level will not respectively Panic nor Exit.
 // For this behaviour Entry.Panic or Entry.Fatal should be used instead.
-func (entry *Entry) Log(level Level, args ...interface{}) {
+func (entry *Entry) Log(level Level, args ...any) {
 	if entry.Logger.IsLevelEnabled(level) {
 		entry.log(level, fmt.Sprint(args...))
 	}
 }
 
-func (entry *Entry) Trace(args ...interface{}) {
+func (entry *Entry) Trace(args ...any) {
 	entry.Log(TraceLevel, args...)
 }
 
-func (entry *Entry) Debug(args ...interface{}) {
+func (entry *Entry) Debug(args ...any) {
 	entry.Log(DebugLevel, args...)
 }
 
-func (entry *Entry) Print(args ...interface{}) {
+func (entry *Entry) Print(args ...any) {
 	entry.Info(args...)
 }
 
-func (entry *Entry) Info(args ...interface{}) {
+func (entry *Entry) Info(args ...any) {
 	entry.Log(InfoLevel, args...)
 }
 
-func (entry *Entry) Warn(args ...interface{}) {
+func (entry *Entry) Warn(args ...any) {
 	entry.Log(WarnLevel, args...)
 }
 
-func (entry *Entry) Warning(args ...interface{}) {
+func (entry *Entry) Warning(args ...any) {
 	entry.Warn(args...)
 }
 
-func (entry *Entry) Error(args ...interface{}) {
+func (entry *Entry) Error(args ...any) {
 	entry.Log(ErrorLevel, args...)
 }
 
-func (entry *Entry) Fatal(args ...interface{}) {
+func (entry *Entry) Fatal(args ...any) {
 	entry.Log(FatalLevel, args...)
 	entry.Logger.Exit(1)
 }
 
-func (entry *Entry) Panic(args ...interface{}) {
+func (entry *Entry) Panic(args ...any) {
 	entry.Log(PanicLevel, args...)
 }
 
 // Entry Printf family functions
 
-func (entry *Entry) Logf(level Level, format string, args ...interface{}) {
+func (entry *Entry) Logf(level Level, format string, args ...any) {
 	if entry.Logger.IsLevelEnabled(level) {
 		entry.Log(level, fmt.Sprintf(format, args...))
 	}
 }
 
-func (entry *Entry) Tracef(format string, args ...interface{}) {
+func (entry *Entry) Tracef(format string, args ...any) {
 	entry.Logf(TraceLevel, format, args...)
 }
 
-func (entry *Entry) Debugf(format string, args ...interface{}) {
+func (entry *Entry) Debugf(format string, args ...any) {
 	entry.Logf(DebugLevel, format, args...)
 }
 
-func (entry *Entry) Infof(format string, args ...interface{}) {
+func (entry *Entry) Infof(format string, args ...any) {
 	entry.Logf(InfoLevel, format, args...)
 }
 
-func (entry *Entry) Printf(format string, args ...interface{}) {
+func (entry *Entry) Printf(format string, args ...any) {
 	entry.Infof(format, args...)
 }
 
-func (entry *Entry) Warnf(format string, args ...interface{}) {
+func (entry *Entry) Warnf(format string, args ...any) {
 	entry.Logf(WarnLevel, format, args...)
 }
 
-func (entry *Entry) Warningf(format string, args ...interface{}) {
+func (entry *Entry) Warningf(format string, args ...any) {
 	entry.Warnf(format, args...)
 }
 
-func (entry *Entry) Errorf(format string, args ...interface{}) {
+func (entry *Entry) Errorf(format string, args ...any) {
 	entry.Logf(ErrorLevel, format, args...)
 }
 
-func (entry *Entry) Fatalf(format string, args ...interface{}) {
+func (entry *Entry) Fatalf(format string, args ...any) {
 	entry.Logf(FatalLevel, format, args...)
 	entry.Logger.Exit(1)
 }
 
-func (entry *Entry) Panicf(format string, args ...interface{}) {
+func (entry *Entry) Panicf(format string, args ...any) {
 	entry.Logf(PanicLevel, format, args...)
 }
 
 // Entry Println family functions
 
-func (entry *Entry) Logln(level Level, args ...interface{}) {
+func (entry *Entry) Logln(level Level, args ...any) {
 	if entry.Logger.IsLevelEnabled(level) {
 		entry.Log(level, entry.sprintlnn(args...))
 	}
 }
 
-func (entry *Entry) Traceln(args ...interface{}) {
+func (entry *Entry) Traceln(args ...any) {
 	entry.Logln(TraceLevel, args...)
 }
 
-func (entry *Entry) Debugln(args ...interface{}) {
+func (entry *Entry) Debugln(args ...any) {
 	entry.Logln(DebugLevel, args...)
 }
 
-func (entry *Entry) Infoln(args ...interface{}) {
+func (entry *Entry) Infoln(args ...any) {
 	entry.Logln(InfoLevel, args...)
 }
 
-func (entry *Entry) Println(args ...interface{}) {
+func (entry *Entry) Println(args ...any) {
 	entry.Infoln(args...)
 }
 
-func (entry *Entry) Warnln(args ...interface{}) {
+func (entry *Entry) Warnln(args ...any) {
 	entry.Logln(WarnLevel, args...)
 }
 
-func (entry *Entry) Warningln(args ...interface{}) {
+func (entry *Entry) Warningln(args ...any) {
 	entry.Warnln(args...)
 }
 
-func (entry *Entry) Errorln(args ...interface{}) {
+func (entry *Entry) Errorln(args ...any) {
 	entry.Logln(ErrorLevel, args...)
 }
 
-func (entry *Entry) Fatalln(args ...interface{}) {
+func (entry *Entry) Fatalln(args ...any) {
 	entry.Logln(FatalLevel, args...)
 	entry.Logger.Exit(1)
 }
 
-func (entry *Entry) Panicln(args ...interface{}) {
+func (entry *Entry) Panicln(args ...any) {
 	entry.Logln(PanicLevel, args...)
 }
 
@@ -439,7 +430,7 @@ func (entry *Entry) Panicln(args ...interface{}) {
 // fmt.Sprintln where spaces are always added between operands, regardless of
 // their type. Instead of vendoring the Sprintln implementation to spare a
 // string allocation, we do the simplest thing.
-func (entry *Entry) sprintlnn(args ...interface{}) string {
+func (entry *Entry) sprintlnn(args ...any) string {
 	msg := fmt.Sprintln(args...)
 	return msg[:len(msg)-1]
 }
