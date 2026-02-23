@@ -1,6 +1,6 @@
 module github.com/sirupsen/logrus
 
-go 1.17
+go 1.23
 
 require (
 	github.com/stretchr/testify v1.10.0
