@@ -568,6 +568,7 @@ func TestGetSetLevelRace(t *testing.T) {
 
 func TestLoggingRace(t *testing.T) {
 	logger := New()
+	logger.Out = &bytes.Buffer{}
 
 	var wg sync.WaitGroup
 	wg.Add(100)
@@ -583,6 +584,7 @@ func TestLoggingRace(t *testing.T) {
 
 func TestLoggingRaceWithHooksOnEntry(t *testing.T) {
 	logger := New()
+	logger.Out = &bytes.Buffer{}
 	hook := new(ModifyHook)
 	logger.AddHook(hook)
 	entry := logger.WithField("context", "clue")
@@ -769,6 +771,7 @@ func TestLogLevelEnabled(t *testing.T) {
 
 func TestReportCallerOnTextFormatter(t *testing.T) {
 	l := New()
+	l.Out = &bytes.Buffer{}
 
 	l.Formatter.(*TextFormatter).ForceColors = true
 	l.Formatter.(*TextFormatter).DisableColors = false
