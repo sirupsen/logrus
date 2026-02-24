@@ -1,3 +1,4 @@
+//go:build !appengine && !js && !windows && !nacl && !plan9
 // +build !appengine,!js,!windows,!nacl,!plan9
 
 package logrus
@@ -10,7 +11,11 @@ import (
 func checkIfTerminal(w io.Writer) bool {
 	switch v := w.(type) {
 	case *os.File:
-		return isTerminal(int(v.Fd()))
+		fd := v.Fd()
+		if fd > uintptr(^uint(0)>>1) {
+			return false
+		}
+		return isTerminal(int(fd))
 	default:
 		return false
 	}
