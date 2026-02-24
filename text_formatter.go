@@ -21,11 +21,7 @@ const (
 	gray   = 37
 )
 
-var baseTimestamp time.Time
-
-func init() {
-	baseTimestamp = time.Now()
-}
+var baseTimestamp = time.Now()
 
 // TextFormatter formats logs into text
 type TextFormatter struct {

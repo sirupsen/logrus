@@ -18,8 +18,10 @@ var (
 	// qualified package name, cached at first use
 	logrusPackage string
 
-	// Positions in the call stack when tracing to report the calling method
-	minimumCallerDepth int
+	// Positions in the call stack when tracing to report the calling method.
+	//
+	// Start at the bottom of the stack before the package-name cache is primed.
+	minimumCallerDepth = 1
 
 	// Used for caller information initialisation
 	callerInitOnce sync.Once
@@ -29,11 +31,6 @@ const (
 	maximumCallerDepth int = 25
 	knownLogrusFrames  int = 4
 )
-
-func init() {
-	// start at the bottom of the stack before the package-name cache is primed
-	minimumCallerDepth = 1
-}
 
 // ErrorKey defines the key when adding errors using [WithError], [Logger.WithError].
 var ErrorKey = "error"
