@@ -1,4 +1,4 @@
-package logrus
+package logrus_test
 
 import (
 	"encoding/json"
@@ -7,12 +7,14 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 )
 
 func TestErrorNotLost(t *testing.T) {
-	formatter := &JSONFormatter{}
+	formatter := &logrus.JSONFormatter{}
 
-	b, err := formatter.Format(WithField("error", errors.New("wild walrus")))
+	b, err := formatter.Format(logrus.WithField("error", errors.New("wild walrus")))
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -29,9 +31,9 @@ func TestErrorNotLost(t *testing.T) {
 }
 
 func TestErrorNotLostOnFieldNotNamedError(t *testing.T) {
-	formatter := &JSONFormatter{}
+	formatter := &logrus.JSONFormatter{}
 
-	b, err := formatter.Format(WithField("omg", errors.New("wild walrus")))
+	b, err := formatter.Format(logrus.WithField("omg", errors.New("wild walrus")))
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -48,9 +50,9 @@ func TestErrorNotLostOnFieldNotNamedError(t *testing.T) {
 }
 
 func TestFieldClashWithTime(t *testing.T) {
-	formatter := &JSONFormatter{}
+	formatter := &logrus.JSONFormatter{}
 
-	b, err := formatter.Format(WithField("time", "right now!"))
+	b, err := formatter.Format(logrus.WithField("time", "right now!"))
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -71,9 +73,9 @@ func TestFieldClashWithTime(t *testing.T) {
 }
 
 func TestFieldClashWithMsg(t *testing.T) {
-	formatter := &JSONFormatter{}
+	formatter := &logrus.JSONFormatter{}
 
-	b, err := formatter.Format(WithField("msg", "something"))
+	b, err := formatter.Format(logrus.WithField("msg", "something"))
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -90,9 +92,9 @@ func TestFieldClashWithMsg(t *testing.T) {
 }
 
 func TestFieldClashWithLevel(t *testing.T) {
-	formatter := &JSONFormatter{}
+	formatter := &logrus.JSONFormatter{}
 
-	b, err := formatter.Format(WithField("level", "something"))
+	b, err := formatter.Format(logrus.WithField("level", "something"))
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -109,15 +111,15 @@ func TestFieldClashWithLevel(t *testing.T) {
 }
 
 func TestFieldClashWithRemappedFields(t *testing.T) {
-	formatter := &JSONFormatter{
-		FieldMap: FieldMap{
-			FieldKeyTime:  "@timestamp",
-			FieldKeyLevel: "@level",
-			FieldKeyMsg:   "@message",
+	formatter := &logrus.JSONFormatter{
+		FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime:  "@timestamp",
+			logrus.FieldKeyLevel: "@level",
+			logrus.FieldKeyMsg:   "@message",
 		},
 	}
 
-	b, err := formatter.Format(WithFields(Fields{
+	b, err := formatter.Format(logrus.WithFields(logrus.Fields{
 		"@timestamp": "@timestamp",
 		"@level":     "@level",
 		"@message":   "@message",
@@ -163,15 +165,15 @@ func TestFieldClashWithRemappedFields(t *testing.T) {
 }
 
 func TestFieldsInNestedDictionary(t *testing.T) {
-	formatter := &JSONFormatter{
+	formatter := &logrus.JSONFormatter{
 		DataKey: "args",
 	}
 
-	logEntry := WithFields(Fields{
+	logEntry := logrus.WithFields(logrus.Fields{
 		"level": "level",
 		"test":  "test",
 	})
-	logEntry.Level = InfoLevel
+	logEntry.Level = logrus.InfoLevel
 
 	b, err := formatter.Format(logEntry)
 	if err != nil {
@@ -205,9 +207,9 @@ func TestFieldsInNestedDictionary(t *testing.T) {
 }
 
 func TestJSONEntryEndsWithNewline(t *testing.T) {
-	formatter := &JSONFormatter{}
+	formatter := &logrus.JSONFormatter{}
 
-	b, err := formatter.Format(WithField("level", "something"))
+	b, err := formatter.Format(logrus.WithField("level", "something"))
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -218,13 +220,13 @@ func TestJSONEntryEndsWithNewline(t *testing.T) {
 }
 
 func TestJSONMessageKey(t *testing.T) {
-	formatter := &JSONFormatter{
-		FieldMap: FieldMap{
-			FieldKeyMsg: "message",
+	formatter := &logrus.JSONFormatter{
+		FieldMap: logrus.FieldMap{
+			logrus.FieldKeyMsg: "message",
 		},
 	}
 
-	b, err := formatter.Format(&Entry{Message: "oh hai"})
+	b, err := formatter.Format(&logrus.Entry{Message: "oh hai"})
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -235,13 +237,13 @@ func TestJSONMessageKey(t *testing.T) {
 }
 
 func TestJSONLevelKey(t *testing.T) {
-	formatter := &JSONFormatter{
-		FieldMap: FieldMap{
-			FieldKeyLevel: "somelevel",
+	formatter := &logrus.JSONFormatter{
+		FieldMap: logrus.FieldMap{
+			logrus.FieldKeyLevel: "somelevel",
 		},
 	}
 
-	b, err := formatter.Format(WithField("level", "something"))
+	b, err := formatter.Format(logrus.WithField("level", "something"))
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -252,13 +254,13 @@ func TestJSONLevelKey(t *testing.T) {
 }
 
 func TestJSONTimeKey(t *testing.T) {
-	formatter := &JSONFormatter{
-		FieldMap: FieldMap{
-			FieldKeyTime: "timeywimey",
+	formatter := &logrus.JSONFormatter{
+		FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime: "timeywimey",
 		},
 	}
 
-	b, err := formatter.Format(WithField("level", "something"))
+	b, err := formatter.Format(logrus.WithField("level", "something"))
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -269,10 +271,10 @@ func TestJSONTimeKey(t *testing.T) {
 }
 
 func TestFieldDoesNotClashWithCaller(t *testing.T) {
-	SetReportCaller(false)
-	formatter := &JSONFormatter{}
+	logrus.SetReportCaller(false)
+	formatter := &logrus.JSONFormatter{}
 
-	b, err := formatter.Format(WithField("func", "howdy pardner"))
+	b, err := formatter.Format(logrus.WithField("func", "howdy pardner"))
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -289,9 +291,9 @@ func TestFieldDoesNotClashWithCaller(t *testing.T) {
 }
 
 func TestFieldClashWithCaller(t *testing.T) {
-	SetReportCaller(true)
-	formatter := &JSONFormatter{}
-	e := WithField("func", "howdy pardner")
+	logrus.SetReportCaller(true)
+	formatter := &logrus.JSONFormatter{}
+	e := logrus.WithField("func", "howdy pardner")
 	e.Caller = &runtime.Frame{Function: "somefunc"}
 	b, err := formatter.Format(e)
 	if err != nil {
@@ -314,41 +316,41 @@ func TestFieldClashWithCaller(t *testing.T) {
 			entry["func"])
 	}
 
-	SetReportCaller(false) // return to default value
+	logrus.SetReportCaller(false) // return to default value
 }
 
 func TestJSONDisableTimestamp(t *testing.T) {
-	formatter := &JSONFormatter{
+	formatter := &logrus.JSONFormatter{
 		DisableTimestamp: true,
 	}
 
-	b, err := formatter.Format(WithField("level", "something"))
+	b, err := formatter.Format(logrus.WithField("level", "something"))
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
 	s := string(b)
-	if strings.Contains(s, FieldKeyTime) {
+	if strings.Contains(s, logrus.FieldKeyTime) {
 		t.Error("Did not prevent timestamp", s)
 	}
 }
 
 func TestJSONEnableTimestamp(t *testing.T) {
-	formatter := &JSONFormatter{}
+	formatter := &logrus.JSONFormatter{}
 
-	b, err := formatter.Format(WithField("level", "something"))
+	b, err := formatter.Format(logrus.WithField("level", "something"))
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
 	s := string(b)
-	if !strings.Contains(s, FieldKeyTime) {
+	if !strings.Contains(s, logrus.FieldKeyTime) {
 		t.Error("Timestamp not present", s)
 	}
 }
 
 func TestJSONDisableHTMLEscape(t *testing.T) {
-	formatter := &JSONFormatter{DisableHTMLEscape: true}
+	formatter := &logrus.JSONFormatter{DisableHTMLEscape: true}
 
-	b, err := formatter.Format(&Entry{Message: "& < >"})
+	b, err := formatter.Format(&logrus.Entry{Message: "& < >"})
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
@@ -359,9 +361,9 @@ func TestJSONDisableHTMLEscape(t *testing.T) {
 }
 
 func TestJSONEnableHTMLEscape(t *testing.T) {
-	formatter := &JSONFormatter{}
+	formatter := &logrus.JSONFormatter{}
 
-	b, err := formatter.Format(&Entry{Message: "& < >"})
+	b, err := formatter.Format(&logrus.Entry{Message: "& < >"})
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
