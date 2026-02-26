@@ -64,6 +64,22 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(true, "&foobar")
 	checkQuoting(true, "x y")
 	checkQuoting(true, "x,y")
+
+	// New/explicit: bool fast path (never needs quoting unless forced).
+	checkQuoting(false, true)
+	checkQuoting(false, false)
+
+	// New/explicit: numeric fast path (never needs quoting unless forced).
+	checkQuoting(false, 0)
+	checkQuoting(false, int64(-123))
+	checkQuoting(false, uint64(123))
+	checkQuoting(false, float64(3.14))
+
+	// New/explicit: []byte fast path.
+	checkQuoting(false, []byte("abcd"))
+	checkQuoting(true, []byte("x y"))
+
+	// Error path (string fast path via Error()).
 	checkQuoting(false, errors.New("invalid"))
 	checkQuoting(true, errors.New("invalid argument"))
 
@@ -74,12 +90,22 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(true, "foo\n\rbar")
 	checkQuoting(true, errors.New("invalid argument"))
 
+	// New/explicit: QuoteEmptyFields shouldn't affect non-empty primitives.
+	checkQuoting(false, 0)
+	checkQuoting(false, true)
+	checkQuoting(false, []byte("abcd"))
+
 	// Test forcing quotes.
 	tf.ForceQuote = true
 	checkQuoting(true, "")
 	checkQuoting(true, "abcd")
 	checkQuoting(true, "foo\n\rbar")
 	checkQuoting(true, errors.New("invalid argument"))
+
+	// New/explicit: ForceQuote should quote numeric/bool/[]byte too.
+	checkQuoting(true, 0)
+	checkQuoting(true, true)
+	checkQuoting(true, []byte("abcd"))
 
 	// Test forcing quotes when also disabling them.
 	tf.DisableQuote = true
@@ -95,6 +121,11 @@ func TestQuoting(t *testing.T) {
 	checkQuoting(false, "abcd")
 	checkQuoting(false, "foo\n\rbar")
 	checkQuoting(false, errors.New("invalid argument"))
+
+	// New/explicit: DisableQuote should keep primitives unquoted.
+	checkQuoting(false, 0)
+	checkQuoting(false, true)
+	checkQuoting(false, []byte("x y"))
 }
 
 func TestEscaping(t *testing.T) {

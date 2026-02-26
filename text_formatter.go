@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -249,28 +250,6 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	}
 }
 
-func (f *TextFormatter) needsQuoting(text string) bool {
-	if f.ForceQuote {
-		return true
-	}
-	if f.QuoteEmptyFields && len(text) == 0 {
-		return true
-	}
-	if f.DisableQuote {
-		return false
-	}
-	for _, ch := range text {
-		//nolint:staticcheck // QF1001: could apply De Morgan's law
-		if !((ch >= 'a' && ch <= 'z') ||
-			(ch >= 'A' && ch <= 'Z') ||
-			(ch >= '0' && ch <= '9') ||
-			ch == '-' || ch == '.' || ch == '_' || ch == '/' || ch == '@' || ch == '^' || ch == '+') {
-			return true
-		}
-	}
-	return false
-}
-
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value any) {
 	if b.Len() > 0 {
 		b.WriteByte(' ')
@@ -281,14 +260,144 @@ func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value any) {
 }
 
 func (f *TextFormatter) appendValue(b *bytes.Buffer, value any) {
-	stringVal, ok := value.(string)
-	if !ok {
-		stringVal = fmt.Sprint(value)
+	// Fast paths.
+	switch v := value.(type) {
+	case string:
+		f.appendString(b, v)
+		return
+	case []byte:
+		f.appendBytes(b, v)
+		return
+	case bool:
+		var raw [8]byte
+		f.appendBytes(b, strconv.AppendBool(raw[:0], v))
+		return
+	case error:
+		f.appendString(b, v.Error())
+		return
+	case fmt.Stringer:
+		f.appendString(b, v.String())
+		return
 	}
 
-	if !f.needsQuoting(stringVal) {
-		b.WriteString(stringVal)
-	} else {
-		fmt.Fprintf(b, "%q", stringVal)
+	// Handle common primitives.
+	var raw [64]byte
+	var num []byte
+
+	switch v := value.(type) {
+	case int:
+		num = strconv.AppendInt(raw[:0], int64(v), 10)
+	case int8:
+		num = strconv.AppendInt(raw[:0], int64(v), 10)
+	case int16:
+		num = strconv.AppendInt(raw[:0], int64(v), 10)
+	case int32:
+		num = strconv.AppendInt(raw[:0], int64(v), 10)
+	case int64:
+		num = strconv.AppendInt(raw[:0], v, 10)
+
+	case uint:
+		num = strconv.AppendUint(raw[:0], uint64(v), 10)
+	case uint8:
+		num = strconv.AppendUint(raw[:0], uint64(v), 10)
+	case uint16:
+		num = strconv.AppendUint(raw[:0], uint64(v), 10)
+	case uint32:
+		num = strconv.AppendUint(raw[:0], uint64(v), 10)
+	case uint64:
+		num = strconv.AppendUint(raw[:0], v, 10)
+	case uintptr:
+		num = strconv.AppendUint(raw[:0], uint64(v), 10)
+
+	case float32:
+		num = strconv.AppendFloat(raw[:0], float64(v), 'g', -1, 32)
+	case float64:
+		num = strconv.AppendFloat(raw[:0], v, 'g', -1, 64)
+
+	default:
+		f.appendString(b, fmt.Sprint(value))
+		return
+	}
+
+	f.appendNumeric(b, num)
+}
+
+func (f *TextFormatter) appendString(b *bytes.Buffer, s string) {
+	quote := f.ForceQuote || (f.QuoteEmptyFields && len(s) == 0) || (!f.DisableQuote && needsQuoting(s))
+	if !quote {
+		b.WriteString(s)
+		return
+	}
+	if len(s) == 0 {
+		b.WriteString(`""`)
+		return
+	}
+
+	var tmp [128]byte
+	b.Write(strconv.AppendQuote(tmp[:0], s))
+}
+
+func (f *TextFormatter) appendBytes(b *bytes.Buffer, bs []byte) {
+	quote := f.ForceQuote || (f.QuoteEmptyFields && len(bs) == 0) || (!f.DisableQuote && needsQuotingBytes(bs))
+	if !quote {
+		b.Write(bs)
+		return
+	}
+	if len(bs) == 0 {
+		b.WriteString(`""`)
+		return
+	}
+
+	var tmp [128]byte
+	b.Write(strconv.AppendQuote(tmp[:0], string(bs)))
+}
+
+func (f *TextFormatter) appendNumeric(b *bytes.Buffer, out []byte) {
+	if f.ForceQuote {
+		var tmp [128]byte
+		b.Write(strconv.AppendQuote(tmp[:0], string(out)))
+		return
+	}
+	b.Write(out)
+}
+
+// needsQuoting returns true if the string contains any byte that
+// requires quoting. It returns false when every byte is "safe" according
+// to isSafeByte.
+func needsQuoting(s string) bool {
+	// use an index loop (avoid rune decoding).
+	for i := range len(s) {
+		c := s[i]
+		if !isSafeByte(c) {
+			return true
+		}
+	}
+	return false
+}
+
+// needsQuotingBytes returns true if the byte slice contains any byte that
+// requires quoting. It returns false when every byte is "safe" according
+// to isSafeByte.
+func needsQuotingBytes(bs []byte) bool {
+	for _, c := range bs {
+		if !isSafeByte(c) {
+			return true
+		}
+	}
+	return false
+}
+
+// isSafeByte returns true if the byte is allowed unquoted (ASCII and in the allowlist).
+// It purposely uses byte arithmetic (no runes) for performance.
+func isSafeByte(ch byte) bool {
+	ok := ch < 0x80 && ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9'))
+	if ok {
+		return true
+	}
+	switch ch {
+	case '-', '.', '_', '/', '@', '^', '+':
+		return true
+	default:
+		return false
 	}
 }
