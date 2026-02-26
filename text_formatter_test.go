@@ -385,211 +385,146 @@ func TestTextFormatterFieldMap(t *testing.T) {
 }
 
 func TestTextFormatterIsColored(t *testing.T) {
-	params := []struct {
-		name               string
-		expectedResult     bool
-		isTerminal         bool
-		disableColor       bool
-		forceColor         bool
-		envColor           bool
-		clicolorIsSet      bool
-		clicolorForceIsSet bool
-		clicolorVal        string
-		clicolorForceVal   string
+	tests := []struct {
+		name         string
+		expected     bool
+		isTerminal   bool
+		disableColor bool
+		forceColors  bool
+		envVars      []string
 	}{
-		// Default values
 		{
-			name:               "testcase1",
-			expectedResult:     false,
-			isTerminal:         false,
-			disableColor:       false,
-			forceColor:         false,
-			envColor:           false,
-			clicolorIsSet:      false,
-			clicolorForceIsSet: false,
+			// Default values
+			name: "default",
 		},
-		// Output on terminal
 		{
-			name:               "testcase2",
-			expectedResult:     true,
-			isTerminal:         true,
-			disableColor:       false,
-			forceColor:         false,
-			envColor:           false,
-			clicolorIsSet:      false,
-			clicolorForceIsSet: false,
+			// Output on terminal
+			name:       "tty",
+			expected:   true,
+			isTerminal: true,
 		},
-		// Output on terminal with color disabled
 		{
-			name:               "testcase3",
-			expectedResult:     false,
-			isTerminal:         true,
-			disableColor:       true,
-			forceColor:         false,
-			envColor:           false,
-			clicolorIsSet:      false,
-			clicolorForceIsSet: false,
+			// Output on terminal with color disabled
+			name:         "tty,DisableColors=1",
+			expected:     false,
+			isTerminal:   true,
+			disableColor: true,
 		},
-		// Output not on terminal with color disabled
 		{
-			name:               "testcase4",
-			expectedResult:     false,
-			isTerminal:         false,
-			disableColor:       true,
-			forceColor:         false,
-			envColor:           false,
-			clicolorIsSet:      false,
-			clicolorForceIsSet: false,
+			// Output not on terminal with color disabled
+			name:         "DisableColors=1",
+			expected:     false,
+			disableColor: true,
 		},
-		// Output not on terminal with color forced
 		{
-			name:               "testcase5",
-			expectedResult:     true,
-			isTerminal:         false,
-			disableColor:       false,
-			forceColor:         true,
-			envColor:           false,
-			clicolorIsSet:      false,
-			clicolorForceIsSet: false,
+			// Output not on terminal with color forced
+			name:        "ForceColors=1",
+			expected:    true,
+			forceColors: true,
 		},
-		// Output on terminal with clicolor set to "0"
 		{
-			name:               "testcase6",
-			expectedResult:     false,
-			isTerminal:         true,
-			disableColor:       false,
-			forceColor:         false,
-			envColor:           true,
-			clicolorIsSet:      true,
-			clicolorForceIsSet: false,
-			clicolorVal:        "0",
+			// Output on terminal with clicolor set to "0"
+			name:       "tty,CLICOLOR=0",
+			expected:   false,
+			isTerminal: true,
+			envVars:    []string{"CLICOLOR=0"},
 		},
-		// Output on terminal with clicolor set to "1"
 		{
-			name:               "testcase7",
-			expectedResult:     true,
-			isTerminal:         true,
-			disableColor:       false,
-			forceColor:         false,
-			envColor:           true,
-			clicolorIsSet:      true,
-			clicolorForceIsSet: false,
-			clicolorVal:        "1",
+			// Output on terminal with clicolor set to "1"
+			name:       "tty,CLICOLOR=1",
+			expected:   true,
+			isTerminal: true,
+			envVars:    []string{"CLICOLOR=1"},
 		},
-		// Output not on terminal with clicolor set to "0"
 		{
-			name:               "testcase8",
-			expectedResult:     false,
-			isTerminal:         false,
-			disableColor:       false,
-			forceColor:         false,
-			envColor:           true,
-			clicolorIsSet:      true,
-			clicolorForceIsSet: false,
-			clicolorVal:        "0",
+			// Output not on terminal with clicolor set to "0"
+			name:     "CLICOLOR=0",
+			expected: false,
+			envVars:  []string{"CLICOLOR=0"},
 		},
-		// Output not on terminal with clicolor set to "1"
 		{
-			name:               "testcase9",
-			expectedResult:     false,
-			isTerminal:         false,
-			disableColor:       false,
-			forceColor:         false,
-			envColor:           true,
-			clicolorIsSet:      true,
-			clicolorForceIsSet: false,
-			clicolorVal:        "1",
+			// Output not on terminal with clicolor set to "1"
+			name:     "CLICOLOR=1",
+			expected: false,
+			envVars:  []string{"CLICOLOR=1"},
 		},
-		// Output not on terminal with clicolor set to "1" and force color
 		{
-			name:               "testcase10",
-			expectedResult:     true,
-			isTerminal:         false,
-			disableColor:       false,
-			forceColor:         true,
-			envColor:           true,
-			clicolorIsSet:      true,
-			clicolorForceIsSet: false,
-			clicolorVal:        "1",
+			// Output not on terminal with clicolor set to "1" and force color
+			name:        "ForceColors=1,CLICOLOR=1",
+			expected:    true,
+			forceColors: true,
+			envVars:     []string{"CLICOLOR=1"},
 		},
-		// Output not on terminal with clicolor set to "0" and force color
 		{
-			name:               "testcase11",
-			expectedResult:     false,
-			isTerminal:         false,
-			disableColor:       false,
-			forceColor:         true,
-			envColor:           true,
-			clicolorIsSet:      true,
-			clicolorForceIsSet: false,
-			clicolorVal:        "0",
+			// Output not on terminal with clicolor set to "0" and force color
+			name:        "ForceColors=1,CLICOLOR=0",
+			expected:    false,
+			forceColors: true,
+			envVars:     []string{"CLICOLOR=0"},
 		},
-		// Output not on terminal with clicolor_force set to "1"
 		{
-			name:               "testcase12",
-			expectedResult:     true,
-			isTerminal:         false,
-			disableColor:       false,
-			forceColor:         false,
-			envColor:           true,
-			clicolorIsSet:      false,
-			clicolorForceIsSet: true,
-			clicolorForceVal:   "1",
+			// Output not on terminal with clicolor_force set to "1"
+			name:     "CLICOLOR_FORCE=1",
+			expected: true,
+			envVars:  []string{"CLICOLOR_FORCE=1"},
 		},
-		// Output not on terminal with clicolor_force set to "0"
 		{
-			name:               "testcase13",
-			expectedResult:     false,
-			isTerminal:         false,
-			disableColor:       false,
-			forceColor:         false,
-			envColor:           true,
-			clicolorIsSet:      false,
-			clicolorForceIsSet: true,
-			clicolorForceVal:   "0",
+			// Output not on terminal with clicolor_force set to "0"
+			name:     "CLICOLOR_FORCE=0",
+			expected: false,
+			envVars:  []string{"CLICOLOR_FORCE=0"},
 		},
-		// Output on terminal with clicolor_force set to "0"
 		{
-			name:               "testcase14",
-			expectedResult:     false,
-			isTerminal:         true,
-			disableColor:       false,
-			forceColor:         false,
-			envColor:           true,
-			clicolorIsSet:      false,
-			clicolorForceIsSet: true,
-			clicolorForceVal:   "0",
+			// Output on terminal with clicolor_force set to "0"
+			name:       "tty,CLICOLOR_FORCE=0",
+			expected:   false,
+			isTerminal: true,
+			envVars:    []string{"CLICOLOR_FORCE=0"},
 		},
 	}
 
-	cleanenv := func() {
-		os.Unsetenv("CLICOLOR")
-		os.Unsetenv("CLICOLOR_FORCE")
-	}
-
-	defer cleanenv()
-
-	for _, val := range params {
-		t.Run("textformatter_"+val.name, func(subT *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// Unset existing vars to prevent them from interfering with the test.
+			unsetEnv(t, "CLICOLOR")
+			unsetEnv(t, "CLICOLOR_FORCE")
+			for _, envVar := range tc.envVars {
+				k, v, _ := strings.Cut(envVar, "=")
+				t.Setenv(k, v)
+			}
 			tf := TextFormatter{
-				isTerminal:                val.isTerminal,
-				DisableColors:             val.disableColor,
-				ForceColors:               val.forceColor,
-				EnvironmentOverrideColors: val.envColor,
+				isTerminal:                tc.isTerminal,
+				DisableColors:             tc.disableColor,
+				ForceColors:               tc.forceColors,
+				EnvironmentOverrideColors: len(tc.envVars) > 0,
 			}
-			cleanenv()
-			if val.clicolorIsSet {
-				os.Setenv("CLICOLOR", val.clicolorVal)
-			}
-			if val.clicolorForceIsSet {
-				os.Setenv("CLICOLOR_FORCE", val.clicolorForceVal)
-			}
+
+			// TODO(thaJeztah): need a way to mock "isTerminal" and check "isColored" for testing
+			//  without depending on non-exported methods and fields.
 			res := tf.isColored()
-			if runtime.GOOS == "windows" && !tf.ForceColors && !val.clicolorForceIsSet {
-				assert.False(subT, res)
+			if runtime.GOOS == "windows" && !tc.forceColors && os.Getenv("CLICOLOR_FORCE") == "" {
+				assert.False(t, res)
 			} else {
-				assert.Equal(subT, val.expectedResult, res)
+				assert.Equal(t, tc.expected, res)
 			}
+		})
+	}
+}
+
+// unsetEnv calls [os.Unsetenv] to unset an environment
+// variable if it is set, and uses t.Cleanup to restore
+// the environment variable to its original value after
+// the test.
+//
+// Because Uneetenv affects the whole process, it should
+// not be used in parallel tests or tests with parallel
+// ancestors.
+func unsetEnv(t *testing.T, env string) {
+	prevValue, ok := os.LookupEnv(env)
+	if ok {
+		_ = os.Unsetenv(env)
+		t.Cleanup(func() {
+			_ = os.Setenv(env, prevValue)
 		})
 	}
 }
