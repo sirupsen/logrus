@@ -112,18 +112,21 @@ func (f *TextFormatter) init(entry *Entry) {
 }
 
 func (f *TextFormatter) isColored() bool {
-	isColored := f.ForceColors || (f.isTerminal && (runtime.GOOS != "windows"))
-
-	if f.EnvironmentOverrideColors {
-		switch force, ok := os.LookupEnv("CLICOLOR_FORCE"); {
-		case ok && force != "0":
-			isColored = true
-		case ok && force == "0", os.Getenv("CLICOLOR") == "0":
-			isColored = false
-		}
+	if f.DisableColors {
+		return false
 	}
 
-	return isColored && !f.DisableColors
+	colored := f.ForceColors || (f.isTerminal && (runtime.GOOS != "windows"))
+	if !f.EnvironmentOverrideColors {
+		return colored
+	}
+	if force, ok := os.LookupEnv("CLICOLOR_FORCE"); ok {
+		return force != "0"
+	}
+	if os.Getenv("CLICOLOR") == "0" {
+		return false
+	}
+	return colored
 }
 
 // Format renders a single log entry
