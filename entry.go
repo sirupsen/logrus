@@ -235,10 +235,10 @@ func (entry *Entry) log(level Level, msg string) {
 	newEntry.Level = level
 	newEntry.Message = msg
 
-	newEntry.Logger.mu.Lock()
+	newEntry.Logger.mu.RLock()
 	reportCaller := newEntry.Logger.ReportCaller
 	bufPool := newEntry.getBufferPool()
-	newEntry.Logger.mu.Unlock()
+	newEntry.Logger.mu.RUnlock()
 
 	if reportCaller {
 		newEntry.Caller = getCaller()
@@ -274,27 +274,28 @@ func (entry *Entry) getBufferPool() (pool BufferPool) {
 }
 
 func (entry *Entry) fireHooks() {
-	entry.Logger.mu.Lock()
-	tmpHooks := maps.Clone(entry.Logger.Hooks)
-	entry.Logger.mu.Unlock()
-	if len(tmpHooks) == 0 {
+	entry.Logger.mu.RLock()
+	if len(entry.Logger.Hooks) == 0 {
+		entry.Logger.mu.RUnlock()
 		return
 	}
-
+	tmpHooks := maps.Clone(entry.Logger.Hooks)
+	entry.Logger.mu.RUnlock()
 	if err := tmpHooks.Fire(entry.Level, entry); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, "Failed to fire hook:", err)
 	}
 }
 
 func (entry *Entry) write() {
-	entry.Logger.mu.Lock()
-	defer entry.Logger.mu.Unlock()
+	entry.Logger.mu.RLock()
 	serialized, err := entry.Logger.Formatter.Format(entry)
+	out := entry.Logger.Out
+	entry.Logger.mu.RUnlock()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to obtain reader, %v\n", err)
 		return
 	}
-	if _, err := entry.Logger.Out.Write(serialized); err != nil {
+	if _, err := out.Write(serialized); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to write to log, %v\n", err)
 	}
 }
