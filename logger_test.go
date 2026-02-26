@@ -1,4 +1,4 @@
-package logrus
+package logrus_test
 
 import (
 	"bytes"
@@ -6,17 +6,18 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestFieldValueError(t *testing.T) {
 	buf := &bytes.Buffer{}
-	l := &Logger{
+	l := &logrus.Logger{
 		Out:       buf,
-		Formatter: new(JSONFormatter),
-		Hooks:     make(LevelHooks),
-		Level:     DebugLevel,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
 	}
 	l.WithField("func", func() {}).Info("test")
 	fmt.Println(buf.String())
@@ -24,17 +25,17 @@ func TestFieldValueError(t *testing.T) {
 	if err := json.Unmarshal(buf.Bytes(), &data); err != nil {
 		t.Error("unexpected error", err)
 	}
-	_, ok := data[FieldKeyLogrusError]
+	_, ok := data[logrus.FieldKeyLogrusError]
 	require.True(t, ok, `cannot found expected "logrus_error" field: %v`, data)
 }
 
 func TestNoFieldValueError(t *testing.T) {
 	buf := &bytes.Buffer{}
-	l := &Logger{
+	l := &logrus.Logger{
 		Out:       buf,
-		Formatter: new(JSONFormatter),
-		Hooks:     make(LevelHooks),
-		Level:     DebugLevel,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
 	}
 	l.WithField("str", "str").Info("test")
 	fmt.Println(buf.String())
@@ -42,7 +43,7 @@ func TestNoFieldValueError(t *testing.T) {
 	if err := json.Unmarshal(buf.Bytes(), &data); err != nil {
 		t.Error("unexpected error", err)
 	}
-	_, ok := data[FieldKeyLogrusError]
+	_, ok := data[logrus.FieldKeyLogrusError]
 	require.False(t, ok)
 }
 
@@ -50,15 +51,15 @@ func TestWarninglnNotEqualToWarning(t *testing.T) {
 	buf := &bytes.Buffer{}
 	bufln := &bytes.Buffer{}
 
-	formatter := new(TextFormatter)
+	formatter := new(logrus.TextFormatter)
 	formatter.DisableTimestamp = true
 	formatter.DisableLevelTruncation = true
 
-	l := &Logger{
+	l := &logrus.Logger{
 		Out:       buf,
 		Formatter: formatter,
-		Hooks:     make(LevelHooks),
-		Level:     DebugLevel,
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
 	}
 	l.Warning("hello,", "world")
 
@@ -84,7 +85,7 @@ func (p *testBufferPool) Put(buf *bytes.Buffer) {
 
 func TestLogger_SetBufferPool(t *testing.T) {
 	out := &bytes.Buffer{}
-	l := New()
+	l := logrus.New()
 	l.SetOutput(out)
 
 	pool := new(testBufferPool)
