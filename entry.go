@@ -237,10 +237,11 @@ func (entry *Entry) log(level Level, msg string) {
 
 	newEntry.Logger.mu.Lock()
 	reportCaller := newEntry.Logger.ReportCaller
+	reportCallerLevel := newEntry.Logger.ReportCallerLevel
 	bufPool := newEntry.getBufferPool()
 	newEntry.Logger.mu.Unlock()
 
-	if reportCaller {
+	if reportCaller && level <= reportCallerLevel {
 		newEntry.Caller = getCaller()
 	}
 
