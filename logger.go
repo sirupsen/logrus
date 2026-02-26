@@ -52,8 +52,20 @@ type Logger struct {
 type exitFunc func(int)
 
 type MutexWrap struct {
-	lock     sync.Mutex
+	lock     sync.RWMutex
 	disabled bool
+}
+
+func (mw *MutexWrap) RLock() {
+	if !mw.disabled {
+		mw.lock.RLock()
+	}
+}
+
+func (mw *MutexWrap) RUnlock() {
+	if !mw.disabled {
+		mw.lock.RUnlock()
+	}
 }
 
 func (mw *MutexWrap) Lock() {
@@ -378,15 +390,15 @@ func (logger *Logger) AddHook(hook Hook) {
 // hooksForLevel returns a snapshot of the hooks registered for the given level.
 // The returned slice is a shallow copy and may be used without holding logger.mu.
 func (logger *Logger) hooksForLevel(level Level) []Hook {
-	logger.mu.Lock()
+	logger.mu.RLock()
 	hooks := logger.Hooks[level]
 	if len(hooks) == 0 {
-		logger.mu.Unlock()
+		logger.mu.RUnlock()
 		return nil
 	}
 	out := make([]Hook, len(hooks))
 	copy(out, hooks)
-	logger.mu.Unlock()
+	logger.mu.RUnlock()
 	return out
 }
 

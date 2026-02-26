@@ -249,10 +249,10 @@ func (entry *Entry) log(level Level, msg string) {
 	newEntry.Level = level
 	newEntry.Message = msg
 
-	logger.mu.Lock()
+	logger.mu.RLock()
 	reportCaller := logger.ReportCaller
 	bufPool := newEntry.getBufferPool()
-	logger.mu.Unlock()
+	logger.mu.RUnlock()
 
 	if reportCaller {
 		newEntry.Caller = getCaller()
@@ -304,9 +304,9 @@ func (entry *Entry) write() {
 	// SetFormatter calls, then release the lock before formatting.
 	// This avoids a deadlock when Format() triggers reentrant logging (e.g.,
 	// a field's MarshalJSON calls logrus). See #1448, #1440.
-	entry.Logger.mu.Lock()
+	entry.Logger.mu.RLock()
 	formatter := entry.Logger.Formatter
-	entry.Logger.mu.Unlock()
+	entry.Logger.mu.RUnlock()
 
 	serialized, err := formatter.Format(entry)
 	if err != nil {
