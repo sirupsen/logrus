@@ -17,7 +17,7 @@ func TestErrorNotLost(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 
-	entry := make(map[string]interface{})
+	entry := make(map[string]any)
 	err = json.Unmarshal(b, &entry)
 	if err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
@@ -36,7 +36,7 @@ func TestErrorNotLostOnFieldNotNamedError(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 
-	entry := make(map[string]interface{})
+	entry := make(map[string]any)
 	err = json.Unmarshal(b, &entry)
 	if err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
@@ -55,7 +55,7 @@ func TestFieldClashWithTime(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 
-	entry := make(map[string]interface{})
+	entry := make(map[string]any)
 	err = json.Unmarshal(b, &entry)
 	if err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
@@ -78,7 +78,7 @@ func TestFieldClashWithMsg(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 
-	entry := make(map[string]interface{})
+	entry := make(map[string]any)
 	err = json.Unmarshal(b, &entry)
 	if err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
@@ -97,7 +97,7 @@ func TestFieldClashWithLevel(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 
-	entry := make(map[string]interface{})
+	entry := make(map[string]any)
 	err = json.Unmarshal(b, &entry)
 	if err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
@@ -129,7 +129,7 @@ func TestFieldClashWithRemappedFields(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 
-	entry := make(map[string]interface{})
+	entry := make(map[string]any)
 	err = json.Unmarshal(b, &entry)
 	if err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
@@ -178,13 +178,13 @@ func TestFieldsInNestedDictionary(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 
-	entry := make(map[string]interface{})
+	entry := make(map[string]any)
 	err = json.Unmarshal(b, &entry)
 	if err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
 	}
 
-	args := entry["args"].(map[string]interface{})
+	args := entry["args"].(map[string]any)
 
 	for _, field := range []string{"test", "level"} {
 		if value, present := args[field]; !present || value != field {
@@ -277,7 +277,7 @@ func TestFieldDoesNotClashWithCaller(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 
-	entry := make(map[string]interface{})
+	entry := make(map[string]any)
 	err = json.Unmarshal(b, &entry)
 	if err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
@@ -298,7 +298,7 @@ func TestFieldClashWithCaller(t *testing.T) {
 		t.Fatal("Unable to format entry: ", err)
 	}
 
-	entry := make(map[string]interface{})
+	entry := make(map[string]any)
 	err = json.Unmarshal(b, &entry)
 	if err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)

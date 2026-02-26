@@ -50,7 +50,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        go-version: [stable, oldstable, 1.17.x]
+        go-version: [stable, oldstable, 1.23.x]
         platform: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.platform }}
     steps:

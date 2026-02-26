@@ -37,10 +37,10 @@ func TestFormatting(t *testing.T) {
 func TestQuoting(t *testing.T) {
 	tf := &TextFormatter{DisableColors: true}
 
-	checkQuoting := func(q bool, value interface{}) {
+	checkQuoting := func(q bool, value any) {
 		b, _ := tf.Format(WithField("test", value))
-		idx := bytes.Index(b, ([]byte)("test="))
-		cont := bytes.Contains(b[idx+5:], []byte("\""))
+		_, after, _ := bytes.Cut(b, ([]byte)("test="))
+		cont := bytes.Contains(after, []byte("\""))
 		if cont != q {
 			if q {
 				t.Errorf("quoting expected for: %#v", value)
@@ -122,7 +122,7 @@ func TestEscaping_Interface(t *testing.T) {
 	ts := time.Now()
 
 	testCases := []struct {
-		value    interface{}
+		value    any
 		expected string
 	}{
 		{ts, fmt.Sprintf("\"%s\"", ts.String())},

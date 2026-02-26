@@ -12,18 +12,18 @@ func TestLogger_LogFn(t *testing.T) {
 	log.SetLevel(log.WarnLevel)
 
 	notCalled := 0
-	log.InfoFn(func() []interface{} {
+	log.InfoFn(func() []any {
 		notCalled++
-		return []interface{}{
+		return []any{
 			"Hello",
 		}
 	})
 	assert.Equal(t, 0, notCalled)
 
 	called := 0
-	log.ErrorFn(func() []interface{} {
+	log.ErrorFn(func() []any {
 		called++
-		return []interface{}{
+		return []any{
 			"Oopsi",
 		}
 	})

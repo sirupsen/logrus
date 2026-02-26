@@ -79,7 +79,7 @@ func TestWriterSplitNewlines(t *testing.T) {
 
 	const logNum = 10
 
-	for i := 0; i < logNum; i++ {
+	for range logNum {
 		_, err := writer.Write([]byte("bar\nfoo\n"))
 		require.NoError(t, err, "writer.Write failed")
 	}
@@ -108,11 +108,11 @@ func TestWriterSplitsMax64KB(t *testing.T) {
 	const bigWriteLen = bufio.MaxScanTokenSize + 100
 	output := make([]byte, bigWriteLen)
 	// lets not write zero bytes
-	for i := 0; i < bigWriteLen; i++ {
+	for i := range bigWriteLen {
 		output[i] = 'A'
 	}
 
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		len, err := writer.Write(output)
 		require.NoError(t, err, "writer.Write failed")
 		assert.Equal(t, bigWriteLen, len, "bytes written")
