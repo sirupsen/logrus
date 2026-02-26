@@ -82,9 +82,13 @@ func NewEntry(logger *Logger) *Entry {
 }
 
 func (entry *Entry) Dup() *Entry {
-	data := make(Fields, len(entry.Data))
-	maps.Copy(data, entry.Data)
-	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, Context: entry.Context, err: entry.err}
+	return &Entry{
+		Logger:  entry.Logger,
+		Data:    maps.Clone(entry.Data),
+		Time:    entry.Time,
+		Context: entry.Context,
+		err:     entry.err,
+	}
 }
 
 // Bytes returns the bytes representation of this entry from the formatter.
@@ -111,9 +115,13 @@ func (entry *Entry) WithError(err error) *Entry {
 
 // WithContext adds a context to the Entry.
 func (entry *Entry) WithContext(ctx context.Context) *Entry {
-	dataCopy := make(Fields, len(entry.Data))
-	maps.Copy(dataCopy, entry.Data)
-	return &Entry{Logger: entry.Logger, Data: dataCopy, Time: entry.Time, err: entry.err, Context: ctx}
+	return &Entry{
+		Logger:  entry.Logger,
+		Data:    maps.Clone(entry.Data),
+		Time:    entry.Time,
+		Context: ctx,
+		err:     entry.err,
+	}
 }
 
 // WithField adds a single field to the Entry.
@@ -150,9 +158,13 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 
 // WithTime overrides the time of the Entry.
 func (entry *Entry) WithTime(t time.Time) *Entry {
-	dataCopy := make(Fields, len(entry.Data))
-	maps.Copy(dataCopy, entry.Data)
-	return &Entry{Logger: entry.Logger, Data: dataCopy, Time: t, err: entry.err, Context: entry.Context}
+	return &Entry{
+		Logger:  entry.Logger,
+		Data:    maps.Clone(entry.Data),
+		Time:    t,
+		Context: entry.Context,
+		err:     entry.err,
+	}
 }
 
 // getPackageName reduces a fully qualified function name to the package name
@@ -265,15 +277,15 @@ func (entry *Entry) getBufferPool() (pool BufferPool) {
 }
 
 func (entry *Entry) fireHooks() {
-	var tmpHooks LevelHooks
 	entry.Logger.mu.Lock()
-	tmpHooks = make(LevelHooks, len(entry.Logger.Hooks))
-	maps.Copy(tmpHooks, entry.Logger.Hooks)
+	tmpHooks := maps.Clone(entry.Logger.Hooks)
 	entry.Logger.mu.Unlock()
+	if len(tmpHooks) == 0 {
+		return
+	}
 
-	err := tmpHooks.Fire(entry.Level, entry)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
+	if err := tmpHooks.Fire(entry.Level, entry); err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "Failed to fire hook:", err)
 	}
 }
 
