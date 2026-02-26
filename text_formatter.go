@@ -7,11 +7,9 @@ import (
 	"os"
 	"runtime"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"unicode/utf8"
 )
 
 const (
@@ -93,21 +91,11 @@ type TextFormatter struct {
 	CallerPrettyfier func(*runtime.Frame) (function string, file string)
 
 	terminalInitOnce sync.Once
-
-	// The max length of the level text, generated dynamically on init
-	levelTextMaxLength int
 }
 
 func (f *TextFormatter) init(entry *Entry) {
 	if entry.Logger != nil {
 		f.isTerminal = checkIfTerminal(entry.Logger.Out)
-	}
-	// Get the max length of the level text
-	for _, level := range AllLevels {
-		levelTextLength := utf8.RuneCount([]byte(level.String()))
-		if levelTextLength > f.levelTextMaxLength {
-			f.levelTextMaxLength = levelTextLength
-		}
 	}
 }
 
@@ -200,7 +188,6 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	if f.isColored() {
 		f.printColored(b, entry, keys, data, timestampFormat)
 	} else {
-
 		for _, key := range fixedKeys {
 			var value any
 			switch {
@@ -228,34 +215,6 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 }
 
 func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, data Fields, timestampFormat string) {
-	var levelColor int
-	switch entry.Level {
-	case DebugLevel, TraceLevel:
-		levelColor = gray
-	case WarnLevel:
-		levelColor = yellow
-	case ErrorLevel, FatalLevel, PanicLevel:
-		levelColor = red
-	case InfoLevel:
-		levelColor = blue
-	default:
-		levelColor = blue
-	}
-
-	levelText := strings.ToUpper(entry.Level.String())
-	if !f.DisableLevelTruncation && !f.PadLevelText {
-		levelText = levelText[0:4]
-	}
-	if f.PadLevelText {
-		// Generates the format string used in the next line, for example "%-6s" or "%-7s".
-		// Based on the max level text length.
-		formatString := "%-" + strconv.Itoa(f.levelTextMaxLength) + "s"
-		// Formats the level text by appending spaces up to the max length, for example:
-		// 	- "INFO   "
-		//	- "WARNING"
-		levelText = fmt.Sprintf(formatString, levelText)
-	}
-
 	// Remove a single newline if it already exists in the message to keep
 	// the behavior of logrus text_formatter the same as the stdlib log package
 	entry.Message = strings.TrimSuffix(entry.Message, "\n")
@@ -278,18 +237,22 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 		}
 	}
 
+	levelText := levelPrefix(entry.Level, f.DisableLevelTruncation, f.PadLevelText)
 	switch {
 	case f.DisableTimestamp:
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m%s %-44s ", levelColor, levelText, caller, entry.Message)
+		_, _ = fmt.Fprintf(b, "%s%s %-44s ", levelText, caller, entry.Message)
 	case !f.FullTimestamp:
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d]%s %-44s ", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), caller, entry.Message)
+		_, _ = fmt.Fprintf(b, "%s[%04d]%s %-44s ", levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), caller, entry.Message)
 	default:
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s]%s %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), caller, entry.Message)
+		_, _ = fmt.Fprintf(b, "%s[%s]%s %-44s ", levelText, entry.Time.Format(timestampFormat), caller, entry.Message)
 	}
+
+	// Keys use the same color as the level-prefix.
 	for _, k := range keys {
-		v := data[k]
-		fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=", levelColor, k)
-		f.appendValue(b, v)
+		b.WriteByte(' ')
+		b.WriteString(colorize(entry.Level, k))
+		b.WriteByte('=')
+		f.appendValue(b, data[k])
 	}
 }
 

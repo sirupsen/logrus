@@ -31,6 +31,8 @@ func (level Level) String() string {
 		return "fatal"
 	case PanicLevel:
 		return "panic"
+	case unknownLevel:
+		return "unknown"
 	default:
 		return "unknown"
 	}
@@ -79,6 +81,8 @@ func (level Level) MarshalText() ([]byte, error) {
 	switch level {
 	case TraceLevel, DebugLevel, InfoLevel, WarnLevel, ErrorLevel, FatalLevel, PanicLevel:
 		return []byte(level.String()), nil
+	case unknownLevel:
+		return nil, fmt.Errorf("not a valid logrus level %d", level)
 	default:
 		return nil, fmt.Errorf("not a valid logrus level %d", level)
 	}
@@ -116,6 +120,9 @@ const (
 	DebugLevel
 	// TraceLevel level. Designates finer-grained informational events than the Debug.
 	TraceLevel
+
+	// unknownLevel is used for unknown values; add new real levels above this
+	unknownLevel
 )
 
 // Won't compile if StdLogger can't be realized by a log.Logger
