@@ -1,48 +1,44 @@
-package logrus
+package logrus_test
 
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestFieldValueError(t *testing.T) {
 	buf := &bytes.Buffer{}
-	l := &Logger{
+	l := &logrus.Logger{
 		Out:       buf,
-		Formatter: new(JSONFormatter),
-		Hooks:     make(LevelHooks),
-		Level:     DebugLevel,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
 	}
 	l.WithField("func", func() {}).Info("test")
-	fmt.Println(buf.String())
 	var data map[string]any
-	if err := json.Unmarshal(buf.Bytes(), &data); err != nil {
-		t.Error("unexpected error", err)
-	}
-	_, ok := data[FieldKeyLogrusError]
-	require.True(t, ok, `cannot found expected "logrus_error" field: %v`, data)
+	err := json.Unmarshal(buf.Bytes(), &data)
+	require.NoError(t, err, "output:\n%s", buf.String())
+	_, ok := data[logrus.FieldKeyLogrusError]
+	require.True(t, ok, `cannot find expected "logrus_error" field: %v`, data)
 }
 
 func TestNoFieldValueError(t *testing.T) {
 	buf := &bytes.Buffer{}
-	l := &Logger{
+	l := &logrus.Logger{
 		Out:       buf,
-		Formatter: new(JSONFormatter),
-		Hooks:     make(LevelHooks),
-		Level:     DebugLevel,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
 	}
 	l.WithField("str", "str").Info("test")
-	fmt.Println(buf.String())
 	var data map[string]any
-	if err := json.Unmarshal(buf.Bytes(), &data); err != nil {
-		t.Error("unexpected error", err)
-	}
-	_, ok := data[FieldKeyLogrusError]
+	err := json.Unmarshal(buf.Bytes(), &data)
+	require.NoError(t, err, "output:\n%s", buf.String())
+	_, ok := data[logrus.FieldKeyLogrusError]
 	require.False(t, ok)
 }
 
@@ -50,22 +46,22 @@ func TestWarninglnNotEqualToWarning(t *testing.T) {
 	buf := &bytes.Buffer{}
 	bufln := &bytes.Buffer{}
 
-	formatter := new(TextFormatter)
+	formatter := new(logrus.TextFormatter)
 	formatter.DisableTimestamp = true
 	formatter.DisableLevelTruncation = true
 
-	l := &Logger{
+	l := &logrus.Logger{
 		Out:       buf,
 		Formatter: formatter,
-		Hooks:     make(LevelHooks),
-		Level:     DebugLevel,
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
 	}
 	l.Warning("hello,", "world")
 
 	l.SetOutput(bufln)
 	l.Warningln("hello,", "world")
 
-	assert.NotEqual(t, buf.String(), bufln.String(), "Warning() and Wantingln() should not be equal")
+	assert.NotEqual(t, buf.String(), bufln.String(), "Warning() and Warningln() should not be equal")
 }
 
 type testBufferPool struct {
@@ -84,7 +80,7 @@ func (p *testBufferPool) Put(buf *bytes.Buffer) {
 
 func TestLogger_SetBufferPool(t *testing.T) {
 	out := &bytes.Buffer{}
-	l := New()
+	l := logrus.New()
 	l.SetOutput(out)
 
 	pool := new(testBufferPool)
