@@ -68,6 +68,10 @@ func (mw *MutexWrap) Unlock() {
 	}
 }
 
+func (mw *MutexWrap) Enable() {
+	mw.disabled = false
+}
+
 func (mw *MutexWrap) Disable() {
 	mw.disabled = true
 }
@@ -345,6 +349,18 @@ func (logger *Logger) Exit(code int) {
 		logger.ExitFunc = os.Exit
 	}
 	logger.ExitFunc(code)
+}
+func (logger *Logger) Lock() {
+	logger.mu.Lock()
+}
+func (logger *Logger) Unlock() {
+	logger.mu.Unlock()
+}
+
+// When an implementer is manipulating the logger concurrently, the
+// implementer should call `SetYesLock` to enable the locking mechanism
+func (logger *Logger) SetYesLock() {
+	logger.mu.Enable()
 }
 
 // SetNoLock disables the lock for situations where a file is opened with
