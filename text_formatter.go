@@ -12,13 +12,6 @@ import (
 	"time"
 )
 
-const (
-	red    = 31
-	yellow = 33
-	blue   = 36
-	gray   = 37
-)
-
 var baseTimestamp = time.Now()
 
 // TextFormatter formats logs into text

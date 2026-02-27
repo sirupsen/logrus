@@ -1,9 +1,16 @@
 package logrus
 
 import (
-	"strconv"
 	"strings"
 	"sync"
+)
+
+const (
+	ansiReset  = "\x1b[0m"  // reset attributes
+	ansiRed    = "\x1b[31m" // red
+	ansiYellow = "\x1b[33m" // yellow
+	ansiCyan   = "\x1b[36m" // cyan
+	ansiWhite  = "\x1b[37m" // white (light gray)
 )
 
 type lvlPrefix struct {
@@ -13,18 +20,18 @@ type lvlPrefix struct {
 }
 
 func colorize(level Level, s string) string {
-	color := blue
+	color := ansiCyan
 	switch level {
 	case DebugLevel, TraceLevel:
-		color = gray
+		color = ansiWhite
 	case WarnLevel:
-		color = yellow
+		color = ansiYellow
 	case ErrorLevel, FatalLevel, PanicLevel:
-		color = red
+		color = ansiRed
 	case InfoLevel:
-		color = blue
+		color = ansiCyan
 	}
-	return "\x1b[" + strconv.Itoa(color) + "m" + s + "\x1b[0m"
+	return color + s + ansiReset
 }
 
 func formatLevel(level Level, disableTrunc, pad bool, maxLen int) string {
