@@ -1,4 +1,4 @@
-//go:build (darwin || dragonfly || freebsd || netbsd || openbsd || hurd) && !js
+//go:build darwin || dragonfly || freebsd || netbsd || openbsd || hurd
 
 package logrus
 
