@@ -52,8 +52,20 @@ type Logger struct {
 type exitFunc func(int)
 
 type MutexWrap struct {
-	lock     sync.Mutex
+	lock     sync.RWMutex
 	disabled bool
+}
+
+func (mw *MutexWrap) RLock() {
+	if !mw.disabled {
+		mw.lock.RLock()
+	}
+}
+
+func (mw *MutexWrap) RUnlock() {
+	if !mw.disabled {
+		mw.lock.RUnlock()
+	}
 }
 
 func (mw *MutexWrap) Lock() {
