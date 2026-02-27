@@ -30,7 +30,7 @@ func (entry *Entry) Writer() *io.PipeWriter {
 func (entry *Entry) WriterLevel(level Level) *io.PipeWriter {
 	reader, writer := io.Pipe()
 
-	var printFunc func(args ...any)
+	printFunc := entry.Print
 
 	// Determine which log function to use based on the specified log level
 	switch level {
@@ -48,10 +48,6 @@ func (entry *Entry) WriterLevel(level Level) *io.PipeWriter {
 		printFunc = entry.Fatal
 	case PanicLevel:
 		printFunc = entry.Panic
-	case unknownLevel:
-		printFunc = entry.Print
-	default:
-		printFunc = entry.Print
 	}
 
 	// Start a new goroutine to scan the input and write it to the logger using the specified print function.
