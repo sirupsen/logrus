@@ -13,7 +13,7 @@ type lvlPrefix struct {
 }
 
 func colorize(level Level, s string) string {
-	var color int
+	color := blue
 	switch level {
 	case DebugLevel, TraceLevel:
 		color = gray
@@ -22,10 +22,6 @@ func colorize(level Level, s string) string {
 	case ErrorLevel, FatalLevel, PanicLevel:
 		color = red
 	case InfoLevel:
-		color = blue
-	case unknownLevel:
-		color = blue
-	default:
 		color = blue
 	}
 	return "\x1b[" + strconv.Itoa(color) + "m" + s + "\x1b[0m"
@@ -46,8 +42,12 @@ func formatLevel(level Level, disableTrunc, pad bool, maxLen int) string {
 }
 
 var levelPrefixOnce = sync.OnceValues(func() (map[Level]lvlPrefix, lvlPrefix) {
+	var maxLevel Level
 	maxLen := 0
 	for _, lvl := range AllLevels {
+		if lvl > maxLevel {
+			maxLevel = lvl
+		}
 		if l := len(lvl.String()); l > maxLen {
 			maxLen = l
 		}
@@ -62,6 +62,7 @@ var levelPrefixOnce = sync.OnceValues(func() (map[Level]lvlPrefix, lvlPrefix) {
 		}
 	}
 
+	unknownLevel := maxLevel + 1
 	unknown := lvlPrefix{
 		full:      formatLevel(unknownLevel, true, false, maxLen),
 		truncated: formatLevel(unknownLevel, false, false, maxLen),
