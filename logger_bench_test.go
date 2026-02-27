@@ -1,33 +1,35 @@
-package logrus
+package logrus_test
 
 import (
 	"io"
 	"os"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 )
 
 func BenchmarkDummyLogger(b *testing.B) {
-	nullf, err := os.OpenFile("/dev/null", os.O_WRONLY, 0666)
+	nullf, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0666)
 	if err != nil {
 		b.Fatalf("%v", err)
 	}
 	defer nullf.Close()
-	doLoggerBenchmark(b, nullf, &TextFormatter{DisableColors: true}, smallFields)
+	doLoggerBenchmark(b, nullf, &logrus.TextFormatter{DisableColors: true}, smallFields)
 }
 
 func BenchmarkDummyLoggerNoLock(b *testing.B) {
-	nullf, err := os.OpenFile("/dev/null", os.O_WRONLY|os.O_APPEND, 0666)
+	nullf, err := os.OpenFile(os.DevNull, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		b.Fatalf("%v", err)
 	}
 	defer nullf.Close()
-	doLoggerBenchmarkNoLock(b, nullf, &TextFormatter{DisableColors: true}, smallFields)
+	doLoggerBenchmarkNoLock(b, nullf, &logrus.TextFormatter{DisableColors: true}, smallFields)
 }
 
-func doLoggerBenchmark(b *testing.B, out *os.File, formatter Formatter, fields Fields) {
-	logger := Logger{
+func doLoggerBenchmark(b *testing.B, out *os.File, formatter logrus.Formatter, fields logrus.Fields) {
+	logger := logrus.Logger{
 		Out:       out,
-		Level:     InfoLevel,
+		Level:     logrus.InfoLevel,
 		Formatter: formatter,
 	}
 	entry := logger.WithFields(fields)
@@ -38,10 +40,10 @@ func doLoggerBenchmark(b *testing.B, out *os.File, formatter Formatter, fields F
 	})
 }
 
-func doLoggerBenchmarkNoLock(b *testing.B, out *os.File, formatter Formatter, fields Fields) {
-	logger := Logger{
+func doLoggerBenchmarkNoLock(b *testing.B, out *os.File, formatter logrus.Formatter, fields logrus.Fields) {
+	logger := logrus.Logger{
 		Out:       out,
-		Level:     InfoLevel,
+		Level:     logrus.InfoLevel,
 		Formatter: formatter,
 	}
 	logger.SetNoLock()
@@ -54,16 +56,16 @@ func doLoggerBenchmarkNoLock(b *testing.B, out *os.File, formatter Formatter, fi
 }
 
 func BenchmarkLoggerJSONFormatter(b *testing.B) {
-	doLoggerBenchmarkWithFormatter(b, &JSONFormatter{})
+	doLoggerBenchmarkWithFormatter(b, &logrus.JSONFormatter{})
 }
 
 func BenchmarkLoggerTextFormatter(b *testing.B) {
-	doLoggerBenchmarkWithFormatter(b, &TextFormatter{})
+	doLoggerBenchmarkWithFormatter(b, &logrus.TextFormatter{})
 }
 
-func doLoggerBenchmarkWithFormatter(b *testing.B, f Formatter) {
+func doLoggerBenchmarkWithFormatter(b *testing.B, f logrus.Formatter) {
 	b.SetParallelism(100)
-	log := New()
+	log := logrus.New()
 	log.Formatter = f
 	log.Out = io.Discard
 	b.RunParallel(func(pb *testing.PB) {

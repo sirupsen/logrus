@@ -1,13 +1,42 @@
-package logrus
+package logrus_test
 
 import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
+type benchStringer string
+
+func (s benchStringer) String() string { return string(s) }
+
+var numericFields = logrus.Fields{
+	"i":   int(42),
+	"i64": int64(-1234567890),
+	"u":   uint(99),
+	"u64": uint64(18446744073709551615),
+	"f32": float32(3.1415927),
+	"f64": float64(-1.2345e6),
+}
+
+var boolFields = logrus.Fields{
+	"t": true,
+	"f": false,
+	"x": true,
+	"y": false,
+}
+
+var stringerFields = logrus.Fields{
+	"s1": benchStringer("alpha"),
+	"s2": benchStringer("beta"),
+	"s3": benchStringer("gamma-delta"), // includes '-' (still unquoted)
+	"s4": benchStringer("needs quote"), // includes space -> quoted path
+}
+
 // smallFields is a small size data set for benchmarking
-var smallFields = Fields{
+var smallFields = logrus.Fields{
 	"foo":   "bar",
 	"baz":   "qux",
 	"one":   "two",
@@ -15,7 +44,7 @@ var smallFields = Fields{
 }
 
 // largeFields is a large size data set for benchmarking
-var largeFields = Fields{
+var largeFields = logrus.Fields{
 	"foo":       "bar",
 	"baz":       "qux",
 	"one":       "two",
@@ -46,56 +75,77 @@ var largeFields = Fields{
 	"entries":   "yeah",
 }
 
-var errorFields = Fields{
+var errorFields = logrus.Fields{
 	"foo": fmt.Errorf("bar"),
 	"baz": fmt.Errorf("qux"),
 }
 
+func BenchmarkNumericTextFormatter(b *testing.B) {
+	doBenchmark(b, &logrus.TextFormatter{DisableColors: true}, numericFields)
+}
+
+func BenchmarkBoolTextFormatter(b *testing.B) {
+	doBenchmark(b, &logrus.TextFormatter{DisableColors: true}, boolFields)
+}
+
+func BenchmarkStringerTextFormatter(b *testing.B) {
+	doBenchmark(b, &logrus.TextFormatter{DisableColors: true}, stringerFields)
+}
+
 func BenchmarkErrorTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{DisableColors: true}, errorFields)
+	doBenchmark(b, &logrus.TextFormatter{DisableColors: true}, errorFields)
 }
 
 func BenchmarkSmallTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{DisableColors: true}, smallFields)
+	doBenchmark(b, &logrus.TextFormatter{DisableColors: true}, smallFields)
 }
 
 func BenchmarkLargeTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{DisableColors: true}, largeFields)
+	doBenchmark(b, &logrus.TextFormatter{DisableColors: true}, largeFields)
 }
 
 func BenchmarkSmallColoredTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{ForceColors: true}, smallFields)
+	doBenchmark(b, &logrus.TextFormatter{ForceColors: true}, smallFields)
 }
 
 func BenchmarkLargeColoredTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{ForceColors: true}, largeFields)
+	doBenchmark(b, &logrus.TextFormatter{ForceColors: true}, largeFields)
 }
 
 func BenchmarkSmallJSONFormatter(b *testing.B) {
-	doBenchmark(b, &JSONFormatter{}, smallFields)
+	doBenchmark(b, &logrus.JSONFormatter{}, smallFields)
 }
 
 func BenchmarkLargeJSONFormatter(b *testing.B) {
-	doBenchmark(b, &JSONFormatter{}, largeFields)
+	doBenchmark(b, &logrus.JSONFormatter{}, largeFields)
 }
 
-func doBenchmark(b *testing.B, formatter Formatter, fields Fields) {
-	logger := New()
+var sink []byte
 
-	entry := &Entry{
+func doBenchmark(b *testing.B, formatter logrus.Formatter, fields logrus.Fields) {
+	logger := logrus.New()
+
+	entry := &logrus.Entry{
 		Time:    time.Time{},
-		Level:   InfoLevel,
+		Level:   logrus.InfoLevel,
 		Message: "message",
 		Data:    fields,
 		Logger:  logger,
 	}
-	var d []byte
-	var err error
+
+	// Warm once to determine output size and validate.
+	d, err := formatter.Format(entry)
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.SetBytes(int64(len(d)))
+
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		d, err = formatter.Format(entry)
 		if err != nil {
 			b.Fatal(err)
 		}
-		b.SetBytes(int64(len(d)))
 	}
+	sink = d
 }
