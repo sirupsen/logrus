@@ -1,4 +1,4 @@
-//go:build !windows && !appengine
+//go:build !appengine
 
 package logrus
 
@@ -13,10 +13,13 @@ func checkIfTerminal(w io.Writer) bool {
 	if f, ok := w.(*os.File); ok {
 		fd := f.Fd()
 		maxInt := uintptr(^uint(0) >> 1)
-		if fd > maxInt {
+		if fd > maxInt || !term.IsTerminal(int(fd)) {
 			return false
 		}
-		return term.IsTerminal(int(fd))
+
+		// On Windows consoles, ANSI escape sequences are not processed
+		// unless ENABLE_VIRTUAL_TERMINAL_PROCESSING is set.
+		return enableVirtualTerminalProcessing(fd)
 	}
 	return false
 }
