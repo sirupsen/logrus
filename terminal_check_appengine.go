@@ -2,10 +2,6 @@
 
 package logrus
 
-import (
-	"io"
-)
-
-func checkIfTerminal(w io.Writer) bool {
+func checkIfTerminal(_ any) bool {
 	return true
 }

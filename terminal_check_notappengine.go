@@ -1,4 +1,4 @@
-//go:build !appengine && !js && !windows && !nacl && !plan9
+//go:build !appengine && !js && !windows && !nacl && !plan9 && !wasi && !wasip1
 
 package logrus
 
