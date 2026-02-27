@@ -304,3 +304,41 @@ func TestEntryFormatterRace(t *testing.T) {
 		entry.Info("should not race")
 	}()
 }
+
+// reentrantValue is a type whose MarshalJSON method triggers another log call,
+// which would deadlock if the logger mutex is held during formatting.
+type reentrantValue struct {
+	logger *Logger
+}
+
+func (r reentrantValue) MarshalJSON() ([]byte, error) {
+	r.logger.Info("reentrant log from MarshalJSON")
+	return []byte(`"reentrant"`), nil
+}
+
+// TestEntryReentrantLoggingDeadlock verifies that logging from within a field's
+// MarshalJSON (or similar serialization callback) does not deadlock.
+// This is a regression test for https://github.com/sirupsen/logrus/issues/1448.
+func TestEntryReentrantLoggingDeadlock(t *testing.T) {
+	logger := New()
+	buf := &bytes.Buffer{}
+	logger.Out = buf
+	logger.SetFormatter(&JSONFormatter{})
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		logger.WithFields(Fields{
+			"key": reentrantValue{logger: logger},
+		}).Info("outer log message")
+	}()
+
+	select {
+	case <-done:
+		// Success: the log call completed without deadlocking.
+		output := buf.String()
+		assert.Contains(t, output, "outer log message")
+	case <-time.After(5 * time.Second):
+		t.Fatal("deadlock detected: reentrant logging from MarshalJSON blocked for 5 seconds")
+	}
+}
