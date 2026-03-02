@@ -217,10 +217,11 @@ func getCaller() *runtime.Frame {
 	return nil
 }
 
-func (entry Entry) HasCaller() (has bool) {
-	return entry.Logger != nil &&
-		entry.Logger.ReportCaller &&
-		entry.Caller != nil
+func (entry Entry) HasCaller() bool {
+	// Caller is attached to the Entry in Entry.log() based on the logger's
+	// ReportCaller value at log time. Reading Logger.ReportCaller here is
+	// racy with concurrent SetReportCaller and unnecessary.
+	return entry.Caller != nil
 }
 
 func (entry *Entry) log(level Level, msg string) {
