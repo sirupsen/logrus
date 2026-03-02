@@ -1,151 +1,167 @@
-package logrus
+package logrus_test
 
 import (
-	"log"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
+	"regexp"
 	"strings"
 	"testing"
-	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 func TestRegister(t *testing.T) {
-	current := len(handlers)
-
-	var results []string
-
-	h1 := func() { results = append(results, "first") }
-	h2 := func() { results = append(results, "second") }
-
-	RegisterExitHandler(h1)
-	RegisterExitHandler(h2)
-
-	if len(handlers) != current+2 {
-		t.Fatalf("expected %d handlers, got %d", current+2, len(handlers))
+	if reexecTest(t, "register", func(t *testing.T) {
+		outfile := os.Args[len(os.Args)-1]
+		logrus.RegisterExitHandler(func() { appendLine(outfile, "first") })
+		logrus.RegisterExitHandler(func() { appendLine(outfile, "second") })
+		logrus.Exit(23)
+	}) {
+		return
 	}
 
-	runHandlers()
-
-	if len(results) != 2 {
-		t.Fatalf("expected 2 handlers to be run, ran %d", len(results))
+	outfile := filepath.Join(t.TempDir(), "out.txt")
+	cmd := reexecCommand(t, "register", outfile)
+	out, err := cmd.CombinedOutput()
+	var ee *exec.ExitError
+	if !errors.As(err, &ee) {
+		t.Fatalf("expected *exec.ExitError, got %T: %v (out=%s)", err, err, out)
 	}
-
-	if results[0] != "first" {
-		t.Fatal("expected handler h1 to be run first, but it wasn't")
+	if ee.ExitCode() != 23 {
+		t.Fatalf("expected exit 23, got %d (out=%s)", ee.ExitCode(), out)
 	}
-
-	if results[1] != "second" {
-		t.Fatal("expected handler h2 to be run second, but it wasn't")
-	}
+	want := "first\nsecond\n"
+	assertFileContent(t, outfile, want, out)
 }
 
 func TestDefer(t *testing.T) {
-	current := len(handlers)
-
-	var results []string
-
-	h1 := func() { results = append(results, "first") }
-	h2 := func() { results = append(results, "second") }
-
-	DeferExitHandler(h1)
-	DeferExitHandler(h2)
-
-	if len(handlers) != current+2 {
-		t.Fatalf("expected %d handlers, got %d", current+2, len(handlers))
+	if reexecTest(t, "defer", func(t *testing.T) {
+		outfile := os.Args[len(os.Args)-1]
+		logrus.DeferExitHandler(func() { appendLine(outfile, "first") })
+		logrus.DeferExitHandler(func() { appendLine(outfile, "second") })
+		logrus.Exit(23)
+	}) {
+		return
 	}
 
-	runHandlers()
-
-	if len(results) != 2 {
-		t.Fatalf("expected 2 handlers to be run, ran %d", len(results))
+	outfile := filepath.Join(t.TempDir(), "out.txt")
+	cmd := reexecCommand(t, "defer", outfile)
+	out, err := cmd.CombinedOutput()
+	var ee *exec.ExitError
+	if !errors.As(err, &ee) {
+		t.Fatalf("expected *exec.ExitError, got %T: %v (out=%s)", err, err, out)
 	}
-
-	if results[0] != "second" {
-		t.Fatal("expected handler h2 to be run first, but it wasn't")
+	if ee.ExitCode() != 23 {
+		t.Fatalf("expected exit 23, got %d (out=%s)", ee.ExitCode(), out)
 	}
-
-	if results[1] != "first" {
-		t.Fatal("expected handler h1 to be run second, but it wasn't")
-	}
+	want := "second\nfirst\n"
+	assertFileContent(t, outfile, want, out)
 }
 
 func TestHandler(t *testing.T) {
-	testprog := testprogleader
-	testprog = append(testprog, getPackage()...)
-	testprog = append(testprog, testprogtrailer...)
-	tempDir, err := os.MkdirTemp("", "test_handler")
+	const payload = "payload"
+	if reexecTest(t, "handler", func(t *testing.T) {
+		outfile := os.Args[len(os.Args)-1]
+		logrus.RegisterExitHandler(func() {
+			_ = os.WriteFile(outfile, []byte(payload), 0o666)
+		})
+		logrus.RegisterExitHandler(func() { panic("bad handler") })
+
+		logrus.Exit(23)
+	}) {
+		return
+	}
+
+	outfile := filepath.Join(t.TempDir(), "outfile.out")
+	cmd := reexecCommand(t, "handler", outfile)
+	out, err := cmd.CombinedOutput()
+	var ee *exec.ExitError
+	if !errors.As(err, &ee) {
+		t.Fatalf("expected *exec.ExitError, got %T: %v (out=%s)", err, err, out)
+	}
+	if ee.ExitCode() != 23 {
+		t.Fatalf("expected exit 23, got %d (out=%s)", ee.ExitCode(), out)
+	}
+
+	want := payload
+	assertFileContent(t, outfile, want, out)
+}
+
+func appendLine(path, s string) {
+	b, err := os.ReadFile(path)
+	if err != nil && !os.IsNotExist(err) {
+		_, _ = os.Stderr.WriteString("appendLine: read " + path + ": " + err.Error() + "\n")
+		os.Exit(1)
+	}
+	b = append(b, []byte(s+"\n")...)
+	if err := os.WriteFile(path, b, 0o666); err != nil {
+		_, _ = os.Stderr.WriteString("appendLine: write " + path + ": " + err.Error() + "\n")
+		os.Exit(1)
+	}
+}
+
+func assertFileContent(t *testing.T, path, want string, childOut []byte) {
+	t.Helper()
+
+	b, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatalf("can't create temp dir. %q", err)
-	}
-	defer os.RemoveAll(tempDir)
-
-	gofile := filepath.Join(tempDir, "gofile.go")
-	if err := os.WriteFile(gofile, testprog, 0666); err != nil {
-		t.Fatalf("can't create go file. %q", err)
+		t.Fatalf("can't read output file: %v (child out=%s)", err, childOut)
 	}
 
-	outfile := filepath.Join(tempDir, "outfile.out")
-	arg := time.Now().UTC().String()
-	// TODO: change to exec.CommandContext(t.Context(), ...) once we switch to Go 1.24+.
-	err = exec.Command("go", "run", gofile, outfile, arg).Run()
-	if err == nil {
-		t.Fatalf("completed normally, should have failed")
+	if got := string(b); got != want {
+		t.Fatalf("unexpected file content: got %q, want %q (child out=%s)", got, want, childOut)
+	}
+}
+
+const tokenPrefix = "reexectest-"
+
+// argv0Token computes a short deterministic token for (t.Name(), name).
+func argv0Token(t *testing.T, name string) string {
+	sum := sha256.Sum256([]byte(t.Name() + "\x00" + name))
+	return tokenPrefix + hex.EncodeToString(sum[:8]) // 16 hex chars
+}
+
+// reexecTest runs fn if this process is the child (argv0 == token).
+// Returns true in the child (caller should return).
+func reexecTest(t *testing.T, name string, f func(t *testing.T)) bool {
+	t.Helper()
+
+	if os.Args[0] != argv0Token(t, name) {
+		return false
 	}
 
-	data, err := os.ReadFile(outfile)
+	// Scrub the "-test.run=<pattern>" that was injected by reexecCommand.
+	origArgs := os.Args
+	if len(os.Args) > 1 && strings.HasPrefix(os.Args[1], "-test.run=") {
+		os.Args = append(os.Args[:1], os.Args[2:]...)
+		defer func() { os.Args = origArgs }()
+	}
+
+	f(t)
+	return true
+}
+
+// reexecCommand builds a command that execs the current test binary (exe)
+// with argv0 set to token and "-test.run=<pattern>" so the child runs only
+// this test/subtest. extraArgs are appended after that; the parent can pass
+// the outfile as extra arg, etc.
+func reexecCommand(t *testing.T, name string, args ...string) *exec.Cmd {
+	t.Helper()
+
+	exe, err := os.Executable()
 	if err != nil {
-		t.Fatalf("can't read output file %s. %q", outfile, err)
+		t.Fatalf("os.Executable(): %v", err)
 	}
 
-	if string(data) != arg {
-		t.Fatalf("bad data. Expected %q, got %q", data, arg)
-	}
+	argv0 := argv0Token(t, name)
+	pattern := "^" + regexp.QuoteMeta(t.Name()) + "$"
+
+	cmd := exec.Command(exe)
+	cmd.Path = exe
+	cmd.Args = append([]string{argv0, "-test.run=" + pattern}, args...)
+	return cmd
 }
-
-// getPackage returns the name of the current package, which makes running this
-// test in a fork simpler
-func getPackage() []byte {
-	pc, _, _, _ := runtime.Caller(0)
-	fullFuncName := runtime.FuncForPC(pc).Name()
-	idx := strings.LastIndex(fullFuncName, ".")
-	return []byte(fullFuncName[:idx]) // trim off function details
-}
-
-var testprogleader = []byte(`
-// Test program for atexit, gets output file and data as arguments and writes
-// data to output file in atexit handler.
-package main
-
-import (
-	"`)
-var testprogtrailer = []byte(
-	`"
-	"flag"
-	"fmt"
-	"io/ioutil"
-)
-
-var outfile = ""
-var data = ""
-
-func handler() {
-	ioutil.WriteFile(outfile, []byte(data), 0666)
-}
-
-func badHandler() {
-	n := 0
-	fmt.Println(1/n)
-}
-
-func main() {
-	flag.Parse()
-	outfile = flag.Arg(0)
-	data = flag.Arg(1)
-
-	logrus.RegisterExitHandler(handler)
-	logrus.RegisterExitHandler(badHandler)
-	logrus.Fatal("Bye bye")
-}
-`)

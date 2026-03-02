@@ -1,39 +1,38 @@
-package logrus
+package logrus_test
 
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type contextKeyType string
 
 func TestEntryWithError(t *testing.T) {
+	expErr := fmt.Errorf("kaboom at layer %d", 4711)
+	assert.Equal(t, expErr, logrus.WithError(expErr).Data["error"])
 
-	assert := assert.New(t)
-
-	defer func() {
-		ErrorKey = "error"
-	}()
-
-	err := fmt.Errorf("kaboom at layer %d", 4711)
-
-	assert.Equal(err, WithError(err).Data["error"])
-
-	logger := New()
+	logger := logrus.New()
 	logger.Out = &bytes.Buffer{}
-	entry := NewEntry(logger)
+	entry := logrus.NewEntry(logger)
 
-	assert.Equal(err, entry.WithError(err).Data["error"])
+	assert.Equal(t, expErr, entry.WithError(expErr).Data["error"])
 
-	ErrorKey = "err"
+	tmpKey := logrus.ErrorKey
+	logrus.ErrorKey = "err" //nolint:reassign // ignore "reassigning variable ErrorKey in other package logrus (reassign)"
+	t.Cleanup(func() {
+		logrus.ErrorKey = tmpKey //nolint:reassign // ignore "reassigning variable ErrorKey in other package logrus (reassign)"
+	})
 
-	assert.Equal(err, entry.WithError(err).Data["err"])
-
+	assert.Equal(t, expErr, entry.WithError(expErr).Data["err"])
 }
 
 func TestEntryWithContext(t *testing.T) {
@@ -41,11 +40,11 @@ func TestEntryWithContext(t *testing.T) {
 	var contextKey contextKeyType = "foo"
 	ctx := context.WithValue(context.Background(), contextKey, "bar")
 
-	assert.Equal(ctx, WithContext(ctx).Context)
+	assert.Equal(ctx, logrus.WithContext(ctx).Context)
 
-	logger := New()
+	logger := logrus.New()
 	logger.Out = &bytes.Buffer{}
-	entry := NewEntry(logger)
+	entry := logrus.NewEntry(logger)
 
 	assert.Equal(ctx, entry.WithContext(ctx).Context)
 }
@@ -54,9 +53,9 @@ func TestEntryWithContextCopiesData(t *testing.T) {
 	assert := assert.New(t)
 
 	// Initialize a parent Entry object with a key/value set in its Data map
-	logger := New()
+	logger := logrus.New()
 	logger.Out = &bytes.Buffer{}
-	parentEntry := NewEntry(logger).WithField("parentKey", "parentValue")
+	parentEntry := logrus.NewEntry(logger).WithField("parentKey", "parentValue")
 
 	// Create two children Entry objects from the parent in different contexts
 	var contextKey1 contextKeyType = "foo"
@@ -97,9 +96,9 @@ func TestEntryWithTimeCopiesData(t *testing.T) {
 	assert := assert.New(t)
 
 	// Initialize a parent Entry object with a key/value set in its Data map
-	logger := New()
+	logger := logrus.New()
 	logger.Out = &bytes.Buffer{}
-	parentEntry := NewEntry(logger).WithField("parentKey", "parentValue")
+	parentEntry := logrus.NewEntry(logger).WithField("parentKey", "parentValue")
 
 	// Create two children Entry objects from the parent with two different times
 	childEntry1 := parentEntry.WithTime(time.Now().AddDate(0, 0, 1))
@@ -136,7 +135,7 @@ func TestEntryPanicln(t *testing.T) {
 		assert.NotNil(t, p)
 
 		switch pVal := p.(type) {
-		case *Entry:
+		case *logrus.Entry:
 			assert.Equal(t, "kaboom", pVal.Message)
 			assert.Equal(t, errBoom, pVal.Data["err"])
 		default:
@@ -144,9 +143,9 @@ func TestEntryPanicln(t *testing.T) {
 		}
 	}()
 
-	logger := New()
+	logger := logrus.New()
 	logger.Out = &bytes.Buffer{}
-	entry := NewEntry(logger)
+	entry := logrus.NewEntry(logger)
 	entry.WithField("err", errBoom).Panicln("kaboom")
 }
 
@@ -158,7 +157,7 @@ func TestEntryPanicf(t *testing.T) {
 		assert.NotNil(t, p)
 
 		switch pVal := p.(type) {
-		case *Entry:
+		case *logrus.Entry:
 			assert.Equal(t, "kaboom true", pVal.Message)
 			assert.Equal(t, errBoom, pVal.Data["err"])
 		default:
@@ -166,9 +165,9 @@ func TestEntryPanicf(t *testing.T) {
 		}
 	}()
 
-	logger := New()
+	logger := logrus.New()
 	logger.Out = &bytes.Buffer{}
-	entry := NewEntry(logger)
+	entry := logrus.NewEntry(logger)
 	entry.WithField("err", errBoom).Panicf("kaboom %v", true)
 }
 
@@ -180,7 +179,7 @@ func TestEntryPanic(t *testing.T) {
 		assert.NotNil(t, p)
 
 		switch pVal := p.(type) {
-		case *Entry:
+		case *logrus.Entry:
 			assert.Equal(t, "kaboom", pVal.Message)
 			assert.Equal(t, errBoom, pVal.Data["err"])
 		default:
@@ -188,9 +187,9 @@ func TestEntryPanic(t *testing.T) {
 		}
 	}()
 
-	logger := New()
+	logger := logrus.New()
 	logger.Out = &bytes.Buffer{}
-	entry := NewEntry(logger)
+	entry := logrus.NewEntry(logger)
 	entry.WithField("err", errBoom).Panic("kaboom")
 }
 
@@ -201,11 +200,11 @@ const (
 
 type panickyHook struct{}
 
-func (p *panickyHook) Levels() []Level {
-	return []Level{InfoLevel}
+func (p *panickyHook) Levels() []logrus.Level {
+	return []logrus.Level{logrus.InfoLevel}
 }
 
-func (p *panickyHook) Fire(entry *Entry) error {
+func (p *panickyHook) Fire(entry *logrus.Entry) error {
 	if entry.Message == badMessage {
 		panic(panicMessage)
 	}
@@ -214,9 +213,9 @@ func (p *panickyHook) Fire(entry *Entry) error {
 }
 
 func TestEntryHooksPanic(t *testing.T) {
-	logger := New()
+	logger := logrus.New()
 	logger.Out = &bytes.Buffer{}
-	logger.Level = InfoLevel
+	logger.Level = logrus.InfoLevel
 	logger.Hooks.Add(&panickyHook{})
 
 	defer func() {
@@ -224,56 +223,70 @@ func TestEntryHooksPanic(t *testing.T) {
 		assert.NotNil(t, p)
 		assert.Equal(t, panicMessage, p)
 
-		entry := NewEntry(logger)
+		entry := logrus.NewEntry(logger)
 		entry.Info("another message")
 	}()
 
-	entry := NewEntry(logger)
+	entry := logrus.NewEntry(logger)
 	entry.Info(badMessage)
 }
 
 func TestEntryWithIncorrectField(t *testing.T) {
-	assert := assert.New(t)
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.SetOutput(io.Discard)
+	entry := logrus.NewEntry(logger)
 
 	fn := func() {}
+	eWithFunc := entry.WithFields(logrus.Fields{"func": fn})
+	eWithFuncPtr := entry.WithFields(logrus.Fields{"funcPtr": &fn})
 
-	e := Entry{Logger: New()}
-	eWithFunc := e.WithFields(Fields{"func": fn})
-	eWithFuncPtr := e.WithFields(Fields{"funcPtr": &fn})
-
-	assert.Equal(`can not add field "func"`, eWithFunc.err)
-	assert.Equal(`can not add field "funcPtr"`, eWithFuncPtr.err)
+	assert.Equal(t, `can not add field "func"`, getErr(t, eWithFunc))
+	assert.Equal(t, `can not add field "funcPtr"`, getErr(t, eWithFuncPtr))
 
 	eWithFunc = eWithFunc.WithField("not_a_func", "it is a string")
 	eWithFuncPtr = eWithFuncPtr.WithField("not_a_func", "it is a string")
 
-	assert.Equal(`can not add field "func"`, eWithFunc.err)
-	assert.Equal(`can not add field "funcPtr"`, eWithFuncPtr.err)
+	assert.Equal(t, `can not add field "func"`, getErr(t, eWithFunc))
+	assert.Equal(t, `can not add field "funcPtr"`, getErr(t, eWithFuncPtr))
 
 	eWithFunc = eWithFunc.WithTime(time.Now())
 	eWithFuncPtr = eWithFuncPtr.WithTime(time.Now())
 
-	assert.Equal(`can not add field "func"`, eWithFunc.err)
-	assert.Equal(`can not add field "funcPtr"`, eWithFuncPtr.err)
+	assert.Equal(t, `can not add field "func"`, getErr(t, eWithFunc))
+	assert.Equal(t, `can not add field "funcPtr"`, getErr(t, eWithFuncPtr))
+}
+
+func getErr(t *testing.T, e *logrus.Entry) string {
+	t.Helper()
+
+	out, err := e.String()
+	require.NoError(t, err)
+
+	var m map[string]any
+	require.NoError(t, json.Unmarshal([]byte(out), &m))
+
+	got, _ := m[logrus.FieldKeyLogrusError].(string)
+	return got
 }
 
 func TestEntryLogfLevel(t *testing.T) {
-	logger := New()
+	logger := logrus.New()
 	buffer := &bytes.Buffer{}
 	logger.Out = buffer
-	logger.SetLevel(InfoLevel)
-	entry := NewEntry(logger)
+	logger.SetLevel(logrus.InfoLevel)
+	entry := logrus.NewEntry(logger)
 
-	entry.Logf(DebugLevel, "%s", "debug")
+	entry.Logf(logrus.DebugLevel, "%s", "debug")
 	assert.NotContains(t, buffer.String(), "debug")
 
-	entry.Logf(WarnLevel, "%s", "warn")
+	entry.Logf(logrus.WarnLevel, "%s", "warn")
 	assert.Contains(t, buffer.String(), "warn")
 }
 
 func TestEntryReportCallerRace(t *testing.T) {
-	logger := New()
-	entry := NewEntry(logger)
+	logger := logrus.New()
+	entry := logrus.NewEntry(logger)
 
 	// logging before SetReportCaller has the highest chance of causing a race condition
 	// to be detected, but doing it twice just to increase the likelihood of detecting the race
@@ -289,8 +302,8 @@ func TestEntryReportCallerRace(t *testing.T) {
 }
 
 func TestEntryFormatterRace(t *testing.T) {
-	logger := New()
-	entry := NewEntry(logger)
+	logger := logrus.New()
+	entry := logrus.NewEntry(logger)
 
 	// logging before SetReportCaller has the highest chance of causing a race condition
 	// to be detected, but doing it twice just to increase the likelihood of detecting the race
@@ -298,7 +311,7 @@ func TestEntryFormatterRace(t *testing.T) {
 		entry.Info("should not race")
 	}()
 	go func() {
-		logger.SetFormatter(&TextFormatter{})
+		logger.SetFormatter(&logrus.TextFormatter{})
 	}()
 	go func() {
 		entry.Info("should not race")
