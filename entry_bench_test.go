@@ -13,7 +13,7 @@ func BenchmarkEntry_WithError(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_ = base.WithError(errBoom)
 	}
 }
@@ -24,7 +24,7 @@ func BenchmarkEntry_WithField_Chain(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		e := base
 
 		e = e.WithField("k0", 0)
@@ -77,7 +77,7 @@ func BenchmarkEntry_WithFields(b *testing.B) {
 			b.ReportAllocs()
 			e := &logrus.Entry{Data: tc.base}
 			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				_ = e.WithFields(tc.fields)
 			}
 		})
