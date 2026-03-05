@@ -141,7 +141,7 @@ func doBenchmark(b *testing.B, formatter logrus.Formatter, fields logrus.Fields)
 	b.SetBytes(int64(len(d)))
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		d, err = formatter.Format(entry)
 		if err != nil {
 			b.Fatal(err)
