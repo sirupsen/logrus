@@ -107,7 +107,19 @@ func (entry *Entry) String() (string, error) {
 // WithError adds an error as single field (using the key defined in [ErrorKey])
 // to the Entry.
 func (entry *Entry) WithError(err error) *Entry {
-	return entry.WithField(ErrorKey, err)
+	// Avoid reflection work in WithFields; we know the type is an error;
+	// copy the entry data and set the ErrorKey directly.
+	data := make(Fields, len(entry.Data)+1)
+	maps.Copy(data, entry.Data)
+	data[ErrorKey] = err
+
+	return &Entry{
+		Logger:  entry.Logger,
+		Data:    data,
+		Time:    entry.Time,
+		Context: entry.Context,
+		err:     entry.err,
+	}
 }
 
 // WithContext adds a context to the Entry.
