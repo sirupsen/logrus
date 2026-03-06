@@ -115,7 +115,10 @@ func (f *TextFormatter) isColored() bool {
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	data := make(Fields)
 	maps.Copy(data, entry.Data)
-	prefixFieldClashes(data, f.FieldMap, entry.HasCaller())
+
+	caller := entry.Caller
+	hasCaller := caller != nil
+	prefixFieldClashes(data, f.FieldMap, hasCaller)
 	keys := make([]string, 0, len(data))
 	for k := range data {
 		keys = append(keys, k)
@@ -134,12 +137,12 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	if entry.err != "" {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyLogrusError))
 	}
-	if entry.HasCaller() {
+	if caller != nil {
 		if f.CallerPrettyfier != nil {
-			funcVal, fileVal = f.CallerPrettyfier(entry.Caller)
+			funcVal, fileVal = f.CallerPrettyfier(caller)
 		} else {
-			funcVal = entry.Caller.Function
-			fileVal = fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line)
+			funcVal = caller.Function
+			fileVal = fmt.Sprintf("%s:%d", caller.File, caller.Line)
 		}
 
 		if funcVal != "" {
@@ -193,9 +196,9 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 				value = entry.Message
 			case key == f.FieldMap.resolve(FieldKeyLogrusError):
 				value = entry.err
-			case key == f.FieldMap.resolve(FieldKeyFunc) && entry.HasCaller():
+			case key == f.FieldMap.resolve(FieldKeyFunc) && hasCaller:
 				value = funcVal
-			case key == f.FieldMap.resolve(FieldKeyFile) && entry.HasCaller():
+			case key == f.FieldMap.resolve(FieldKeyFile) && hasCaller:
 				value = fileVal
 			default:
 				value = data[key]
@@ -213,32 +216,32 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	// the behavior of logrus text_formatter the same as the stdlib log package
 	entry.Message = strings.TrimSuffix(entry.Message, "\n")
 
-	caller := ""
-	if entry.HasCaller() {
-		funcVal := fmt.Sprintf("%s()", entry.Caller.Function)
-		fileVal := fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line)
+	callerText := ""
+	if caller := entry.Caller; caller != nil {
+		funcVal := fmt.Sprintf("%s()", caller.Function)
+		fileVal := fmt.Sprintf("%s:%d", caller.File, caller.Line)
 
 		if f.CallerPrettyfier != nil {
-			funcVal, fileVal = f.CallerPrettyfier(entry.Caller)
+			funcVal, fileVal = f.CallerPrettyfier(caller)
 		}
 
 		if fileVal == "" {
-			caller = funcVal
+			callerText = funcVal
 		} else if funcVal == "" {
-			caller = fileVal
+			callerText = fileVal
 		} else {
-			caller = fileVal + " " + funcVal
+			callerText = fileVal + " " + funcVal
 		}
 	}
 
 	levelText := levelPrefix(entry.Level, f.DisableLevelTruncation, f.PadLevelText)
 	switch {
 	case f.DisableTimestamp:
-		_, _ = fmt.Fprintf(b, "%s%s %-44s ", levelText, caller, entry.Message)
+		_, _ = fmt.Fprintf(b, "%s%s %-44s ", levelText, callerText, entry.Message)
 	case !f.FullTimestamp:
-		_, _ = fmt.Fprintf(b, "%s[%04d]%s %-44s ", levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), caller, entry.Message)
+		_, _ = fmt.Fprintf(b, "%s[%04d]%s %-44s ", levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), callerText, entry.Message)
 	default:
-		_, _ = fmt.Fprintf(b, "%s[%s]%s %-44s ", levelText, entry.Time.Format(timestampFormat), caller, entry.Message)
+		_, _ = fmt.Fprintf(b, "%s[%s]%s %-44s ", levelText, entry.Time.Format(timestampFormat), callerText, entry.Message)
 	}
 
 	// Keys use the same color as the level-prefix.

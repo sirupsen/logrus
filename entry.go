@@ -177,7 +177,7 @@ func (entry *Entry) WithTime(t time.Time) *Entry {
 }
 
 // getPackageName reduces a fully qualified function name to the package name
-// There really ought to be to be a better way...
+// There really ought to be a better way...
 func getPackageName(f string) string {
 	for {
 		lastPeriod := strings.LastIndex(f, ".")
@@ -229,10 +229,12 @@ func getCaller() *runtime.Frame {
 	return nil
 }
 
+// HasCaller reports whether this Entry contains caller information.
+//
+// Caller is attached at log time if [Logger.ReportCaller] was enabled.
+// In most cases, it is preferable to check whether [Entry.Caller] is nil
+// directly.
 func (entry Entry) HasCaller() bool {
-	// Caller is attached to the Entry in Entry.log() based on the logger's
-	// ReportCaller value at log time. Reading Logger.ReportCaller here is
-	// racy with concurrent SetReportCaller and unnecessary.
 	return entry.Caller != nil
 }
 

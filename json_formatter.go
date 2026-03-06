@@ -61,6 +61,7 @@ type JSONFormatter struct {
 
 // Format renders a single log entry
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
+	caller := entry.Caller
 	data := make(Fields, len(entry.Data)+4)
 	for k, v := range entry.Data {
 		switch v := v.(type) {
@@ -79,7 +80,8 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		data = newData
 	}
 
-	prefixFieldClashes(data, f.FieldMap, entry.HasCaller())
+	hasCaller := caller != nil
+	prefixFieldClashes(data, f.FieldMap, hasCaller)
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
@@ -94,11 +96,11 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	}
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
-	if entry.HasCaller() {
-		funcVal := entry.Caller.Function
-		fileVal := fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line)
+	if caller != nil {
+		funcVal := caller.Function
+		fileVal := fmt.Sprintf("%s:%d", caller.File, caller.Line)
 		if f.CallerPrettyfier != nil {
-			funcVal, fileVal = f.CallerPrettyfier(entry.Caller)
+			funcVal, fileVal = f.CallerPrettyfier(caller)
 		}
 		if funcVal != "" {
 			data[f.FieldMap.resolve(FieldKeyFunc)] = funcVal
