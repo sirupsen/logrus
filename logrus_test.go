@@ -451,19 +451,6 @@ func TestCallerReportingOverhead(t *testing.T) {
 		iterations, maxDelta.Seconds(), elapsedReporting)
 }
 
-// benchmarks for both with and without caller-function reporting
-func BenchmarkWithoutCallerTracing(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		logLoop(1000, false)
-	}
-}
-
-func BenchmarkWithCallerTracing(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		logLoop(1000, true)
-	}
-}
-
 func TestConvertLevelToString(t *testing.T) {
 	assert.Equal(t, "trace", TraceLevel.String())
 	assert.Equal(t, "debug", DebugLevel.String())

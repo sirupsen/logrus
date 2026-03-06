@@ -2,6 +2,7 @@ package logrus_test
 
 import (
 	"errors"
+	"io"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -41,8 +42,8 @@ func BenchmarkEntry_WithFields(b *testing.B) {
 	fnPtr := &fn
 
 	tests := []struct {
-		name string
-		base logrus.Fields
+		name   string
+		base   logrus.Fields
 		fields logrus.Fields
 	}{
 		{
@@ -82,4 +83,74 @@ func BenchmarkEntry_WithFields(b *testing.B) {
 			}
 		})
 	}
+}
+
+func benchmarkEntryInfo(b *testing.B, reportCaller bool) {
+	// JSONFormatter is used intentionally to measure realistic end-to-end
+	// ReportCaller overhead (Entry.log + caller field formatting),
+	// not getCaller() in isolation.
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.SetReportCaller(reportCaller)
+	logger.SetLevel(logrus.InfoLevel) // ensure Info is enabled
+	logger.SetOutput(io.Discard)
+
+	entry := logrus.NewEntry(logger)
+
+	// getCaller has a package-level sync.Once; exclude initialization from the benchmark.
+	entry.Info("warmup")
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for range b.N {
+		entry.Info("test message")
+	}
+}
+
+func BenchmarkEntry_ReportCaller_NoCaller(b *testing.B)   { benchmarkEntryInfo(b, false) }
+func BenchmarkEntry_ReportCaller_WithCaller(b *testing.B) { benchmarkEntryInfo(b, true) }
+
+//go:noinline
+func caller4(entry *logrus.Entry) { caller3(entry) }
+
+//go:noinline
+func caller3(entry *logrus.Entry) { caller2(entry) }
+
+//go:noinline
+func caller2(entry *logrus.Entry) { caller1(entry) }
+
+//go:noinline
+func caller1(entry *logrus.Entry) { entry.Info("test message") }
+
+// benchmarkEntryReportCallerDepth4 simulates a wrapper call site.
+// It does not increase getCaller() scan depth (which stops at the first
+// non-logrus frame), but ensures ReportCaller overhead is stable with
+// wrapper layers.
+func benchmarkEntryReportCallerDepth4(b *testing.B, reportCaller bool) {
+	// JSONFormatter is used intentionally to measure realistic end-to-end
+	// ReportCaller overhead (Entry.log + caller field formatting),
+	// not getCaller() in isolation.
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.SetReportCaller(reportCaller)
+	logger.SetLevel(logrus.InfoLevel)
+	logger.SetOutput(io.Discard)
+
+	entry := logrus.NewEntry(logger)
+
+	// getCaller has a package-level sync.Once; exclude initialization from the benchmark.
+	entry.Info("warmup")
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for range b.N {
+		caller4(entry)
+	}
+}
+
+func BenchmarkEntry_ReportCaller_NoCaller_Depth4(b *testing.B) {
+	benchmarkEntryReportCallerDepth4(b, false)
+}
+func BenchmarkEntry_ReportCaller_WithCaller_Depth4(b *testing.B) {
+	benchmarkEntryReportCallerDepth4(b, true)
 }
