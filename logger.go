@@ -375,6 +375,21 @@ func (logger *Logger) AddHook(hook Hook) {
 	logger.Hooks.Add(hook)
 }
 
+// hooksForLevel returns a snapshot of the hooks registered for the given level.
+// The returned slice is a shallow copy and may be used without holding logger.mu.
+func (logger *Logger) hooksForLevel(level Level) []Hook {
+	logger.mu.Lock()
+	hooks := logger.Hooks[level]
+	if len(hooks) == 0 {
+		logger.mu.Unlock()
+		return nil
+	}
+	out := make([]Hook, len(hooks))
+	copy(out, hooks)
+	logger.mu.Unlock()
+	return out
+}
+
 // IsLevelEnabled checks if logging for the given level is enabled.
 func (logger *Logger) IsLevelEnabled(level Level) bool {
 	return logger.level() >= level
@@ -403,9 +418,9 @@ func (logger *Logger) SetReportCaller(reportCaller bool) {
 // ReplaceHooks replaces the logger hooks and returns the old ones
 func (logger *Logger) ReplaceHooks(hooks LevelHooks) LevelHooks {
 	logger.mu.Lock()
+	defer logger.mu.Unlock()
 	oldHooks := logger.Hooks
 	logger.Hooks = hooks
-	logger.mu.Unlock()
 	return oldHooks
 }
 

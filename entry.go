@@ -239,9 +239,8 @@ func (entry Entry) HasCaller() bool {
 }
 
 func (entry *Entry) log(level Level, msg string) {
-	var buffer *bytes.Buffer
-
 	newEntry := entry.Dup()
+	logger := newEntry.Logger
 
 	if newEntry.Time.IsZero() {
 		newEntry.Time = time.Now()
@@ -250,17 +249,22 @@ func (entry *Entry) log(level Level, msg string) {
 	newEntry.Level = level
 	newEntry.Message = msg
 
-	newEntry.Logger.mu.Lock()
-	reportCaller := newEntry.Logger.ReportCaller
+	logger.mu.Lock()
+	reportCaller := logger.ReportCaller
 	bufPool := newEntry.getBufferPool()
-	newEntry.Logger.mu.Unlock()
+	logger.mu.Unlock()
 
 	if reportCaller {
 		newEntry.Caller = getCaller()
 	}
 
-	newEntry.fireHooks()
-	buffer = bufPool.Get()
+	// Select hooks based on the level for this log call. Hooks receive the
+	// Entry and may mutate it, but that does not affect which hooks are
+	// fired for this event.
+	hooks := logger.hooksForLevel(level)
+	newEntry.fireHooks(hooks)
+
+	buffer := bufPool.Get()
 	defer func() {
 		newEntry.Buffer = nil
 		buffer.Reset()
@@ -268,9 +272,7 @@ func (entry *Entry) log(level Level, msg string) {
 	}()
 	buffer.Reset()
 	newEntry.Buffer = buffer
-
 	newEntry.write()
-
 	newEntry.Buffer = nil
 
 	// To avoid Entry#log() returning a value that only would make sense for
@@ -288,16 +290,12 @@ func (entry *Entry) getBufferPool() (pool BufferPool) {
 	return bufferPool
 }
 
-func (entry *Entry) fireHooks() {
-	entry.Logger.mu.Lock()
-	tmpHooks := maps.Clone(entry.Logger.Hooks)
-	entry.Logger.mu.Unlock()
-	if len(tmpHooks) == 0 {
-		return
-	}
-
-	if err := tmpHooks.Fire(entry.Level, entry); err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, "Failed to fire hook:", err)
+func (entry *Entry) fireHooks(hooks []Hook) {
+	for _, hook := range hooks {
+		if err := hook.Fire(entry); err != nil {
+			_, _ = fmt.Fprintln(os.Stderr, "Failed to fire hook:", err)
+			return
+		}
 	}
 }
 
