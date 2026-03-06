@@ -1,10 +1,11 @@
 package logrus_test
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
+	"io"
+	"maps"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,6 +15,23 @@ import (
 	"github.com/sirupsen/logrus/hooks/test"
 	. "github.com/sirupsen/logrus/internal/testutils"
 )
+
+// RecordingFormatter is a test helper that implements Formatter and
+// records information about the last formatted Entry.
+//
+// On every call to Format, it increments Calls and stores a shallow copy
+// of entry.Data in EntryData, overwriting any previous value. The formatted
+// output is the raw entry.Message as bytes.
+type RecordingFormatter struct {
+	Calls     atomic.Int64
+	EntryData Fields
+}
+
+func (f *RecordingFormatter) Format(entry *Entry) ([]byte, error) {
+	f.Calls.Add(1)
+	f.EntryData = maps.Clone(entry.Data)
+	return []byte(entry.Message), nil
+}
 
 type TestHook struct {
 	Fired bool
@@ -50,9 +68,11 @@ func TestHookFires(t *testing.T) {
 }
 
 type ModifyHook struct {
+	Calls atomic.Int64
 }
 
 func (hook *ModifyHook) Fire(entry *Entry) error {
+	hook.Calls.Add(1)
 	entry.Data["wow"] = "whale"
 	return nil
 }
@@ -103,36 +123,35 @@ func (h *SingleLevelModifyHook) Levels() []Level {
 	return []Level{InfoLevel}
 }
 
+// TestHookEntryIsPristine tests that each log gets a pristine copy of Entry,
+// and changes from modifying hooks are not persisted.
+//
+// Regression test for https://github.com/sirupsen/logrus/issues/795
 func TestHookEntryIsPristine(t *testing.T) {
+	formatter := &RecordingFormatter{}
+	hook := &SingleLevelModifyHook{}
 	l := New()
-	b := &bytes.Buffer{}
-	l.Formatter = &JSONFormatter{}
-	l.Out = b
-	l.AddHook(&SingleLevelModifyHook{})
+	l.SetOutput(io.Discard)
+	l.SetFormatter(formatter)
+	l.AddHook(hook)
 
-	l.Error("error message")
-	data := map[string]string{}
-	err := json.Unmarshal(b.Bytes(), &data)
-	require.NoError(t, err)
-	_, ok := data["wow"]
-	require.False(t, ok)
-	b.Reset()
+	// Initial message should have a pristine copy of Entry.
+	l.Error("first")
+	assert.Equal(t, int64(0), hook.Calls.Load())
+	assert.Equal(t, int64(1), formatter.Calls.Load())
+	require.Empty(t, formatter.EntryData)
 
-	l.Info("error message")
-	data = map[string]string{}
-	err = json.Unmarshal(b.Bytes(), &data)
-	require.NoError(t, err)
-	_, ok = data["wow"]
-	require.True(t, ok)
-	b.Reset()
+	// Info message modifies data through SingleLevelModifyHook
+	l.Info("second")
+	assert.Equal(t, int64(1), hook.Calls.Load())
+	assert.Equal(t, int64(2), formatter.Calls.Load())
+	require.Equal(t, Fields{"wow": "whale"}, formatter.EntryData)
 
-	l.Error("error message")
-	data = map[string]string{}
-	err = json.Unmarshal(b.Bytes(), &data)
-	require.NoError(t, err)
-	_, ok = data["wow"]
-	require.False(t, ok)
-	b.Reset()
+	// Should have a pristine copy of Entry.
+	l.Error("third")
+	assert.Equal(t, int64(1), hook.Calls.Load())
+	assert.Equal(t, int64(3), formatter.Calls.Load())
+	require.Empty(t, formatter.EntryData)
 }
 
 type ErrorHook struct {
