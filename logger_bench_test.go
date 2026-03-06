@@ -32,8 +32,9 @@ func doLoggerBenchmark(b *testing.B, out *os.File, formatter logrus.Formatter, f
 		Level:     logrus.InfoLevel,
 		Formatter: formatter,
 	}
-	entry := logger.WithFields(fields)
+
 	b.RunParallel(func(pb *testing.PB) {
+		entry := logger.WithFields(fields) // new entry per goroutine
 		for pb.Next() {
 			entry.Info("aaa")
 		}
@@ -47,8 +48,9 @@ func doLoggerBenchmarkNoLock(b *testing.B, out *os.File, formatter logrus.Format
 		Formatter: formatter,
 	}
 	logger.SetNoLock()
-	entry := logger.WithFields(fields)
+
 	b.RunParallel(func(pb *testing.PB) {
+		entry := logger.WithFields(fields) // new entry per goroutine
 		for pb.Next() {
 			entry.Info("aaa")
 		}
