@@ -151,6 +151,7 @@ func benchmarkEntryReportCallerDepth4(b *testing.B, reportCaller bool) {
 func BenchmarkEntry_ReportCaller_NoCaller_Depth4(b *testing.B) {
 	benchmarkEntryReportCallerDepth4(b, false)
 }
+
 func BenchmarkEntry_ReportCaller_WithCaller_Depth4(b *testing.B) {
 	benchmarkEntryReportCallerDepth4(b, true)
 }

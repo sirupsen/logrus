@@ -12,7 +12,7 @@ import (
 
 // An example on how to use a hook
 func Example_hook() {
-	var log = logrus.New()
+	log := logrus.New()
 	log.Formatter = new(logrus.TextFormatter)                     // default
 	log.Formatter.(*logrus.TextFormatter).DisableColors = true    // remove colors
 	log.Formatter.(*logrus.TextFormatter).DisableTimestamp = true // remove timestamp from test output

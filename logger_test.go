@@ -3,6 +3,7 @@ package logrus_test
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -11,9 +12,9 @@ import (
 )
 
 func TestFieldValueError(t *testing.T) {
-	buf := &bytes.Buffer{}
+	var buf bytes.Buffer
 	l := &logrus.Logger{
-		Out:       buf,
+		Out:       &buf,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
 		Level:     logrus.DebugLevel,
@@ -27,9 +28,9 @@ func TestFieldValueError(t *testing.T) {
 }
 
 func TestNoFieldValueError(t *testing.T) {
-	buf := &bytes.Buffer{}
+	var buf bytes.Buffer
 	l := &logrus.Logger{
-		Out:       buf,
+		Out:       &buf,
 		Formatter: new(logrus.JSONFormatter),
 		Hooks:     make(logrus.LevelHooks),
 		Level:     logrus.DebugLevel,
@@ -42,26 +43,27 @@ func TestNoFieldValueError(t *testing.T) {
 	require.False(t, ok)
 }
 
-func TestWarninglnNotEqualToWarning(t *testing.T) {
-	buf := &bytes.Buffer{}
-	bufln := &bytes.Buffer{}
-
-	formatter := new(logrus.TextFormatter)
-	formatter.DisableTimestamp = true
-	formatter.DisableLevelTruncation = true
-
+func TestWarningAndWarninglnFormatting(t *testing.T) {
+	var buf bytes.Buffer
 	l := &logrus.Logger{
-		Out:       buf,
-		Formatter: formatter,
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Out: &buf,
+		Formatter: &logrus.TextFormatter{
+			DisableColors:          true,
+			DisableTimestamp:       true,
+			DisableLevelTruncation: true,
+		},
+		Hooks: make(logrus.LevelHooks),
+		Level: logrus.DebugLevel,
 	}
-	l.Warning("hello,", "world")
+	l.Warning("hello", "world")
+	expected := "level=warning msg=helloworld\n"
+	assert.Equal(t, expected, buf.String())
 
-	l.SetOutput(bufln)
-	l.Warningln("hello,", "world")
+	buf.Reset()
+	l.Warningln("hello", "world")
 
-	assert.NotEqual(t, buf.String(), bufln.String(), "Warning() and Warningln() should not be equal")
+	expected = "level=warning msg=\"hello world\"\n"
+	assert.Equal(t, expected, buf.String())
 }
 
 type testBufferPool struct {
@@ -79,9 +81,8 @@ func (p *testBufferPool) Put(buf *bytes.Buffer) {
 }
 
 func TestLogger_SetBufferPool(t *testing.T) {
-	out := &bytes.Buffer{}
 	l := logrus.New()
-	l.SetOutput(out)
+	l.SetOutput(io.Discard)
 
 	pool := new(testBufferPool)
 	l.SetBufferPool(pool)

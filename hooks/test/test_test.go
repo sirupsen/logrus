@@ -1,4 +1,4 @@
-package test
+package test_test
 
 import (
 	"io"
@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +23,7 @@ func TestAllHooks(t *testing.T) {
 	})
 	assert := assert.New(t)
 
-	logger, hook := NewNullLogger()
+	logger, hook := test.NewNullLogger()
 	assert.Nil(hook.LastEntry())
 	assert.Empty(hook.Entries)
 
@@ -40,7 +41,7 @@ func TestAllHooks(t *testing.T) {
 	assert.Nil(hook.LastEntry())
 	assert.Empty(hook.Entries)
 
-	hook = NewGlobal()
+	hook = test.NewGlobal()
 
 	logrus.SetOutput(io.Discard)
 	logrus.Error("Hello error")
@@ -50,12 +51,11 @@ func TestAllHooks(t *testing.T) {
 }
 
 func TestLoggingWithHooksRace(t *testing.T) {
-
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	unlocker := r.Intn(100)
 
 	assert := assert.New(t)
-	logger, hook := NewNullLogger()
+	logger, hook := test.NewNullLogger()
 
 	var wgOne, wgAll sync.WaitGroup
 	wgOne.Add(1)
@@ -86,7 +86,7 @@ func TestLoggingWithHooksRace(t *testing.T) {
 func TestFatalWithAlternateExit(t *testing.T) {
 	assert := assert.New(t)
 
-	logger, hook := NewNullLogger()
+	logger, hook := test.NewNullLogger()
 	logger.ExitFunc = func(code int) {}
 
 	logger.Fatal("something went very wrong")
@@ -111,6 +111,6 @@ func TestNewLocal(t *testing.T) {
 		}()
 	}
 
-	hook := NewLocal(logger)
+	hook := test.NewLocal(logger)
 	assert.NotNil(hook)
 }

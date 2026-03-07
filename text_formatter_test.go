@@ -308,7 +308,6 @@ func TestPadLevelText(t *testing.T) {
 			if val.paddedLevelText != "" && !strings.Contains(logLineWithPadding, val.paddedLevelText) {
 				t.Errorf("log line %q should contain the padded level text %q when padding is enabled", logLineWithPadding, val.paddedLevelText)
 			}
-
 		})
 	}
 }
