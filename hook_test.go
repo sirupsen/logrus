@@ -221,6 +221,7 @@ func TestAddHookRace2(t *testing.T) {
 		stdLogger.SetOutput(oldOut)
 		stdLogger.ReplaceHooks(oldHooks)
 	})
+	stdLogger.SetOutput(io.Discard)
 
 	for i := range 3 {
 		testname := fmt.Sprintf("Test %d", i)

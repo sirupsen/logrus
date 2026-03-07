@@ -22,7 +22,7 @@ func TestEntryWithError(t *testing.T) {
 	assert.Equal(t, expErr, logrus.WithError(expErr).Data["error"])
 
 	logger := logrus.New()
-	logger.Out = &bytes.Buffer{}
+	logger.SetOutput(io.Discard)
 	entry := logrus.NewEntry(logger)
 
 	assert.Equal(t, expErr, entry.WithError(expErr).Data["error"])
@@ -44,7 +44,7 @@ func TestEntryWithContext(t *testing.T) {
 	assert.Equal(ctx, logrus.WithContext(ctx).Context)
 
 	logger := logrus.New()
-	logger.Out = &bytes.Buffer{}
+	logger.SetOutput(io.Discard)
 	entry := logrus.NewEntry(logger)
 
 	assert.Equal(ctx, entry.WithContext(ctx).Context)
@@ -55,7 +55,7 @@ func TestEntryWithContextCopiesData(t *testing.T) {
 
 	// Initialize a parent Entry object with a key/value set in its Data map
 	logger := logrus.New()
-	logger.Out = &bytes.Buffer{}
+	logger.SetOutput(io.Discard)
 	parentEntry := logrus.NewEntry(logger).WithField("parentKey", "parentValue")
 
 	// Create two children Entry objects from the parent in different contexts
@@ -98,7 +98,7 @@ func TestEntryWithTimeCopiesData(t *testing.T) {
 
 	// Initialize a parent Entry object with a key/value set in its Data map
 	logger := logrus.New()
-	logger.Out = &bytes.Buffer{}
+	logger.SetOutput(io.Discard)
 	parentEntry := logrus.NewEntry(logger).WithField("parentKey", "parentValue")
 
 	// Create two children Entry objects from the parent with two different times
@@ -145,7 +145,7 @@ func TestEntryPanicln(t *testing.T) {
 	}()
 
 	logger := logrus.New()
-	logger.Out = &bytes.Buffer{}
+	logger.SetOutput(io.Discard)
 	entry := logrus.NewEntry(logger)
 	entry.WithField("err", errBoom).Panicln("kaboom")
 }
@@ -167,7 +167,7 @@ func TestEntryPanicf(t *testing.T) {
 	}()
 
 	logger := logrus.New()
-	logger.Out = &bytes.Buffer{}
+	logger.SetOutput(io.Discard)
 	entry := logrus.NewEntry(logger)
 	entry.WithField("err", errBoom).Panicf("kaboom %v", true)
 }
@@ -189,7 +189,7 @@ func TestEntryPanic(t *testing.T) {
 	}()
 
 	logger := logrus.New()
-	logger.Out = &bytes.Buffer{}
+	logger.SetOutput(io.Discard)
 	entry := logrus.NewEntry(logger)
 	entry.WithField("err", errBoom).Panic("kaboom")
 }
@@ -215,9 +215,9 @@ func (p *panickyHook) Fire(entry *logrus.Entry) error {
 
 func TestEntryHooksPanic(t *testing.T) {
 	logger := logrus.New()
-	logger.Out = &bytes.Buffer{}
-	logger.Level = logrus.InfoLevel
-	logger.Hooks.Add(&panickyHook{})
+	logger.SetOutput(io.Discard)
+	logger.SetLevel(logrus.InfoLevel)
+	logger.AddHook(&panickyHook{})
 
 	defer func() {
 		p := recover()
@@ -272,9 +272,9 @@ func getErr(t *testing.T, e *logrus.Entry) string {
 }
 
 func TestEntryLogfLevel(t *testing.T) {
+	var buffer bytes.Buffer
 	logger := logrus.New()
-	buffer := &bytes.Buffer{}
-	logger.Out = buffer
+	logger.SetOutput(&buffer)
 	logger.SetLevel(logrus.InfoLevel)
 	entry := logrus.NewEntry(logger)
 
@@ -375,9 +375,9 @@ func (r reentrantValue) MarshalJSON() ([]byte, error) {
 // MarshalJSON (or similar serialization callback) does not deadlock.
 // This is a regression test for https://github.com/sirupsen/logrus/issues/1448.
 func TestEntryReentrantLoggingDeadlock(t *testing.T) {
+	var buf bytes.Buffer
 	logger := logrus.New()
-	buf := &bytes.Buffer{}
-	logger.Out = buf
+	logger.SetOutput(&buf)
 	logger.SetFormatter(&logrus.JSONFormatter{})
 
 	done := make(chan struct{})

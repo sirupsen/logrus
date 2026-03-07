@@ -110,11 +110,9 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		}
 	}
 
-	var b *bytes.Buffer
-	if entry.Buffer != nil {
-		b = entry.Buffer
-	} else {
-		b = &bytes.Buffer{}
+	b := entry.Buffer
+	if b == nil {
+		b = new(bytes.Buffer)
 	}
 
 	encoder := json.NewEncoder(b)

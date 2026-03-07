@@ -171,11 +171,9 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		fixedKeys = append(fixedKeys, keys...)
 	}
 
-	var b *bytes.Buffer
-	if entry.Buffer != nil {
-		b = entry.Buffer
-	} else {
-		b = &bytes.Buffer{}
+	b := entry.Buffer
+	if b == nil {
+		b = new(bytes.Buffer)
 	}
 
 	timestampFormat := f.TimestampFormat
