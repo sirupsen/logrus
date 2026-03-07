@@ -43,13 +43,11 @@ type Logger struct {
 	// Reusable empty entry
 	entryPool sync.Pool
 	// Function to exit the application, defaults to `os.Exit()`
-	ExitFunc exitFunc
+	ExitFunc func(int)
 	// The buffer pool used to format the log. If it is nil, the default global
 	// buffer pool will be used.
 	BufferPool BufferPool
 }
-
-type exitFunc func(int)
 
 type MutexWrap struct {
 	lock     sync.Mutex
