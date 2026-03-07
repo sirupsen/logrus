@@ -90,7 +90,20 @@ func (entry *Entry) Dup() *Entry {
 
 // Bytes returns the bytes representation of this entry from the formatter.
 func (entry *Entry) Bytes() ([]byte, error) {
-	return entry.Logger.Formatter.Format(entry)
+	// Snapshot the formatter under the lock to protect against concurrent
+	// SetFormatter calls, then release the lock before formatting.
+	// This avoids a data race and prevents a deadlock if Format() triggers
+	// reentrant logging (e.g., a field's MarshalJSON calls logrus).
+	//
+	// See:
+	//
+	// - https://github.com/sirupsen/logrus/issues/1440
+	// - https://github.com/sirupsen/logrus/issues/1448
+	entry.Logger.mu.Lock()
+	formatter := entry.Logger.Formatter
+	entry.Logger.mu.Unlock()
+
+	return formatter.Format(entry)
 }
 
 // String returns the string representation from the reader and ultimately the
