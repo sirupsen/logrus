@@ -18,6 +18,8 @@ type Hook struct {
 	mu      sync.RWMutex
 }
 
+var _ logrus.Hook = (*Hook)(nil)
+
 // NewGlobal installs a test hook for the global logger.
 func NewGlobal() *Hook {
 	hook := new(Hook)

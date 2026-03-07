@@ -12,6 +12,8 @@ type Hook struct {
 	LogLevels []logrus.Level
 }
 
+var _ logrus.Hook = (*Hook)(nil)
+
 // Fire will be called when some logging function is called with current hook
 // It will format log entry to string and write it to appropriate writer
 func (hook *Hook) Fire(entry *logrus.Entry) error {
