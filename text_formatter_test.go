@@ -492,20 +492,21 @@ func TestTextFormatterIsColored(t *testing.T) {
 				t.Setenv(k, v)
 			}
 			tf := TextFormatter{
-				isTerminal:                tc.isTerminal,
 				DisableColors:             tc.disableColor,
 				ForceColors:               tc.forceColors,
 				EnvironmentOverrideColors: len(tc.envVars) > 0,
 			}
 
+			expected := tc.expected
+			if runtime.GOOS == "windows" && !tc.forceColors && os.Getenv("CLICOLOR_FORCE") == "" {
+				// On Windows, without ForceColors or CLICOLOR_FORCE, colors are disabled.
+				expected = false
+			}
+
 			// TODO(thaJeztah): need a way to mock "isTerminal" and check "isColored" for testing
 			//  without depending on non-exported methods and fields.
-			res := tf.isColored()
-			if runtime.GOOS == "windows" && !tc.forceColors && os.Getenv("CLICOLOR_FORCE") == "" {
-				assert.False(t, res)
-			} else {
-				assert.Equal(t, tc.expected, res)
-			}
+			res := tf.isColored(tc.isTerminal) // tc.isTerminal avoids depending on a real TTY
+			assert.Equal(t, expected, res)
 		})
 	}
 }
