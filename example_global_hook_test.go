@@ -6,12 +6,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var (
-	mystring string
-)
+var mystring string
 
-type GlobalHook struct {
-}
+type GlobalHook struct{}
 
 func (h *GlobalHook) Levels() []logrus.Level {
 	return logrus.AllLevels

@@ -328,7 +328,6 @@ func TestTimeOverrideMultipleLogs(t *testing.T) {
 }
 
 func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
-
 	var buffer bytes.Buffer
 	var fields Fields
 
@@ -356,7 +355,6 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 	assert.Equal(t, "omg it is!", fields["msg"])
 	assert.Equal(t, "eating raw fish", fields["context"])
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
-
 }
 
 func TestNestedLoggingReportsCorrectCaller(t *testing.T) {

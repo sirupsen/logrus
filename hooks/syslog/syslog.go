@@ -17,9 +17,14 @@ type SyslogHook struct {
 	SyslogRaddr   string
 }
 
-// Creates a hook to be added to an instance of logger. This is called with
-// `hook, err := NewSyslogHook("udp", "localhost:514", syslog.LOG_DEBUG, "")`
-// `if err == nil { log.Hooks.Add(hook) }`
+// NewSyslogHook creates a hook to be added to an instance of logger.
+//
+// This is called with:
+//
+// 	hook, err := NewSyslogHook("udp", "localhost:514", syslog.LOG_DEBUG, "")
+//	if err == nil {
+//		log.Hooks.Add(hook)
+//	}
 func NewSyslogHook(network, raddr string, priority syslog.Priority, tag string) (*SyslogHook, error) {
 	w, err := syslog.Dial(network, raddr, priority, tag)
 	return &SyslogHook{w, network, raddr}, err
@@ -28,7 +33,7 @@ func NewSyslogHook(network, raddr string, priority syslog.Priority, tag string) 
 func (hook *SyslogHook) Fire(entry *logrus.Entry) error {
 	line, err := entry.String()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to read entry, %v", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Unable to read entry, %v", err)
 		return err
 	}
 

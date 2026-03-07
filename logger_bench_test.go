@@ -9,7 +9,7 @@ import (
 )
 
 func BenchmarkDummyLogger(b *testing.B) {
-	nullf, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0666)
+	nullf, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0o666)
 	if err != nil {
 		b.Fatalf("%v", err)
 	}
@@ -18,7 +18,7 @@ func BenchmarkDummyLogger(b *testing.B) {
 }
 
 func BenchmarkDummyLoggerNoLock(b *testing.B) {
-	nullf, err := os.OpenFile(os.DevNull, os.O_WRONLY|os.O_APPEND, 0666)
+	nullf, err := os.OpenFile(os.DevNull, os.O_WRONLY|os.O_APPEND, 0o666)
 	if err != nil {
 		b.Fatalf("%v", err)
 	}

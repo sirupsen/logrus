@@ -14,7 +14,6 @@ func TestLocalhostAddAndPrint(t *testing.T) {
 	log := logrus.New()
 	log.SetOutput(io.Discard)
 	hook, err := NewSyslogHook("udp", "localhost:514", syslog.LOG_INFO, "")
-
 	if err != nil {
 		t.Errorf("Unable to connect to local syslog.")
 	}

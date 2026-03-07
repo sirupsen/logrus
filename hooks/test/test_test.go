@@ -50,7 +50,6 @@ func TestAllHooks(t *testing.T) {
 }
 
 func TestLoggingWithHooksRace(t *testing.T) {
-
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	unlocker := r.Intn(100)
 
