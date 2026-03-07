@@ -333,7 +333,14 @@ func runEntryLoggerRace(t *testing.T, mutate func(logger *logrus.Logger)) {
 	const n = 100
 
 	var wg sync.WaitGroup
-	wg.Add(3)
+	wg.Add(4)
+
+	go func() {
+		defer wg.Done()
+		for range n {
+			_, _ = entry.Bytes()
+		}
+	}()
 
 	go func() {
 		defer wg.Done()
