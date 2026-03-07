@@ -113,6 +113,8 @@ func (f *TextFormatter) isColored() bool {
 
 // Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
+	f.terminalInitOnce.Do(func() { f.init(entry) })
+
 	data := make(Fields)
 	maps.Copy(data, entry.Data)
 
@@ -175,8 +177,6 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	} else {
 		b = &bytes.Buffer{}
 	}
-
-	f.terminalInitOnce.Do(func() { f.init(entry) })
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
