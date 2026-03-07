@@ -294,6 +294,7 @@ func TestEntryLoggerMutationRace(t *testing.T) {
 		{doc: "SetBufferPool", mutate: func(l *logrus.Logger) { l.SetBufferPool(nopBufferPool{}) }},
 		{doc: "SetFormatter", mutate: func(l *logrus.Logger) { l.SetFormatter(&logrus.TextFormatter{}) }},
 		{doc: "SetLevel", mutate: func(l *logrus.Logger) { l.SetLevel(logrus.InfoLevel) }},
+		{doc: "SetOutput", mutate: func(l *logrus.Logger) { l.SetOutput(io.Discard) }},
 		{doc: "SetReportCaller", mutate: func(l *logrus.Logger) { l.SetReportCaller(true) }},
 		{doc: "ReplaceHooks_withHookPresent", mutate: func(l *logrus.Logger) {
 			// Replace with a fresh map each time to maximize mutation.
