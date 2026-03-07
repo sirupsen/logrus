@@ -285,40 +285,31 @@ func TestEntryLogfLevel(t *testing.T) {
 	assert.Contains(t, buffer.String(), "warn")
 }
 
-func TestEntryReportCallerRace(t *testing.T) {
-	logger := logrus.New()
-	logger.SetOutput(io.Discard)
-	entry := logrus.NewEntry(logger)
+func TestEntryLoggerMutationRace(t *testing.T) {
+	tests := []struct {
+		doc    string
+		mutate func(*logrus.Logger)
+	}{
+		{doc: "AddHook", mutate: func(l *logrus.Logger) { l.AddHook(noopHook{}) }},
+		{doc: "SetBufferPool", mutate: func(l *logrus.Logger) { l.SetBufferPool(nopBufferPool{}) }},
+		{doc: "SetFormatter", mutate: func(l *logrus.Logger) { l.SetFormatter(&logrus.TextFormatter{}) }},
+		{doc: "SetLevel", mutate: func(l *logrus.Logger) { l.SetLevel(logrus.InfoLevel) }},
+		{doc: "SetReportCaller", mutate: func(l *logrus.Logger) { l.SetReportCaller(true) }},
+		{doc: "ReplaceHooks_withHookPresent", mutate: func(l *logrus.Logger) {
+			// Replace with a fresh map each time to maximize mutation.
+			h := make(logrus.LevelHooks)
+			for _, lvl := range logrus.AllLevels {
+				h[lvl] = []logrus.Hook{noopHook{}}
+			}
+			l.ReplaceHooks(h)
+		}},
+	}
 
-	// logging before SetReportCaller has the highest chance of causing a race condition
-	// to be detected, but doing it twice just to increase the likelihood of detecting the race
-	go func() {
-		entry.Info("should not race")
-	}()
-	go func() {
-		logger.SetReportCaller(true)
-	}()
-	go func() {
-		entry.Info("should not race")
-	}()
-}
-
-func TestEntryFormatterRace(t *testing.T) {
-	logger := logrus.New()
-	logger.SetOutput(io.Discard)
-	entry := logrus.NewEntry(logger)
-
-	// logging before SetReportCaller has the highest chance of causing a race condition
-	// to be detected, but doing it twice just to increase the likelihood of detecting the race
-	go func() {
-		entry.Info("should not race")
-	}()
-	go func() {
-		logger.SetFormatter(&logrus.TextFormatter{})
-	}()
-	go func() {
-		entry.Info("should not race")
-	}()
+	for _, tc := range tests {
+		t.Run(tc.doc, func(t *testing.T) {
+			runEntryLoggerRace(t, tc.mutate)
+		})
+	}
 }
 
 type noopHook struct{}
@@ -326,7 +317,14 @@ type noopHook struct{}
 func (noopHook) Levels() []logrus.Level   { return logrus.AllLevels }
 func (noopHook) Fire(*logrus.Entry) error { return nil }
 
-func TestHookAddRace(t *testing.T) {
+type nopBufferPool struct{}
+
+func (nopBufferPool) Get() *bytes.Buffer { return new(bytes.Buffer) }
+func (nopBufferPool) Put(*bytes.Buffer)  {}
+
+func runEntryLoggerRace(t *testing.T, mutate func(logger *logrus.Logger)) {
+	t.Helper()
+
 	logger := logrus.New()
 	logger.SetOutput(io.Discard)
 	entry := logrus.NewEntry(logger)
@@ -346,7 +344,7 @@ func TestHookAddRace(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for range n {
-			logger.AddHook(noopHook{})
+			mutate(logger)
 		}
 	}()
 
