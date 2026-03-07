@@ -560,3 +560,59 @@ func TestCustomSorting(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, strings.HasPrefix(string(b), "prefix="), "format output is %q", string(b))
 }
+
+// TestCustomSorting_FirstFormat tests that color and terminal settings
+// are performed on the first message, and the message is properly
+// formatted with default (fixedKeys) fields excluded.
+//
+// regression test for https://github.com/sirupsen/logrus/issues/1298
+func TestCustomSorting_FirstFormat(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("colored output not supported on Windows")
+	}
+	if !checkIfTerminal(os.Stderr) {
+		t.Skip("test requires a TTY")
+	}
+
+	t.Setenv("CLICOLOR", "")
+	t.Setenv("CLICOLOR_FORCE", "")
+
+	logger := New()
+	logger.SetOutput(os.Stderr) // don't discard output; we need terminal detection
+	entry := &Entry{
+		Logger:  logger,
+		Message: `colored messages are pretty`,
+		Level:   InfoLevel,
+		Data:    Fields{"z": 2, "a": 1},
+	}
+
+	var sortCalled bool
+	var otherFields []string
+	tf := &TextFormatter{
+		DisableTimestamp: true,
+		SortingFunc: func(keys []string) {
+			sortCalled = true
+			sort.Strings(keys)
+			for _, key := range keys {
+				if _, ok := entry.Data[key]; !ok {
+					// default ("fixedKeys") should not be included when printing colored.
+					otherFields = append(otherFields, key)
+				}
+			}
+		},
+	}
+	for _, name := range []string{"first", "second"} {
+		t.Run(name, func(t *testing.T) {
+			sortCalled = false
+			otherFields = []string{}
+			out, err := tf.Format(entry)
+			require.NoError(t, err)
+			assert.True(t, sortCalled)
+			assert.Empty(t, otherFields)
+
+			// sanity checks:
+			assert.Contains(t, string(out), "\x1b[") // ANSI present
+			assert.Contains(t, string(out), "colored messages are pretty")
+		})
+	}
+}
