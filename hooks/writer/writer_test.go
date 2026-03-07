@@ -1,4 +1,4 @@
-package writer
+package writer_test
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/writer"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,13 +20,13 @@ func TestDifferentLevelsGoToDifferentWriters(t *testing.T) {
 	})
 	log.SetOutput(io.Discard) // Send all logs to nowhere by default
 
-	log.AddHook(&Hook{
+	log.AddHook(&writer.Hook{
 		Writer: &a,
 		LogLevels: []logrus.Level{
 			logrus.WarnLevel,
 		},
 	})
-	log.AddHook(&Hook{ // Send info and debug logs to stdout
+	log.AddHook(&writer.Hook{ // Send info and debug logs to stdout
 		Writer: &b,
 		LogLevels: []logrus.Level{
 			logrus.InfoLevel,
