@@ -3,6 +3,7 @@
 package syslog
 
 import (
+	"io"
 	"log/syslog"
 	"testing"
 
@@ -11,6 +12,7 @@ import (
 
 func TestLocalhostAddAndPrint(t *testing.T) {
 	log := logrus.New()
+	log.SetOutput(io.Discard)
 	hook, err := NewSyslogHook("udp", "localhost:514", syslog.LOG_INFO, "")
 
 	if err != nil {

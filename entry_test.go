@@ -287,6 +287,7 @@ func TestEntryLogfLevel(t *testing.T) {
 
 func TestEntryReportCallerRace(t *testing.T) {
 	logger := logrus.New()
+	logger.SetOutput(io.Discard)
 	entry := logrus.NewEntry(logger)
 
 	// logging before SetReportCaller has the highest chance of causing a race condition
@@ -304,6 +305,7 @@ func TestEntryReportCallerRace(t *testing.T) {
 
 func TestEntryFormatterRace(t *testing.T) {
 	logger := logrus.New()
+	logger.SetOutput(io.Discard)
 	entry := logrus.NewEntry(logger)
 
 	// logging before SetReportCaller has the highest chance of causing a race condition
