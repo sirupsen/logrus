@@ -146,10 +146,16 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	if isColored {
 		f.printColored(b, entry, keys, data)
-		return b.Bytes(), nil
+	} else {
+		f.printPlain(b, entry, keys, data)
 	}
 
-	var funcVal, fileVal string
+	return b.Bytes(), nil
+}
+
+func (f *TextFormatter) printPlain(b *bytes.Buffer, entry *Entry, keys []string, data Fields) {
+	caller := entry.Caller
+	hasCaller := caller != nil
 
 	fixedKeys := make([]string, 0, 4+len(data))
 	if !f.DisableTimestamp {
@@ -162,6 +168,8 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	if entry.err != "" {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyLogrusError))
 	}
+
+	var funcVal, fileVal string
 	if caller != nil {
 		if f.CallerPrettyfier != nil {
 			funcVal, fileVal = f.CallerPrettyfier(caller)
@@ -218,7 +226,6 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	}
 
 	b.WriteByte('\n')
-	return b.Bytes(), nil
 }
 
 func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, data Fields) {
