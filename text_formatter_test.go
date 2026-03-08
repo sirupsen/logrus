@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -592,7 +593,7 @@ func TestCustomSorting_FirstFormat(t *testing.T) {
 		DisableTimestamp: true,
 		SortingFunc: func(keys []string) {
 			sortCalled = true
-			sort.Strings(keys)
+			slices.Sort(keys)
 			for _, key := range keys {
 				if _, ok := entry.Data[key]; !ok {
 					// default ("fixedKeys") should not be included when printing colored.

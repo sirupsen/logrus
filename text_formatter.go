@@ -6,7 +6,7 @@ import (
 	"maps"
 	"os"
 	"runtime"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -53,7 +53,7 @@ type TextFormatter struct {
 	// be desired.
 	DisableSorting bool
 
-	// The keys sorting function, when uninitialized it uses sort.Strings.
+	// The keys sorting function, when uninitialized it uses slices.Sort.
 	SortingFunc func([]string)
 
 	// Disables the truncation of the level text to 4 characters.
@@ -170,7 +170,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	if !f.DisableSorting {
 		if f.SortingFunc == nil {
-			sort.Strings(keys)
+			slices.Sort(keys)
 			fixedKeys = append(fixedKeys, keys...)
 		} else {
 			if !isColored {
