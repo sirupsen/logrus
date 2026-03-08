@@ -195,27 +195,27 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	}
 	if isColored {
 		f.printColored(b, entry, keys, data, timestampFormat)
-	} else {
-		for _, key := range fixedKeys {
-			var value any
-			switch {
-			case key == f.FieldMap.resolve(FieldKeyTime):
-				value = entry.Time.Format(timestampFormat)
-			case key == f.FieldMap.resolve(FieldKeyLevel):
-				value = entry.Level.String()
-			case key == f.FieldMap.resolve(FieldKeyMsg):
-				value = entry.Message
-			case key == f.FieldMap.resolve(FieldKeyLogrusError):
-				value = entry.err
-			case key == f.FieldMap.resolve(FieldKeyFunc) && hasCaller:
-				value = funcVal
-			case key == f.FieldMap.resolve(FieldKeyFile) && hasCaller:
-				value = fileVal
-			default:
-				value = data[key]
-			}
-			f.appendKeyValue(b, key, value)
+		return b.Bytes(), nil
+	}
+	for _, key := range fixedKeys {
+		var value any
+		switch {
+		case key == f.FieldMap.resolve(FieldKeyTime):
+			value = entry.Time.Format(timestampFormat)
+		case key == f.FieldMap.resolve(FieldKeyLevel):
+			value = entry.Level.String()
+		case key == f.FieldMap.resolve(FieldKeyMsg):
+			value = entry.Message
+		case key == f.FieldMap.resolve(FieldKeyLogrusError):
+			value = entry.err
+		case key == f.FieldMap.resolve(FieldKeyFunc) && hasCaller:
+			value = funcVal
+		case key == f.FieldMap.resolve(FieldKeyFile) && hasCaller:
+			value = fileVal
+		default:
+			value = data[key]
 		}
+		f.appendKeyValue(b, key, value)
 	}
 
 	b.WriteByte('\n')
@@ -265,6 +265,8 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 		b.WriteByte('=')
 		f.appendValue(b, data[k])
 	}
+
+	b.WriteByte('\n')
 }
 
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value any) {
