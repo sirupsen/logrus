@@ -157,7 +157,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 			funcVal, fileVal = f.CallerPrettyfier(caller)
 		} else {
 			funcVal = caller.Function
-			fileVal = fmt.Sprintf("%s:%d", caller.File, caller.Line)
+			fileVal = caller.File + ":" + strconv.Itoa(caller.Line)
 		}
 
 		if funcVal != "" {
@@ -227,13 +227,16 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	// the behavior of logrus text_formatter the same as the stdlib log package
 	entry.Message = strings.TrimSuffix(entry.Message, "\n")
 
-	callerText := ""
+	var callerText string
 	if caller := entry.Caller; caller != nil {
-		funcVal := fmt.Sprintf("%s()", caller.Function)
-		fileVal := fmt.Sprintf("%s:%d", caller.File, caller.Line)
-
+		var funcVal, fileVal string
 		if f.CallerPrettyfier != nil {
 			funcVal, fileVal = f.CallerPrettyfier(caller)
+		} else {
+			if caller.Function != "" {
+				funcVal = caller.Function + "()"
+			}
+			fileVal = caller.File + ":" + strconv.Itoa(caller.Line)
 		}
 
 		if fileVal == "" {
