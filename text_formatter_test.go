@@ -616,3 +616,68 @@ func TestCustomSorting_FirstFormat(t *testing.T) {
 		})
 	}
 }
+
+func TestTextEntryFieldValueError(t *testing.T) {
+	t.Run("good value", func(t *testing.T) {
+		var buf bytes.Buffer
+		l := New()
+		l.SetOutput(&buf)
+		l.SetFormatter(&TextFormatter{DisableTimestamp: true, DisableColors: true})
+
+		l.WithField("ok", "ok").Info("test")
+
+		out := buf.String()
+		if field := FieldKeyLogrusError + "="; strings.Contains(out, field) {
+			t.Errorf(`Unexpected "logrus_error" field in log entry: %v`, out)
+		}
+		if field := `ok=ok`; !strings.Contains(out, field) {
+			t.Errorf(`Expected log entry to contain "ok=ok": %v`, out)
+		}
+	})
+
+	// If we dropped an unsupported field, the FieldKeyLogrusError should
+	// contain a message that we did.
+	t.Run("bad and good value", func(t *testing.T) {
+		var buf bytes.Buffer
+		l := New()
+		l.SetOutput(&buf)
+		l.SetFormatter(&TextFormatter{DisableTimestamp: true, DisableColors: true})
+
+		l.WithField("func", func() {}).WithField("ok", "ok").Info("test")
+
+		out := buf.String()
+		if field := FieldKeyLogrusError + "="; !strings.Contains(out, field) {
+			t.Errorf(`Expected log entry to contain a "logrus_error" field: %v`, out)
+		}
+		if field := `func=`; strings.Contains(out, field) {
+			t.Errorf(`Expected "func" field to be removed from log entry: %v`, out)
+		}
+		if field := `ok=ok`; !strings.Contains(out, field) {
+			t.Errorf(`Expected log entry to contain "ok=ok": %v`, out)
+		}
+
+	})
+
+	// This is testing the current behavior; error is preserved, even if an
+	// unsupported value was dropped and replaced with a supported value for
+	// the same field.
+	t.Run("replace bad value", func(t *testing.T) {
+		var buf bytes.Buffer
+		l := New()
+		l.SetOutput(&buf)
+		l.SetFormatter(&TextFormatter{DisableTimestamp: true, DisableColors: true})
+
+		l.WithField("func", func() {}).WithField("ok", "ok").WithField("func", "not-a-func").Info("test")
+
+		out := buf.String()
+		if field := FieldKeyLogrusError + "="; !strings.Contains(out, field) {
+			t.Errorf(`Expected log entry to contain a "logrus_error" field: %v`, out)
+		}
+		if field := `func=not-a-func`; !strings.Contains(out, field) {
+			t.Errorf(`Expected log entry to contain "func=not-a-func": %v`, out)
+		}
+		if field := `ok=ok`; !strings.Contains(out, field) {
+			t.Errorf(`Expected log entry to contain "ok=ok": %v`, out)
+		}
+	})
+}
