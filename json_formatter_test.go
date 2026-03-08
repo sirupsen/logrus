@@ -1,6 +1,7 @@
 package logrus_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -204,6 +205,83 @@ func TestFieldsInNestedDictionary(t *testing.T) {
 	if entry["level"] != "info" {
 		t.Errorf("Expected 'level' field to contain 'info'")
 	}
+}
+
+func TestJSONEntryFieldValueError(t *testing.T) {
+	t.Run("good value", func(t *testing.T) {
+		var buf bytes.Buffer
+		l := logrus.New()
+		l.SetOutput(&buf)
+		l.SetFormatter(&logrus.JSONFormatter{DisableTimestamp: true})
+
+		l.WithField("ok", "ok").Info("test")
+
+		var data map[string]any
+		err := json.Unmarshal(buf.Bytes(), &data)
+		if err != nil {
+			t.Fatal("Unable to unmarshal formatted entry: ", err)
+		}
+
+		if _, ok := data[logrus.FieldKeyLogrusError]; ok {
+			t.Errorf(`Unexpected "logrus_error" field in log entry: %v`, data)
+		}
+		if v, ok := data["ok"]; !ok || v != "ok" {
+			t.Errorf(`Expected log entry to contain "ok"="ok": %v`, data)
+		}
+	})
+
+	// If we dropped an unsupported field, the FieldKeyLogrusError should
+	// contain a message that we did.
+	t.Run("bad and good value", func(t *testing.T) {
+		var buf bytes.Buffer
+		l := logrus.New()
+		l.SetOutput(&buf)
+		l.SetFormatter(&logrus.JSONFormatter{DisableTimestamp: true})
+
+		l.WithField("func", func() {}).WithField("ok", "ok").Info("test")
+
+		var data map[string]any
+		if err := json.Unmarshal(buf.Bytes(), &data); err != nil {
+			t.Fatal("Unable to unmarshal formatted entry: ", err)
+		}
+
+		if v, ok := data[logrus.FieldKeyLogrusError]; !ok || v == "" {
+			t.Errorf(`Expected log entry to contain a "logrus_error" field: %v`, data)
+		}
+		if _, ok := data["func"]; ok {
+			t.Errorf(`Expected "func" field to be removed from log entry: %v`, data)
+		}
+		if v, ok := data["ok"]; !ok || v != "ok" {
+			t.Errorf(`Expected log entry to contain "ok=ok": %v`, data)
+		}
+	})
+
+	// This is testing the current behavior; error is preserved, even if an
+	// unsupported value was dropped and replaced with a supported value for
+	// the same field.
+	t.Run("replace bad value", func(t *testing.T) {
+		var buf bytes.Buffer
+		l := logrus.New()
+		l.SetOutput(&buf)
+		l.SetFormatter(&logrus.JSONFormatter{DisableTimestamp: true})
+
+		l.WithField("func", func() {}).WithField("ok", "ok").WithField("func", "not-a-func").Info("test")
+
+		var data map[string]any
+		if err := json.Unmarshal(buf.Bytes(), &data); err != nil {
+			t.Fatal("Unable to unmarshal formatted entry: ", err)
+		}
+
+		if v, ok := data[logrus.FieldKeyLogrusError]; !ok || v == "" {
+			t.Errorf(`Expected log entry to contain a "logrus_error" field: %v`, data)
+		}
+		if v, ok := data["func"]; !ok || v != "not-a-func" {
+			t.Errorf(`Expected log entry to contain "func=not-a-func": %v`, data)
+		}
+		if v, ok := data["ok"]; !ok || v != "ok" {
+			t.Errorf(`Expected log entry to contain "ok=ok": %v`, data)
+		}
+	})
 }
 
 func TestJSONEntryEndsWithNewline(t *testing.T) {
