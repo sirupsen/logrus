@@ -170,6 +170,8 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	if !f.DisableSorting {
 		if f.SortingFunc == nil {
+			// Default sorting does not sort the "fixed keys";
+			// see https://github.com/sirupsen/logrus/commit/73bc94e60c753099e8bae902f81fbd6e7dd95f26
 			slices.Sort(keys)
 			fixedKeys = append(fixedKeys, keys...)
 		} else {
