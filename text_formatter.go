@@ -139,6 +139,16 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		keys = append(keys, k)
 	}
 
+	b := entry.Buffer
+	if b == nil {
+		b = new(bytes.Buffer)
+	}
+
+	if isColored {
+		f.printColored(b, entry, keys, data)
+		return b.Bytes(), nil
+	}
+
 	var funcVal, fileVal string
 
 	fixedKeys := make([]string, 0, 4+len(data))
@@ -175,26 +185,13 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 			slices.Sort(keys)
 			fixedKeys = append(fixedKeys, keys...)
 		} else {
-			if !isColored {
-				fixedKeys = append(fixedKeys, keys...)
-				f.SortingFunc(fixedKeys)
-			} else {
-				f.SortingFunc(keys)
-			}
+			fixedKeys = append(fixedKeys, keys...)
+			f.SortingFunc(fixedKeys)
 		}
 	} else {
 		fixedKeys = append(fixedKeys, keys...)
 	}
 
-	b := entry.Buffer
-	if b == nil {
-		b = new(bytes.Buffer)
-	}
-
-	if isColored {
-		f.printColored(b, entry, keys, data)
-		return b.Bytes(), nil
-	}
 	for _, key := range fixedKeys {
 		var value any
 		switch {
@@ -262,6 +259,14 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 			timestampFormat = defaultTimestampFormat
 		}
 		_, _ = fmt.Fprintf(b, "%s[%s]%s %-44s ", levelText, entry.Time.Format(timestampFormat), callerText, entry.Message)
+	}
+
+	if !f.DisableSorting {
+		if f.SortingFunc == nil {
+			slices.Sort(keys)
+		} else {
+			f.SortingFunc(keys)
+		}
 	}
 
 	// Keys use the same color as the level-prefix.
