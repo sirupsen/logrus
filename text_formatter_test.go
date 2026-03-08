@@ -195,14 +195,18 @@ func TestDisableLevelTruncation(t *testing.T) {
 		Time:    time.Now(),
 		Message: "testing",
 	}
-	keys := []string{}
-	timestampFormat := "Mon Jan 2 15:04:05 -0700 MST 2006"
 	checkDisableTruncation := func(disabled bool, level Level) {
-		tf := &TextFormatter{DisableLevelTruncation: disabled}
-		var b bytes.Buffer
+		tf := &TextFormatter{
+			DisableLevelTruncation: disabled,
+			ForceColors:            true,
+			DisableTimestamp:       true,
+		}
 		entry.Level = level
-		tf.printColored(&b, entry, keys, nil, timestampFormat)
-		logLine := (&b).String()
+		out, err := tf.Format(entry)
+		if err != nil {
+			t.Errorf("error formatting log entry: %s", err)
+		}
+		logLine := string(out)
 		if disabled {
 			expected := strings.ToUpper(level.String())
 			if !strings.Contains(logLine, expected) {
@@ -279,21 +283,22 @@ func TestPadLevelText(t *testing.T) {
 
 	// We create a "default" TextFormatter to do a control test.
 	// We also create a TextFormatter with PadLevelText, which is the parameter we want to do our most relevant assertions against.
-	tfDefault := TextFormatter{}
-	tfWithPadding := TextFormatter{PadLevelText: true}
+	tfDefault := TextFormatter{ForceColors: true}
+	tfWithPadding := TextFormatter{ForceColors: true, PadLevelText: true}
 
 	for _, val := range params {
 		t.Run(val.name, func(t *testing.T) {
-			// TextFormatter writes into these bytes.Buffers, and we make assertions about their contents later
-			var bytesDefault bytes.Buffer
-			var bytesWithPadding bytes.Buffer
+			out, err := tfDefault.Format(&Entry{Level: val.level})
+			if err != nil {
+				t.Errorf("error formatting log entry: %s", err)
+			}
+			logLineDefault := string(out)
 
-			tfDefault.printColored(&bytesDefault, &Entry{Level: val.level}, []string{}, nil, "")
-			tfWithPadding.printColored(&bytesWithPadding, &Entry{Level: val.level}, []string{}, nil, "")
-
-			// turn the bytes back into a string so that we can actually work with the data
-			logLineDefault := (&bytesDefault).String()
-			logLineWithPadding := (&bytesWithPadding).String()
+			out, err = tfWithPadding.Format(&Entry{Level: val.level})
+			if err != nil {
+				t.Errorf("error formatting log entry: %s", err)
+			}
+			logLineWithPadding := string(out)
 
 			// Control: the level text should not be padded by default
 			if val.paddedLevelText != "" && strings.Contains(logLineDefault, val.paddedLevelText) {
