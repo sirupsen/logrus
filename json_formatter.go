@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
+	"strconv"
 )
 
 type fieldKey string
@@ -62,7 +63,7 @@ type JSONFormatter struct {
 // Format renders a single log entry
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	caller := entry.Caller
-	data := make(Fields, len(entry.Data)+4)
+	data := make(Fields, len(entry.Data)+defaultFields)
 	for k, v := range entry.Data {
 		switch v := v.(type) {
 		case error:
@@ -75,7 +76,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	}
 
 	if f.DataKey != "" {
-		newData := make(Fields, 4)
+		newData := make(Fields, defaultFields+1)
 		newData[f.DataKey] = data
 		data = newData
 	}
@@ -97,10 +98,12 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
 	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
 	if caller != nil {
-		funcVal := caller.Function
-		fileVal := fmt.Sprintf("%s:%d", caller.File, caller.Line)
+		var funcVal, fileVal string
 		if f.CallerPrettyfier != nil {
 			funcVal, fileVal = f.CallerPrettyfier(caller)
+		} else {
+			funcVal = caller.Function
+			fileVal = caller.File + ":" + strconv.FormatInt(int64(caller.Line), 10)
 		}
 		if funcVal != "" {
 			data[f.FieldMap.resolve(FieldKeyFunc)] = funcVal

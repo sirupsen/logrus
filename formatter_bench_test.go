@@ -22,10 +22,12 @@ var numericFields = logrus.Fields{
 }
 
 var boolFields = logrus.Fields{
-	"t": true,
-	"f": false,
-	"x": true,
-	"y": false,
+	"t":   true,
+	"f":   false,
+	"x":   true,
+	"y":   false,
+	"yes": true,
+	"no":  false,
 }
 
 var stringerFields = logrus.Fields{
@@ -33,6 +35,8 @@ var stringerFields = logrus.Fields{
 	"s2": benchStringer("beta"),
 	"s3": benchStringer("gamma-delta"), // includes '-' (still unquoted)
 	"s4": benchStringer("needs quote"), // includes space -> quoted path
+	"s5": benchStringer(`needs "quote"`),
+	"s6": benchStringer(`needs 'quote'`),
 }
 
 // smallFields is a small size data set for benchmarking
@@ -78,6 +82,22 @@ var largeFields = logrus.Fields{
 var errorFields = logrus.Fields{
 	"foo": fmt.Errorf("bar"),
 	"baz": fmt.Errorf("qux"),
+}
+
+func BenchmarkZeroTextFormatter(b *testing.B) {
+	doBenchmark(b, &logrus.TextFormatter{DisableColors: true}, logrus.Fields{})
+}
+
+func BenchmarkOneStringTextFormatter(b *testing.B) {
+	doBenchmark(b, &logrus.TextFormatter{DisableColors: true}, logrus.Fields{"foo": "bar"})
+}
+
+func BenchmarkOneNumericTextFormatter(b *testing.B) {
+	doBenchmark(b, &logrus.TextFormatter{DisableColors: true}, logrus.Fields{"i": int(42)})
+}
+
+func BenchmarkOneBoolTextFormatter(b *testing.B) {
+	doBenchmark(b, &logrus.TextFormatter{DisableColors: true}, logrus.Fields{"t": true})
 }
 
 func BenchmarkNumericTextFormatter(b *testing.B) {
@@ -140,6 +160,7 @@ func doBenchmark(b *testing.B, formatter logrus.Formatter, fields logrus.Fields)
 	}
 	b.SetBytes(int64(len(d)))
 
+	b.ReportAllocs()
 	b.ResetTimer()
 	for range b.N {
 		d, err = formatter.Format(entry)

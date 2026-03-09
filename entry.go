@@ -73,8 +73,8 @@ type Entry struct {
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
-		// Default is three fields, plus one optional.  Give a little extra room.
-		Data: make(Fields, 6),
+		// Reserve default predefined fields and a little extra room.
+		Data: make(Fields, defaultFields+3),
 	}
 }
 

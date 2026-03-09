@@ -127,7 +127,7 @@ func (f *TextFormatter) isColored(isTerminal bool) bool {
 
 // Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
-	data := make(Fields)
+	data := make(Fields, len(entry.Data))
 	maps.Copy(data, entry.Data)
 	isColored := f.isColored(f.isTerminal(entry))
 
@@ -157,7 +157,7 @@ func (f *TextFormatter) printPlain(b *bytes.Buffer, entry *Entry, keys []string,
 	caller := entry.Caller
 	hasCaller := caller != nil
 
-	fixedKeys := make([]string, 0, 4+len(keys))
+	fixedKeys := make([]string, 0, len(keys)+defaultFields)
 	if !f.DisableTimestamp {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyTime))
 	}
@@ -175,7 +175,7 @@ func (f *TextFormatter) printPlain(b *bytes.Buffer, entry *Entry, keys []string,
 			funcVal, fileVal = f.CallerPrettyfier(caller)
 		} else {
 			funcVal = caller.Function
-			fileVal = caller.File + ":" + strconv.Itoa(caller.Line)
+			fileVal = caller.File + ":" + strconv.FormatInt(int64(caller.Line), 10)
 		}
 
 		if funcVal != "" {
@@ -242,7 +242,7 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 			if caller.Function != "" {
 				funcVal = caller.Function + "()"
 			}
-			fileVal = caller.File + ":" + strconv.Itoa(caller.Line)
+			fileVal = caller.File + ":" + strconv.FormatInt(int64(caller.Line), 10)
 		}
 
 		if fileVal == "" {
