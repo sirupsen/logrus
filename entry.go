@@ -35,41 +35,61 @@ const (
 // ErrorKey defines the key when adding errors using [WithError], [Logger.WithError].
 var ErrorKey = "error"
 
-// Entry is the final or intermediate Logrus logging entry. It contains all
-// the fields passed with WithField{,s}. It's finally logged when Trace, Debug,
-// Info, Warn, Error, Fatal or Panic is called on it. These objects can be
-// reused and passed around as much as you wish to avoid field duplication.
+// Entry represents a single log event. It may be either an intermediate
+// entry (created via WithField(s), WithContext, etc.) or a final entry
+// that is emitted when one of the level methods (Trace, Debug, Info,
+// Warn, Error, Fatal, Panic) is called.
 //
-//nolint:recvcheck // the methods of "Entry" use pointer receiver and non-pointer receiver.
+// An Entry always belongs to a Logger. A nil Logger is invalid and will
+// cause a panic when the entry is logged. Use [NewEntry] or Logger methods
+// to construct entries.
+//
+// Entries are safe to reuse for adding fields and may be passed around
+// to avoid field duplication. Each log operation operates on a copy
+// of the Entry’s data to avoid mutation during formatting.
+//
+//nolint:recvcheck // Entry methods intentionally use both pointer and value receivers.
 type Entry struct {
+	// Logger is the Logger that owns this entry and is responsible for
+	// formatting, hooks, and output. It must not be nil. An Entry without
+	// a Logger is invalid and will panic when logged.
 	Logger *Logger
 
-	// Contains all the fields set by the user.
+	// Data contains all user-defined fields attached to this entry.
 	Data Fields
 
-	// Time at which the log entry was created
+	// Time is the timestamp for the log event. If zero when the entry is
+	// logged, it defaults to the current time.
 	Time time.Time
 
-	// Level the log entry was logged at: Trace, Debug, Info, Warn, Error, Fatal or Panic
-	// This field will be set on entry firing and the value will be equal to the one in Logger struct field.
+	// Level is the severity of the log entry. It is set when the entry
+	// is fired and reflects the level used for that log call.
 	Level Level
 
-	// Calling method, with package name
+	// Caller contains the calling method information when caller
+	// reporting is enabled.
 	Caller *runtime.Frame
 
-	// Message passed to Trace, Debug, Info, Warn, Error, Fatal or Panic
+	// Message is the log message supplied to one of the logging methods
+	// (Trace, Debug, Info, Warn, Error, Fatal, or Panic). It is set when
+	// the entry is logged.
 	Message string
 
-	// When formatter is called in entry.log(), a Buffer may be set to entry
+	// Buffer is a reusable buffer provided to the formatter. It is set
+	// before formatting in the normal log path; when nil, formatters
+	// allocate their own.
 	Buffer *bytes.Buffer
 
-	// Contains the context set by the user. Useful for hook processing etc.
+	// Context carries user-provided context for hooks and formatters.
 	Context context.Context
 
-	// err may contain a field formatting error
+	// err contains internal field-formatting errors.
 	err string
 }
 
+// NewEntry creates a new Entry associated with the provided Logger.
+// The logger must not be nil. Passing a nil logger will result in a
+// panic when a logging method (e.g., Info, Error, etc.) is called.
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
@@ -78,6 +98,11 @@ func NewEntry(logger *Logger) *Entry {
 	}
 }
 
+// Dup creates a copy of the entry for further modification.
+//
+// The Data map is cloned so that changes to fields on the returned
+// entry do not mutate the original. The Logger and other metadata
+// are copied by value.
 func (entry *Entry) Dup() *Entry {
 	return &Entry{
 		Logger:  entry.Logger,
