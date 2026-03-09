@@ -192,7 +192,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 		if isErrField {
 			tmp := fmt.Sprintf("can not add field %q", k)
 			if fieldErr != "" {
-				fieldErr = entry.err + ", " + tmp
+				fieldErr += ", " + tmp
 			} else {
 				fieldErr = tmp
 			}
