@@ -127,7 +127,7 @@ func (f *TextFormatter) isColored(isTerminal bool) bool {
 
 // Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
-	data := make(Fields)
+	data := make(Fields, len(entry.Data))
 	maps.Copy(data, entry.Data)
 	isColored := f.isColored(f.isTerminal(entry))
 
