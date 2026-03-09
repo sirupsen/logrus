@@ -1,32 +1,39 @@
 name: CI
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+# Default to 'contents: read', which grants actions to read commits.
+#
+# If any permission is set, any permission not included in the list is
+# implicitly set to "none".
+#
+# see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on: [push, pull_request]
 
 env:
   GOTOOLCHAIN: local
 
 jobs:
-
   lint:
     name: Golang-CI Lint
     timeout-minutes: 10
-    strategy:
-      matrix:
-        platform: [ubuntu-latest]
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
       - name: Install Go
         uses: actions/setup-go@v6
         with:
           go-version: stable
-      - uses: actions/checkout@v6
-      - uses: golangci/golangci-lint-action@v9
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v9
+
   cross:
     name: Cross
     timeout-minutes: 10
@@ -53,12 +60,15 @@ jobs:
         go-version: [stable, oldstable, 1.23.x]
         platform: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.platform }}
+    defaults:
+      run:
+        shell: bash
     steps:
-    - name: Install Go
-      uses: actions/setup-go@v6
-      with:
-        go-version: ${{ matrix.go-version }}
-    - name: Checkout code
-      uses: actions/checkout@v6
-    - name: Test
-      run: go test -race -v ./...
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Test
+        run: go test -race -v ./...
