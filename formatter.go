@@ -2,15 +2,16 @@ package logrus
 
 import "time"
 
+const defaultTimestampFormat = time.RFC3339
+
 // Default key names for the default fields
 const (
-	defaultTimestampFormat = time.RFC3339
-	FieldKeyMsg            = "msg"
-	FieldKeyLevel          = "level"
-	FieldKeyTime           = "time"
-	FieldKeyLogrusError    = "logrus_error"
-	FieldKeyFunc           = "func"
-	FieldKeyFile           = "file"
+	FieldKeyMsg         = "msg"
+	FieldKeyLevel       = "level"
+	FieldKeyTime        = "time"
+	FieldKeyLogrusError = "logrus_error"
+	FieldKeyFunc        = "func"
+	FieldKeyFile        = "file"
 )
 
 // The Formatter interface is used to implement a custom Formatter. It takes an

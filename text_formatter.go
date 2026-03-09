@@ -6,7 +6,7 @@ import (
 	"maps"
 	"os"
 	"runtime"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -53,7 +53,7 @@ type TextFormatter struct {
 	// be desired.
 	DisableSorting bool
 
-	// The keys sorting function, when uninitialized it uses sort.Strings.
+	// The keys sorting function, when uninitialized it uses slices.Sort.
 	SortingFunc func([]string)
 
 	// Disables the truncation of the level text to 4 characters.
@@ -139,9 +139,25 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 		keys = append(keys, k)
 	}
 
-	var funcVal, fileVal string
+	b := entry.Buffer
+	if b == nil {
+		b = new(bytes.Buffer)
+	}
 
-	fixedKeys := make([]string, 0, 4+len(data))
+	if isColored {
+		f.printColored(b, entry, keys, data)
+	} else {
+		f.printPlain(b, entry, keys, data)
+	}
+
+	return b.Bytes(), nil
+}
+
+func (f *TextFormatter) printPlain(b *bytes.Buffer, entry *Entry, keys []string, data Fields) {
+	caller := entry.Caller
+	hasCaller := caller != nil
+
+	fixedKeys := make([]string, 0, 4+len(keys))
 	if !f.DisableTimestamp {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyTime))
 	}
@@ -152,12 +168,14 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	if entry.err != "" {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyLogrusError))
 	}
+
+	var funcVal, fileVal string
 	if caller != nil {
 		if f.CallerPrettyfier != nil {
 			funcVal, fileVal = f.CallerPrettyfier(caller)
 		} else {
 			funcVal = caller.Function
-			fileVal = fmt.Sprintf("%s:%d", caller.File, caller.Line)
+			fileVal = caller.File + ":" + strconv.Itoa(caller.Line)
 		}
 
 		if funcVal != "" {
@@ -170,70 +188,61 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	if !f.DisableSorting {
 		if f.SortingFunc == nil {
-			sort.Strings(keys)
+			// Default sorting does not sort the "fixed keys";
+			// see https://github.com/sirupsen/logrus/commit/73bc94e60c753099e8bae902f81fbd6e7dd95f26
+			slices.Sort(keys)
 			fixedKeys = append(fixedKeys, keys...)
 		} else {
-			if !isColored {
-				fixedKeys = append(fixedKeys, keys...)
-				f.SortingFunc(fixedKeys)
-			} else {
-				f.SortingFunc(keys)
-			}
+			fixedKeys = append(fixedKeys, keys...)
+			f.SortingFunc(fixedKeys)
 		}
 	} else {
 		fixedKeys = append(fixedKeys, keys...)
 	}
 
-	b := entry.Buffer
-	if b == nil {
-		b = new(bytes.Buffer)
-	}
-
-	timestampFormat := f.TimestampFormat
-	if timestampFormat == "" {
-		timestampFormat = defaultTimestampFormat
-	}
-	if isColored {
-		f.printColored(b, entry, keys, data, timestampFormat)
-	} else {
-		for _, key := range fixedKeys {
-			var value any
-			switch {
-			case key == f.FieldMap.resolve(FieldKeyTime):
-				value = entry.Time.Format(timestampFormat)
-			case key == f.FieldMap.resolve(FieldKeyLevel):
-				value = entry.Level.String()
-			case key == f.FieldMap.resolve(FieldKeyMsg):
-				value = entry.Message
-			case key == f.FieldMap.resolve(FieldKeyLogrusError):
-				value = entry.err
-			case key == f.FieldMap.resolve(FieldKeyFunc) && hasCaller:
-				value = funcVal
-			case key == f.FieldMap.resolve(FieldKeyFile) && hasCaller:
-				value = fileVal
-			default:
-				value = data[key]
+	for _, key := range fixedKeys {
+		var value any
+		switch {
+		case key == f.FieldMap.resolve(FieldKeyTime):
+			if f.TimestampFormat == "" {
+				value = entry.Time.Format(defaultTimestampFormat)
+			} else {
+				value = entry.Time.Format(f.TimestampFormat)
 			}
-			f.appendKeyValue(b, key, value)
+		case key == f.FieldMap.resolve(FieldKeyLevel):
+			value = entry.Level.String()
+		case key == f.FieldMap.resolve(FieldKeyMsg):
+			value = entry.Message
+		case key == f.FieldMap.resolve(FieldKeyLogrusError):
+			value = entry.err
+		case key == f.FieldMap.resolve(FieldKeyFunc) && hasCaller:
+			value = funcVal
+		case key == f.FieldMap.resolve(FieldKeyFile) && hasCaller:
+			value = fileVal
+		default:
+			value = data[key]
 		}
+		f.appendKeyValue(b, key, value)
 	}
 
 	b.WriteByte('\n')
-	return b.Bytes(), nil
 }
 
-func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, data Fields, timestampFormat string) {
+func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, data Fields) {
 	// Remove a single newline if it already exists in the message to keep
 	// the behavior of logrus text_formatter the same as the stdlib log package
 	entry.Message = strings.TrimSuffix(entry.Message, "\n")
 
-	callerText := ""
+	var callerText string
 	if caller := entry.Caller; caller != nil {
-		funcVal := fmt.Sprintf("%s()", caller.Function)
-		fileVal := fmt.Sprintf("%s:%d", caller.File, caller.Line)
-
+		var funcVal, fileVal string
 		if f.CallerPrettyfier != nil {
 			funcVal, fileVal = f.CallerPrettyfier(caller)
+		} else {
+			if caller.Function != "" {
+				funcVal = caller.Function + "()"
+			}
+			fileVal = caller.File + ":" + strconv.Itoa(caller.Line)
 		}
 
 		if fileVal == "" {
@@ -252,7 +261,19 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	case !f.FullTimestamp:
 		_, _ = fmt.Fprintf(b, "%s[%04d]%s %-44s ", levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), callerText, entry.Message)
 	default:
+		timestampFormat := f.TimestampFormat
+		if timestampFormat == "" {
+			timestampFormat = defaultTimestampFormat
+		}
 		_, _ = fmt.Fprintf(b, "%s[%s]%s %-44s ", levelText, entry.Time.Format(timestampFormat), callerText, entry.Message)
+	}
+
+	if !f.DisableSorting {
+		if f.SortingFunc == nil {
+			slices.Sort(keys)
+		} else {
+			f.SortingFunc(keys)
+		}
 	}
 
 	// Keys use the same color as the level-prefix.
@@ -262,6 +283,8 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 		b.WriteByte('=')
 		f.appendValue(b, data[k])
 	}
+
+	b.WriteByte('\n')
 }
 
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value any) {
