@@ -157,7 +157,7 @@ func (f *TextFormatter) printPlain(b *bytes.Buffer, entry *Entry, keys []string,
 	caller := entry.Caller
 	hasCaller := caller != nil
 
-	fixedKeys := make([]string, 0, 4+len(keys))
+	fixedKeys := make([]string, 0, len(keys)+defaultFields)
 	if !f.DisableTimestamp {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyTime))
 	}

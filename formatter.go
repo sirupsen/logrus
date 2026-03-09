@@ -2,7 +2,19 @@ package logrus
 
 import "time"
 
-const defaultTimestampFormat = time.RFC3339
+const (
+	// defaultTimestampFormat is the layout used to format entry timestamps
+	// when a formatter has not specified a custom TimestampFormat.
+	// It follows time.RFC3339 and is applied unless timestamps are disabled.
+	defaultTimestampFormat = time.RFC3339
+
+	// defaultFields is the number of commonly included predefined log entry fields
+	// (msg, level, time). It is used as a capacity hint when constructing
+	// intermediate collections during formatting (for example, the fixed key list).
+	//
+	// It does not include the optional "logrus_error", "func", or "file" fields.
+	defaultFields = 3
+)
 
 // Default key names for the default fields
 const (
