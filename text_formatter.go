@@ -15,7 +15,15 @@ import (
 
 var baseTimestamp = time.Now()
 
-// TextFormatter formats logs into text
+// TextFormatter formats logs into text.
+//
+// Output is logfmt-like: key=value pairs separated by spaces. Field keys are
+// written as-is (unquoted and unescaped) in the plain (non-colored) format;
+// only field values may be quoted depending on DisableQuote, ForceQuote,
+// QuoteEmptyFields, and the value content.
+//
+// When colors are enabled, ANSI escape sequences may be added for presentation.
+// For fully escaped structured output (including safe keys), use JSONFormatter.
 type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
 	ForceColors bool
@@ -71,12 +79,17 @@ type TextFormatter struct {
 	terminal bool
 
 	// FieldMap allows users to customize the names of keys for default fields.
+	// Mapped keys are written as-is, so they should be safe for plain-text output.
+	//
 	// As an example:
+	//
 	// formatter := &TextFormatter{
-	//     FieldMap: FieldMap{
-	//         FieldKeyTime:  "@timestamp",
-	//         FieldKeyLevel: "@level",
-	//         FieldKeyMsg:   "@message"}}
+	// 	FieldMap: FieldMap{
+	// 		FieldKeyTime:  "@timestamp",
+	// 		FieldKeyLevel: "@level",
+	// 		FieldKeyMsg:   "@message",
+	// 	},
+	// }
 	FieldMap FieldMap
 
 	// CallerPrettyfier can be set by the user to modify the content
@@ -287,6 +300,8 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	b.WriteByte('\n')
 }
 
+// appendKeyValue writes key=value. Keys are written verbatim (unquoted/unescaped);
+// values are subject to quoting/escaping.
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value any) {
 	if b.Len() > 0 {
 		b.WriteByte(' ')
