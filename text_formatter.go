@@ -157,7 +157,7 @@ func (f *TextFormatter) printPlain(b *bytes.Buffer, entry *Entry, keys []string,
 	caller := entry.Caller
 	hasCaller := caller != nil
 
-	fixedKeys := make([]string, 0, 4+len(data))
+	fixedKeys := make([]string, 0, 4+len(keys))
 	if !f.DisableTimestamp {
 		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyTime))
 	}
@@ -204,11 +204,11 @@ func (f *TextFormatter) printPlain(b *bytes.Buffer, entry *Entry, keys []string,
 		var value any
 		switch {
 		case key == f.FieldMap.resolve(FieldKeyTime):
-			timestampFormat := f.TimestampFormat
-			if timestampFormat == "" {
-				timestampFormat = defaultTimestampFormat
+			if f.TimestampFormat == "" {
+				value = entry.Time.Format(defaultTimestampFormat)
+			} else {
+				value = entry.Time.Format(f.TimestampFormat)
 			}
-			value = entry.Time.Format(timestampFormat)
 		case key == f.FieldMap.resolve(FieldKeyLevel):
 			value = entry.Level.String()
 		case key == f.FieldMap.resolve(FieldKeyMsg):
