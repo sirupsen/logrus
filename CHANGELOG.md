@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.10.0 (unreleased)
+
+Fixes:
+  * Fix reentrant logging deadlocks in formatter paths.
+  * Fix race conditions in formatter and entry handling.
+  * Improve concurrency safety around formatter and hook access.
+
+Features:
+  * Basic `slog` hook for bridging Logrus entries to `log/slog`.
+  * Add minimal, composable logging interfaces for each log level. This enables
+    consumers to depend on narrower interfaces, making it easier to substitute
+    or adapt logging implementations.
+
+Changed:
+  * Raise minimum supported Go version to 1.23.
+  * Improve TextFormatter performance and reduce allocations.
+  * Optimize Entry hot paths (including WithError and caller reporting).
+  * TextFormatter now renders `[]byte` values as raw/quoted strings instead of slice-of-ints.
+
+Performance:
+  * ~17% geomean runtime improvement and ~26% throughput increase overall.
+  * Significant allocation reductions across TextFormatter and Entry paths (large reductions in colored/text formatter cases).
+
+
 ## 1.9.4
 
 Fixes:
