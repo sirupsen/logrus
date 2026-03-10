@@ -294,6 +294,8 @@ func (entry *Entry) log(level Level, msg string) {
 
 	if reportCaller {
 		newEntry.Caller = getCaller()
+	} else {
+		newEntry.Caller = entry.Caller
 	}
 
 	// Select hooks based on the level for this log call. Hooks receive the
