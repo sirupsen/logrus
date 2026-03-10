@@ -60,6 +60,14 @@ type JSONFormatter struct {
 	PrettyPrint bool
 }
 
+func errorsArrayToStrings(errs []error) []string {
+	strs := make([]string, len(errs))
+	for i, err := range errs {
+		strs[i] = err.Error()
+	}
+	return strs
+}
+
 // Format renders a single log entry
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	caller := entry.Caller
@@ -70,6 +78,8 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 			// Otherwise errors are ignored by `encoding/json`
 			// https://github.com/sirupsen/logrus/issues/137
 			data[k] = v.Error()
+		case []error:
+			data[k] = errorsArrayToStrings(v)
 		default:
 			data[k] = v
 		}
