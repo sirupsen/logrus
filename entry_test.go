@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -126,6 +127,39 @@ func TestEntryWithTimeCopiesData(t *testing.T) {
 	val, exists = parentEntry.Data["childKey"]
 	assert.False(exists)
 	assert.Empty(val)
+}
+
+func TestEntryDupCopiesMetadata(t *testing.T) {
+	logger := logrus.New()
+	logger.SetOutput(io.Discard)
+
+	buffer := bytes.NewBufferString("buffered")
+	caller := &runtime.Frame{Function: "example.fn", File: "example.go", Line: 42}
+	ctx := context.WithValue(context.Background(), contextKeyType("dup"), "value")
+
+	original := logrus.NewEntry(logger)
+	original.Data["animal"] = "walrus"
+	original.Time = time.Unix(1700000000, 0)
+	original.Level = logrus.WarnLevel
+	original.Caller = caller
+	original.Message = "duplicated"
+	original.Buffer = buffer
+	original.Context = ctx
+
+	dup := original.Dup()
+
+	require.NotSame(t, original, dup)
+	assert.Equal(t, original.Logger, dup.Logger)
+	assert.Equal(t, original.Time, dup.Time)
+	assert.Equal(t, original.Level, dup.Level)
+	assert.Equal(t, original.Caller, dup.Caller)
+	assert.Equal(t, original.Message, dup.Message)
+	assert.Equal(t, original.Buffer, dup.Buffer)
+	assert.Equal(t, original.Context, dup.Context)
+	assert.Equal(t, original.Data, dup.Data)
+
+	dup.Data["animal"] = "otter"
+	assert.Equal(t, "walrus", original.Data["animal"])
 }
 
 func TestEntryPanicln(t *testing.T) {
