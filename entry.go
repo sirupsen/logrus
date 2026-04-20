@@ -108,6 +108,10 @@ func (entry *Entry) Dup() *Entry {
 		Logger:  entry.Logger,
 		Data:    maps.Clone(entry.Data),
 		Time:    entry.Time,
+		Level:   entry.Level,
+		Caller:  entry.Caller,
+		Message: entry.Message,
+		Buffer:  entry.Buffer,
 		Context: entry.Context,
 		err:     entry.err,
 	}
