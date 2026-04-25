@@ -129,17 +129,17 @@ var (
 // it'll accept a stdlib logger ([log.Logger]) and a logrus logger.
 // There's no standard interface, so this is the closest we get, unfortunately.
 type StdLogger interface {
-	Print(...any)
-	Printf(string, ...any)
-	Println(...any)
+	Print(args ...any)
+	Printf(format string, args ...any)
+	Println(args ...any)
 
-	Fatal(...any)
-	Fatalf(string, ...any)
-	Fatalln(...any)
+	Fatal(args ...any)
+	Fatalf(format string, args ...any)
+	Fatalln(args ...any)
 
-	Panic(...any)
-	Panicf(string, ...any)
-	Panicln(...any)
+	Panic(args ...any)
+	Panicf(format string, args ...any)
+	Panicln(args ...any)
 }
 
 // FieldLogger extends the [StdLogger] interface, generalizing
