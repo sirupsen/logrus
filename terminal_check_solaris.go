@@ -1,4 +1,4 @@
-//go:build solaris
+//go:build solaris && !tinygo
 
 package logrus
 
