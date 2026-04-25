@@ -149,39 +149,27 @@ type FieldLogger interface {
 	WithFields(fields Fields) *Entry
 	WithError(err error) *Entry
 
-	Debugf(format string, args ...any)
-	Infof(format string, args ...any)
-	Printf(format string, args ...any)
-	Warnf(format string, args ...any)
-	Warningf(format string, args ...any)
-	Errorf(format string, args ...any)
-	Fatalf(format string, args ...any)
-	Panicf(format string, args ...any)
+	StdLogger
 
 	Debug(args ...any)
-	Info(args ...any)
-	Print(args ...any)
-	Warn(args ...any)
-	Warning(args ...any)
-	Error(args ...any)
-	Fatal(args ...any)
-	Panic(args ...any)
-
+	Debugf(format string, args ...any)
 	Debugln(args ...any)
-	Infoln(args ...any)
-	Println(args ...any)
-	Warnln(args ...any)
-	Warningln(args ...any)
-	Errorln(args ...any)
-	Fatalln(args ...any)
-	Panicln(args ...any)
 
-	// IsDebugEnabled() bool
-	// IsInfoEnabled() bool
-	// IsWarnEnabled() bool
-	// IsErrorEnabled() bool
-	// IsFatalEnabled() bool
-	// IsPanicEnabled() bool
+	Info(args ...any)
+	Infof(format string, args ...any)
+	Infoln(args ...any)
+
+	Warn(args ...any)
+	Warnf(format string, args ...any)
+	Warnln(args ...any)
+
+	Warning(args ...any)
+	Warningf(format string, args ...any)
+	Warningln(args ...any)
+
+	Error(args ...any)
+	Errorf(format string, args ...any)
+	Errorln(args ...any)
 }
 
 // Ext1FieldLogger (the first extension to [FieldLogger]) is superfluous, it is
