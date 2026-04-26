@@ -26,16 +26,16 @@ const (
 	FieldKeyFile        = "file"
 )
 
-// The Formatter interface is used to implement a custom Formatter. It takes an
-// `Entry`. It exposes all the fields, including the default ones:
+// Formatter is implemented by types that format log entries. It receives an
+// [*Entry], which contains all fields, including the standard ones:
 //
-// * `entry.Data["msg"]`. The message passed from Info, Warn, Error ..
-// * `entry.Data["time"]`. The timestamp.
-// * `entry.Data["level"]. The level the entry was logged at.
+//   - entry.Message: the message passed to logging methods such as [Info], [Warn], [Error]
+//   - entry.Time: the timestamp
+//   - entry.Level: the log level
 //
-// Any additional fields added with `WithField` or `WithFields` are also in
-// `entry.Data`. Format is expected to return an array of bytes which are then
-// logged to `logger.Out`.
+// Additional fields added with [WithField] or [WithFields] are available in
+// [Entry.Data]. Format should return the formatted log entry as a byte slice,
+// which is written to [Logger.Out].
 type Formatter interface {
 	Format(*Entry) ([]byte, error)
 }

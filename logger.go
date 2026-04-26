@@ -199,9 +199,10 @@ func (logger *Logger) Panicf(format string, args ...any) {
 	logger.Logf(PanicLevel, format, args...)
 }
 
-// Log will log a message at the level given as parameter.
-// Warning: using Log at Panic or Fatal level will not respectively Panic nor Exit.
-// For this behaviour Logger.Panic or Logger.Fatal should be used instead.
+// Log logs a message at the specified level.
+//
+// Note: using Log with [PanicLevel] or [FatalLevel] does not trigger a panic
+// or exit. For that behavior, use [Logger.Panic] or [Logger.Fatal].
 func (logger *Logger) Log(level Level, args ...any) {
 	if logger.IsLevelEnabled(level) {
 		entry := logger.newEntry()
