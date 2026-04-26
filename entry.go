@@ -87,9 +87,10 @@ type Entry struct {
 	err string
 }
 
-// NewEntry creates a new Entry associated with the provided Logger.
-// The logger must not be nil. Passing a nil logger will result in a
-// panic when a logging method (e.g., Info, Error, etc.) is called.
+// NewEntry creates a new [Entry] associated with the provided Logger.
+// The logger must not be nil. Passing a nil logger results in a
+// panic when a logging method (e.g., [Entry.Info], [Entry.Error], etc.)
+// is called.
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
@@ -100,9 +101,8 @@ func NewEntry(logger *Logger) *Entry {
 
 // Dup creates a copy of the entry for further modification.
 //
-// The Data map is cloned so that changes to fields on the returned
-// entry do not mutate the original. The Logger and other metadata
-// are copied by value.
+// Data is cloned to avoid mutating the original entry. Other fields
+// (Logger, Time, Context, etc.) are copied by value.
 func (entry *Entry) Dup() *Entry {
 	return &Entry{
 		Logger:  entry.Logger,
@@ -360,9 +360,10 @@ func (entry *Entry) write() {
 	}
 }
 
-// Log will log a message at the level given as parameter.
-// Warning: using Log at Panic or Fatal level will not respectively Panic nor Exit.
-// For this behaviour Entry.Panic or Entry.Fatal should be used instead.
+// Log logs a message at the specified level.
+//
+// Note: using Log with [PanicLevel] or [FatalLevel] does not trigger a panic
+// or exit. For that behavior, use [Entry.Panic] or [Entry.Fatal].
 func (entry *Entry) Log(level Level, args ...any) {
 	if entry.Logger.IsLevelEnabled(level) {
 		entry.log(level, fmt.Sprint(args...))
