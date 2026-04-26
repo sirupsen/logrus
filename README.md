@@ -103,7 +103,7 @@ between 20 and 40% in recent tests with 1.6 and 1.7.  You can validate this in y
 environment via benchmarks:
 
 ```bash
-go test -bench=.*CallerTracing
+go test -bench=ReportCaller
 ```
 
 #### Case-sensitivity
