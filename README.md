@@ -23,18 +23,6 @@ about structured logging in Go today. Check out, for example,
 [zap]: https://github.com/uber-go/zap
 [apex]: https://github.com/apex/log
 
-**Seeing weird case-sensitive problems?** It's in the past been possible to
-import Logrus as both upper- and lower-case. Due to the Go package environment,
-this caused issues in the community and we needed a standard. Some environments
-experienced problems with the upper-case variant, so the lower-case was decided.
-Everything using `logrus` will need to use the lower-case:
-`github.com/sirupsen/logrus`. Any package that isn't, should be changed.
-
-To fix Glide, see [these
-comments](https://github.com/sirupsen/logrus/issues/553#issuecomment-306591437).
-For an in-depth explanation of the casing issue, see [this
-comment](https://github.com/sirupsen/logrus/issues/570#issuecomment-313933276).
-
 Nicely color-coded in development (when a TTY is attached, otherwise just
 plain text):
 
@@ -108,9 +96,11 @@ go test -bench=ReportCaller
 
 #### Case-sensitivity
 
-The organization's name was changed to lower-case--and this will not be changed
-back. If you are getting import conflicts due to case sensitivity, please use
-the lower-case import: `github.com/sirupsen/logrus`.
+The organization's name was [changed to lower-case][1]. If you are getting import
+conflicts due to case sensitivity, please use the lower-case import:
+`github.com/sirupsen/logrus`.
+
+[1]: https://github.com/sirupsen/logrus/issues/570#issuecomment-313933276
 
 #### Example
 
