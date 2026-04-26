@@ -3,13 +3,10 @@
 Logrus is a structured logger for Go (golang), completely API compatible with
 the standard library logger.
 
-**Logrus is in maintenance-mode.** We will not be introducing new features. It's
-simply too hard to do in a way that won't break many people's projects, which is
-the last thing you want from your Logging library (again...).
-
-This does not mean Logrus is dead. Logrus will continue to be maintained for
-security, (backwards compatible) bug fixes, and performance (where we are
-limited by the interface).
+**Logrus is in maintenance mode.** The project focuses on security, bug fixes,
+and performance improvements. New features are not planned, aside from changes
+required to provide interoperability with other logging ecosystems (e.g., Go's
+[log/slog](https://pkg.go.dev/log/slog)).
 
 I believe Logrus' biggest contribution is to have played a part in today's
 widespread use of structured logging in Golang. There doesn't seem to be a
