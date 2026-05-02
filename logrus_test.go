@@ -19,7 +19,7 @@ import (
 	. "github.com/sirupsen/logrus/internal/testutils"
 )
 
-// TestReportCaller verifies that when ReportCaller is set, the 'func' field
+// TestReportCallerWhenConfigured verifies that when ReportCaller is set, the 'func' field
 // is added, and when it is unset it is not set or modified
 // Verify that functions within the Logrus package aren't considered when
 // discovering the caller.
@@ -96,7 +96,7 @@ func TestReportCallerHelperDirect(t *testing.T) {
 	assert.Regexp(t, "github.com/.*/logrus_test.logSomething", fields["func"])
 }
 
-// TestReportCallerHelperDirect - verify reference when logging from a function called via pointer
+// TestReportCallerHelperViaPointer - verify reference when logging from a function called via pointer
 func TestReportCallerHelperViaPointer(t *testing.T) {
 	fptr := logSomething
 	fields := fptr(t, "via pointer")
