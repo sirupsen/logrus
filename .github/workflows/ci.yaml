@@ -72,3 +72,49 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Test
         run: go test -race -v ./...
+
+  tinygo:
+    name: TinyGo
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - name: Install TinyGo
+        run: |
+          wget https://github.com/tinygo-org/tinygo/releases/download/v0.41.1/tinygo_0.41.1_amd64.deb
+          sudo dpkg -i tinygo_0.41.1_amd64.deb
+      - name: Test TinyGo support
+        run: |
+          dir=$(mktemp -d)
+          cd "$dir"
+          go mod init logrus-tinygo-smoke
+          go mod edit -replace github.com/sirupsen/logrus="$GITHUB_WORKSPACE"
+          go get github.com/sirupsen/logrus
+          cat > logrus_tinygo_test.go <<'EOF'
+          package logrus_tinygo_smoke
+
+          import (
+          	"bytes"
+          	"testing"
+
+          	"github.com/sirupsen/logrus"
+          )
+
+          func TestTinyGoLogging(t *testing.T) {
+          	var out bytes.Buffer
+          	logger := logrus.New()
+          	logger.SetOutput(&out)
+          	logger.SetFormatter(&logrus.TextFormatter{DisableTimestamp: true})
+          	logger.WithField("target", "tinygo").Info("hello")
+
+          	if out.Len() == 0 {
+          		t.Fatal("expected log output")
+          	}
+          }
+          EOF
+          tinygo test .
