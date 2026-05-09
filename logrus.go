@@ -120,9 +120,15 @@ const (
 
 // Won't compile if StdLogger can't be realized by a log.Logger
 var (
-	_ StdLogger = &log.Logger{}
-	_ StdLogger = &Entry{}
-	_ StdLogger = &Logger{}
+	_ StdLogger = (*log.Logger)(nil)
+	_ StdLogger = (*Entry)(nil)
+	_ StdLogger = (*Logger)(nil)
+
+	_ Fielder = (*Entry)(nil)
+	_ Fielder = (*Logger)(nil)
+
+	_ FieldLogger = (*Entry)(nil)
+	_ FieldLogger = (*Logger)(nil)
 )
 
 // StdLogger is what your logrus-enabled library should take, that way
@@ -142,12 +148,18 @@ type StdLogger interface {
 	Panicln(args ...any)
 }
 
-// FieldLogger extends the [StdLogger] interface, generalizing
-// the [Entry] and [Logger] types.
-type FieldLogger interface {
+// Fielder defines the methods implemented by [Entry] and [Logger] to
+// manage fields (structured logs).
+type Fielder interface {
 	WithField(key string, value any) *Entry
 	WithFields(fields Fields) *Entry
 	WithError(err error) *Entry
+}
+
+// FieldLogger extends the [StdLogger] interface, generalizing
+// the [Entry] and [Logger] types.
+type FieldLogger interface {
+	Fielder
 
 	StdLogger
 
