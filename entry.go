@@ -497,7 +497,7 @@ func (entry *Entry) Panicln(args ...any) {
 	entry.Logln(PanicLevel, args...)
 }
 
-// sprintlnn => Sprint no newline. This is to get the behavior of how
+// sprintlnn => Sprint no newline. This is to get the behavior of
 // fmt.Sprintln where spaces are always added between operands, regardless of
 // their type. Instead of vendoring the Sprintln implementation to spare a
 // string allocation, we do the simplest thing.
