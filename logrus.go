@@ -150,15 +150,29 @@ type FieldLogger interface {
 	WithError(err error) *Entry
 
 	StdLogger
+	StdLogger
+	DebugLogger
+	InfoLogger
+	WarnLogger
+	ErrorLogger
+}
 
+// DebugLogger provides convenience functions to print [DebugLevel] logs.
+type DebugLogger interface {
 	Debug(args ...any)
 	Debugf(format string, args ...any)
 	Debugln(args ...any)
+}
 
+// InfoLogger provides convenience functions to print [InfoLevel] logs.
+type InfoLogger interface {
 	Info(args ...any)
 	Infof(format string, args ...any)
 	Infoln(args ...any)
+}
 
+// WarnLogger provides convenience functions to print [WarnLevel] logs.
+type WarnLogger interface {
 	Warn(args ...any)
 	Warnf(format string, args ...any)
 	Warnln(args ...any)
@@ -166,10 +180,20 @@ type FieldLogger interface {
 	Warning(args ...any)
 	Warningf(format string, args ...any)
 	Warningln(args ...any)
+}
 
+// ErrorLogger provides convenience functions to print [ErrorLevel] logs.
+type ErrorLogger interface {
 	Error(args ...any)
 	Errorf(format string, args ...any)
 	Errorln(args ...any)
+}
+
+// TraceLogger provides convenience functions to print [TraceLevel] logs.
+type TraceLogger interface {
+	Tracef(format string, args ...any)
+	Trace(args ...any)
+	Traceln(args ...any)
 }
 
 // Ext1FieldLogger (the first extension to [FieldLogger]) is superfluous, it is
@@ -177,7 +201,5 @@ type FieldLogger interface {
 // instead.
 type Ext1FieldLogger interface {
 	FieldLogger
-	Tracef(format string, args ...any)
-	Trace(args ...any)
-	Traceln(args ...any)
+	TraceLogger
 }
