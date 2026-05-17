@@ -259,3 +259,36 @@ func TestHookFireOrder(t *testing.T) {
 	}
 	require.Equal(t, []string{"first hook", "second hook", "third hook"}, checkers)
 }
+
+type hookWithError struct {
+	fire func() error
+}
+
+func (h *hookWithError) Levels() []Level {
+	return AllLevels
+}
+
+func (h *hookWithError) Fire(*Entry) error {
+	return h.fire()
+}
+
+func TestHookFireContinuesAfterError(t *testing.T) {
+	checkers := []string{}
+	h := LevelHooks{}
+	h.Add(&hookWithError{fire: func() error {
+		checkers = append(checkers, "first hook")
+		return nil
+	}})
+	h.Add(&hookWithError{fire: func() error {
+		checkers = append(checkers, "second hook")
+		return assert.AnError
+	}})
+	h.Add(&hookWithError{fire: func() error {
+		checkers = append(checkers, "third hook")
+		return nil
+	}})
+
+	err := h.Fire(InfoLevel, &Entry{})
+	require.Error(t, err)
+	require.Equal(t, []string{"first hook", "second hook", "third hook"}, checkers)
+}
