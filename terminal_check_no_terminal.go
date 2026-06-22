@@ -1,4 +1,4 @@
-//go:build js || nacl || plan9 || wasi || wasip1
+//go:build js || nacl || plan9 || wasi || wasip1 || tinygo
 
 package logrus
 
