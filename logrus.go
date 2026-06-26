@@ -126,6 +126,7 @@ var (
 
 	_ FieldLogger = (*Logger)(nil)
 	_ FieldLogger = (*Entry)(nil)
+	_ FieldLogger = Ext1FieldLogger(nil)
 
 	_ DebugLogger = (*Logger)(nil)
 	_ InfoLogger  = (*Logger)(nil)
@@ -138,6 +139,9 @@ var (
 	_ WarnLogger  = (*Entry)(nil)
 	_ ErrorLogger = (*Entry)(nil)
 	_ TraceLogger = (*Entry)(nil)
+
+	_ Ext1FieldLogger = (*Logger)(nil)
+	_ Ext1FieldLogger = (*Entry)(nil)
 )
 
 // StdLogger is what your logrus-enabled library should take, that way
