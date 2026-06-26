@@ -118,11 +118,26 @@ const (
 	TraceLevel
 )
 
-// Won't compile if StdLogger can't be realized by a log.Logger
+// Compile-time interface assertions.
 var (
-	_ StdLogger = &log.Logger{}
-	_ StdLogger = &Entry{}
-	_ StdLogger = &Logger{}
+	_ StdLogger = (*log.Logger)(nil)
+	_ StdLogger = (*Entry)(nil)
+	_ StdLogger = (*Logger)(nil)
+
+	_ FieldLogger = (*Logger)(nil)
+	_ FieldLogger = (*Entry)(nil)
+
+	_ DebugLogger = (*Logger)(nil)
+	_ InfoLogger  = (*Logger)(nil)
+	_ WarnLogger  = (*Logger)(nil)
+	_ ErrorLogger = (*Logger)(nil)
+	_ TraceLogger = (*Logger)(nil)
+
+	_ DebugLogger = (*Entry)(nil)
+	_ InfoLogger  = (*Entry)(nil)
+	_ WarnLogger  = (*Entry)(nil)
+	_ ErrorLogger = (*Entry)(nil)
+	_ TraceLogger = (*Entry)(nil)
 )
 
 // StdLogger is what your logrus-enabled library should take, that way
@@ -150,34 +165,59 @@ type FieldLogger interface {
 	WithError(err error) *Entry
 
 	StdLogger
+	DebugLogger
+	InfoLogger
+	WarnLogger
+	ErrorLogger
 
-	Debug(args ...any)
-	Debugf(format string, args ...any)
-	Debugln(args ...any)
-
-	Info(args ...any)
-	Infof(format string, args ...any)
-	Infoln(args ...any)
-
-	Warn(args ...any)
-	Warnf(format string, args ...any)
-	Warnln(args ...any)
+	// Legacy warning aliases. These are kept on FieldLogger for backwards
+	// compatibility, but are intentionally omitted from [WarnLogger].
 
 	Warning(args ...any)
 	Warningf(format string, args ...any)
 	Warningln(args ...any)
+}
 
+// DebugLogger provides convenience functions to log messages at level [DebugLevel].
+type DebugLogger interface {
+	Debug(args ...any)
+	Debugf(format string, args ...any)
+	Debugln(args ...any)
+}
+
+// InfoLogger provides convenience functions to log messages at level [InfoLevel].
+type InfoLogger interface {
+	Info(args ...any)
+	Infof(format string, args ...any)
+	Infoln(args ...any)
+}
+
+// WarnLogger provides convenience functions to log messages at level [WarnLevel].
+type WarnLogger interface {
+	Warn(args ...any)
+	Warnf(format string, args ...any)
+	Warnln(args ...any)
+}
+
+// ErrorLogger provides convenience functions to log messages at level [ErrorLevel].
+type ErrorLogger interface {
 	Error(args ...any)
 	Errorf(format string, args ...any)
 	Errorln(args ...any)
 }
 
-// Ext1FieldLogger (the first extension to [FieldLogger]) is superfluous, it is
-// here for consistency. Do not use. Use [FieldLogger], [Logger] or [Entry]
-// instead.
+// TraceLogger provides convenience functions to log messages at level [TraceLevel].
+type TraceLogger interface {
+	Trace(args ...any)
+	Tracef(format string, args ...any)
+	Traceln(args ...any)
+}
+
+// Ext1FieldLogger is FieldLogger extended with Trace-level methods.
+//
+// New code should prefer the smallest applicable interface, such as
+// [FieldLogger] or [TraceLogger], or use [Logger] or [Entry] directly.
 type Ext1FieldLogger interface {
 	FieldLogger
-	Tracef(format string, args ...any)
-	Trace(args ...any)
-	Traceln(args ...any)
+	TraceLogger
 }
