@@ -94,11 +94,13 @@ jobs:
       - name: Install TinyGo
         run: |
           tinygo_deb="tinygo_${TINYGO_VERSION}_amd64.deb"
-          wget "https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/${tinygo_deb}"
+          wget --progress=dot:giga "https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/${tinygo_deb}"
+          echo "${TINYGO_CHECKSUM#sha256:} *${tinygo_deb}" | sha256sum -c -
           sudo dpkg -i "${tinygo_deb}"
           tinygo version
         env:
           TINYGO_VERSION: 0.41.1
+          TINYGO_CHECKSUM: "sha256:901fbccffc61adb111656d1f907dfc21b6c499ca841b115866a0d6de2d835fbe"
       - name: Test
         # Run with "safe" tag to avoid "panic: reflect.Value has no flag field"
         # coming from go-spew (or the next testify version);
