@@ -142,6 +142,19 @@ func (entry *Entry) String() (string, error) {
 	return str, nil
 }
 
+// WithCaller adds a caller field to the Entry.
+func (entry *Entry) WithCaller() *Entry {
+	frame := getCaller()
+	if frame != nil {
+		return entry.WithFields(Fields{
+			FieldKeyFile: fmt.Sprintf("%s:%d", frame.File, frame.Line),
+			FieldKeyFunc: frame.Function,
+		})
+	}
+
+	return entry
+}
+
 // WithError adds an error as single field (using the key defined in [ErrorKey])
 // to the Entry.
 func (entry *Entry) WithError(err error) *Entry {
