@@ -1,3 +1,6 @@
+// TinyGo doesn't implement b.SetParallelism.
+//go:build !tinygo
+
 package logrus_test
 
 import (
