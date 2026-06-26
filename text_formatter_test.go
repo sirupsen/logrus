@@ -577,6 +577,11 @@ func TestCustomSorting_FirstFormat(t *testing.T) {
 		t.Skip("colored output not supported on Windows")
 	}
 	if !checkIfTerminal(os.Stderr) {
+		if runtime.Compiler == "tinygo" {
+			// TinyGo currently (v0.41.1) doesn't support t.Skip (SkipNow is incomplete, requires runtime.Goexit())
+			t.Log("SKIP: test requires a TTY")
+			return
+		}
 		t.Skip("test requires a TTY")
 	}
 

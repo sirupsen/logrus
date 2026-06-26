@@ -72,3 +72,38 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Test
         run: go test -race -v ./...
+
+  tinygo:
+    name: TinyGo
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        # TinyGo may not have support for all latest language features,
+        # so we're pinning to a fixed version for now.
+        # https://tinygo.org/docs/reference/go-compat-matrix/
+        go-version: [1.26.x]
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Install TinyGo
+        run: |
+          tinygo_deb="tinygo_${TINYGO_VERSION}_amd64.deb"
+          wget --progress=dot:giga "https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/${tinygo_deb}"
+          echo "${TINYGO_CHECKSUM#sha256:} *${tinygo_deb}" | sha256sum -c -
+          sudo dpkg -i "${tinygo_deb}"
+          tinygo version
+        env:
+          TINYGO_VERSION: 0.41.1
+          TINYGO_CHECKSUM: "sha256:901fbccffc61adb111656d1f907dfc21b6c499ca841b115866a0d6de2d835fbe"
+      - name: Test
+        # Run with "safe" tag to avoid "panic: reflect.Value has no flag field"
+        # coming from go-spew (or the next testify version);
+        # https://github.com/davecgh/go-spew/blob/v1.1.1/spew/bypass.go#L105-L109
+        # https://github.com/stretchr/testify/blob/001eb7946baf451879253643e4ce4b38eaa0d4a7/internal/spew/bypass.go#L106-L110
+        run: tinygo test -tags safe -v ./...

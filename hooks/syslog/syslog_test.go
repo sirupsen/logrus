@@ -1,4 +1,6 @@
-//go:build !windows && !nacl && !plan9
+// TinyGo currently (v0.41.1) doesn't fully support `log/syslog`;
+// https://tinygo.org/docs/reference/lang-support/stdlib/#logsyslog
+//go:build !windows && !nacl && !plan9 && !tinygo
 
 package syslog_test
 

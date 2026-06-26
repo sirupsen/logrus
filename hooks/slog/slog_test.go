@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"regexp"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -138,6 +139,12 @@ func TestSlogHook_error_propagates(t *testing.T) {
 }
 
 func TestSlogHook_source(t *testing.T) {
+	if runtime.Compiler == "tinygo" {
+		// TinyGo currently (v0.41.1) doesn't support `runtime.Caller`;
+		// https://tinygo.org/docs/reference/lang-support/stdlib/#logslog
+		t.Log("SKIP: TinyGo does not support runtime.Caller") // no t.Skip on tinygo
+		return
+	}
 	buf := &bytes.Buffer{}
 	slogLogger := slog.New(slog.NewTextHandler(buf, &slog.HandlerOptions{
 		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
