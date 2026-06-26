@@ -414,6 +414,7 @@ func (logger *Logger) SetOutput(output io.Writer) {
 	logger.Out = output
 }
 
+// SetReportCaller sets whether the caller stack frame must be logged.
 func (logger *Logger) SetReportCaller(reportCaller bool) {
 	logger.mu.Lock()
 	defer logger.mu.Unlock()
