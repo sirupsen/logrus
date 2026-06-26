@@ -31,7 +31,7 @@ func (p *defaultPool) Get() *bytes.Buffer {
 }
 
 // SetBufferPool allows to replace the default logrus buffer pool
-// to better meets the specific needs of an application.
+// to better meet the specific needs of an application.
 func SetBufferPool(bp BufferPool) {
 	bufferPool = bp
 }
