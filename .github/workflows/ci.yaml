@@ -18,7 +18,6 @@ on: [push, pull_request]
 
 env:
   GOTOOLCHAIN: local
-  TINYGO_VERSION: 0.41.1
 
 jobs:
   lint:
@@ -77,47 +76,32 @@ jobs:
   tinygo:
     name: TinyGo
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # TinyGo may not have support for all latest language features,
+        # so we're pinning to a fixed version for now.
+        # https://tinygo.org/docs/reference/go-compat-matrix/
+        go-version: [1.26.x]
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Install Go
         uses: actions/setup-go@v6
         with:
-          go-version: stable
+          go-version: ${{ matrix.go-version }}
       - name: Install TinyGo
         run: |
           tinygo_deb="tinygo_${TINYGO_VERSION}_amd64.deb"
           wget "https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/${tinygo_deb}"
           sudo dpkg -i "${tinygo_deb}"
           tinygo version
-      - name: Test TinyGo support
-        run: |
-          dir=$(mktemp -d)
-          cd "$dir"
-          go mod init logrus-tinygo-smoke
-          go mod edit -replace github.com/sirupsen/logrus="$GITHUB_WORKSPACE"
-          go get github.com/sirupsen/logrus
-          cat > logrus_tinygo_test.go <<'EOF'
-          package logrus_tinygo_smoke
-
-          import (
-            "bytes"
-            "testing"
-
-            "github.com/sirupsen/logrus"
-          )
-
-          func TestTinyGoLogging(t *testing.T) {
-            var out bytes.Buffer
-            logger := logrus.New()
-            logger.SetOutput(&out)
-            logger.SetFormatter(&logrus.TextFormatter{DisableTimestamp: true})
-            logger.WithField("target", "tinygo").Info("hello")
-
-            if out.Len() == 0 {
-              t.Fatal("expected log output")
-            }
-          }
-          EOF
-          tinygo test .
+        env:
+          TINYGO_VERSION: 0.41.1
+      - name: Test
+        # Run with "safe" tag to avoid "panic: reflect.Value has no flag field"
+        # coming from go-spew (or the next testify version);
+        # https://github.com/davecgh/go-spew/blob/v1.1.1/spew/bypass.go#L105-L109
+        # https://github.com/stretchr/testify/blob/001eb7946baf451879253643e4ce4b38eaa0d4a7/internal/spew/bypass.go#L106-L110
+        run: tinygo test -tags safe -v ./...
