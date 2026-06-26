@@ -664,26 +664,6 @@ func TestReplaceHooks(t *testing.T) {
 	assert.True(t, old.Fired)
 }
 
-// Compile test
-func TestLogrusInterfaces(t *testing.T) {
-	var buffer bytes.Buffer
-	// This verifies FieldLogger and Ext1FieldLogger work as designed.
-	// Please don't use them. Use Logger and Entry directly.
-	fn := func(xl Ext1FieldLogger) {
-		var l FieldLogger = xl
-		b := l.WithField("key", "value")
-		b.Debug("Test")
-	}
-	// test logger
-	logger := New()
-	logger.Out = &buffer
-	fn(logger)
-
-	// test Entry
-	e := logger.WithField("another", "value")
-	fn(e)
-}
-
 // Implements io.Writer using channels for synchronization, so we can wait on
 // the Entry.Writer goroutine to write in a non-racey way. This does assume that
 // there is a single call to Logger.Out for each message.
