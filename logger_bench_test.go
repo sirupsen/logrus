@@ -60,6 +60,40 @@ func doLoggerBenchmarkNoLock(b *testing.B, out *os.File, formatter logrus.Format
 	})
 }
 
+type nopFormatter struct{}
+
+func (nopFormatter) Format(*logrus.Entry) ([]byte, error) {
+	return nil, nil
+}
+
+func BenchmarkLoggerLog(b *testing.B) {
+	logger := logrus.New()
+	logger.SetFormatter(nopFormatter{})
+	logger.SetLevel(logrus.InfoLevel)
+	logger.SetOutput(io.Discard)
+
+	b.ReportAllocs()
+
+	b.Run("disabled_level", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			logger.Log(logrus.DebugLevel, "test")
+		}
+	})
+	b.Run("enabled_log", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			logger.Log(logrus.WarnLevel, "test")
+		}
+	})
+	b.Run("enabled_logln", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			logger.Logln(logrus.WarnLevel, "test")
+		}
+	})
+}
+
 func BenchmarkLoggerJSONFormatter(b *testing.B) {
 	doLoggerBenchmarkWithFormatter(b, &logrus.JSONFormatter{})
 }

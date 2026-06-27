@@ -366,6 +366,12 @@ func (entry *Entry) write() {
 // or exit. For that behavior, use [Entry.Panic] or [Entry.Fatal].
 func (entry *Entry) Log(level Level, args ...any) {
 	if entry.Logger.IsLevelEnabled(level) {
+		if len(args) == 1 {
+			if v, ok := args[0].(string); ok {
+				entry.log(level, v)
+				return
+			}
+		}
 		entry.log(level, fmt.Sprint(args...))
 	}
 }
@@ -456,7 +462,7 @@ func (entry *Entry) Panicf(format string, args ...any) {
 
 func (entry *Entry) Logln(level Level, args ...any) {
 	if entry.Logger.IsLevelEnabled(level) {
-		entry.Log(level, entry.sprintlnn(args...))
+		entry.log(level, entry.sprintlnn(args...))
 	}
 }
 
@@ -502,6 +508,11 @@ func (entry *Entry) Panicln(args ...any) {
 // their type. Instead of vendoring the Sprintln implementation to spare a
 // string allocation, we do the simplest thing.
 func (entry *Entry) sprintlnn(args ...any) string {
+	if len(args) == 1 {
+		if v, ok := args[0].(string); ok {
+			return v
+		}
+	}
 	msg := fmt.Sprintln(args...)
 	return msg[:len(msg)-1]
 }
