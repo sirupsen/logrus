@@ -354,18 +354,20 @@ Splunk or Logstash.
 
 The built-in logging formatters are:
 
-* `logrus.TextFormatter`. Logs the event in colors if stdout is a tty, otherwise
-  without colors.
-  * *Note:* to force colored output when there is no TTY, set the `ForceColors`
+* [`logrus.TextFormatter`](https://pkg.go.dev/github.com/sirupsen/logrus#TextFormatter)
+  logs the event in colors if stdout is a TTY, otherwise without colors.
+  * To force colored output when there is no TTY, set the `ForceColors`
     field to `true`.  To force no colored output even if there is a TTY  set the
-    `DisableColors` field to `true`. For Windows, see
-    [github.com/mattn/go-colorable](https://github.com/mattn/go-colorable).
+    `DisableColors` field to `true`.
+  * On modern Windows terminals with ANSI (Virtual Terminal) support, TextFormatter
+    automatically enables colored output. If your environment does not support ANSI
+    escape sequences, [github.com/mattn/go-colorable](https://github.com/mattn/go-colorable)
+    can be used as a compatibility layer.
   * When colors are enabled, levels are truncated to 4 characters by default. To disable
     truncation set the `DisableLevelTruncation` field to `true`.
   * When outputting to a TTY, it's often helpful to visually scan down a column where all the levels are the same width. Setting the `PadLevelText` field to `true` enables this behavior, by adding padding to the level text.
-  * All options are listed in the [generated docs](https://pkg.go.dev/github.com/sirupsen/logrus#TextFormatter).
-* `logrus.JSONFormatter`. Logs fields as JSON.
-  * All options are listed in the [generated docs](https://pkg.go.dev/github.com/sirupsen/logrus#JSONFormatter).
+* [`logrus.JSONFormatter`](https://pkg.go.dev/github.com/sirupsen/logrus#JSONFormatter)
+  logs fields as JSON.
 
 Third-party logging formatters:
 
