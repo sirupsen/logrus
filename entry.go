@@ -104,13 +104,9 @@ func NewEntry(logger *Logger) *Entry {
 // Data is cloned to avoid mutating the original entry. Other fields
 // (Logger, Time, Context, etc.) are copied by value.
 func (entry *Entry) Dup() *Entry {
-	return &Entry{
-		Logger:  entry.Logger,
-		Data:    maps.Clone(entry.Data),
-		Time:    entry.Time,
-		Context: entry.Context,
-		err:     entry.err,
-	}
+	newEntry := *entry
+	newEntry.Data = maps.Clone(entry.Data)
+	return &newEntry
 }
 
 // Bytes returns the bytes representation of this entry from the formatter.
@@ -151,24 +147,17 @@ func (entry *Entry) WithError(err error) *Entry {
 	maps.Copy(data, entry.Data)
 	data[ErrorKey] = err
 
-	return &Entry{
-		Logger:  entry.Logger,
-		Data:    data,
-		Time:    entry.Time,
-		Context: entry.Context,
-		err:     entry.err,
-	}
+	newEntry := *entry
+	newEntry.Data = data
+	return &newEntry
 }
 
 // WithContext adds a context to the Entry.
 func (entry *Entry) WithContext(ctx context.Context) *Entry {
-	return &Entry{
-		Logger:  entry.Logger,
-		Data:    maps.Clone(entry.Data),
-		Time:    entry.Time,
-		Context: ctx,
-		err:     entry.err,
-	}
+	newEntry := *entry
+	newEntry.Data = maps.Clone(entry.Data)
+	newEntry.Context = ctx
+	return &newEntry
 }
 
 // WithField adds a single field to the Entry.
@@ -209,13 +198,10 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 
 // WithTime overrides the time of the Entry.
 func (entry *Entry) WithTime(t time.Time) *Entry {
-	return &Entry{
-		Logger:  entry.Logger,
-		Data:    maps.Clone(entry.Data),
-		Time:    t,
-		Context: entry.Context,
-		err:     entry.err,
-	}
+	newEntry := *entry
+	newEntry.Data = maps.Clone(entry.Data)
+	newEntry.Time = t
+	return &newEntry
 }
 
 // getPackageName reduces a fully qualified function name to the package name
