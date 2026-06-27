@@ -57,6 +57,7 @@ time="2015-03-26T01:27:38-04:00" level=debug msg="Temperature changes" temperatu
 time="2015-03-26T01:27:38-04:00" level=panic msg="It's over 9000!" animal=orca size=9009
 time="2015-03-26T01:27:38-04:00" level=fatal msg="The ice breaks!" err=&{0x2082280c0 map[animal:orca size:9009] 2015-03-26 01:27:38.441574009 -0400 EDT panic It's over 9000!} number=100 omg=true
 ```
+
 To ensure this behaviour even if a TTY is attached, set your formatter as follows:
 
 ```go
@@ -73,6 +74,7 @@ If you wish to add the calling method as a field, instruct the logger via:
 ```go
 logrus.SetReportCaller(true)
 ```
+
 This adds the caller as 'method' like so:
 
 ```json
@@ -83,6 +85,7 @@ This adds the caller as 'method' like so:
 ```text
 time="2015-03-26T01:27:38-04:00" level=fatal method=github.com/sirupsen/arcticcreatures.migrate msg="a penguin swims by" animal=penguin
 ```
+
 Note that this does add measurable overhead - the cost will depend on the version of Go, but is
 between 20 and 40% in recent tests with 1.6 and 1.7.  You can validate this in your
 environment via benchmarks:
@@ -276,6 +279,7 @@ func init() {
   }
 }
 ```
+
 Note: Syslog hooks also support connecting to local syslog (Ex. "/dev/log" or "/var/run/syslog" or "/var/run/log"). For the detail, please check the [syslog hook README](hooks/syslog/README.md).
 
 A list of currently known service hooks can be found in this wiki [page](https://github.com/sirupsen/logrus/wiki/Hooks)
@@ -505,4 +509,4 @@ Situations when locking is not needed include:
 
   2) logger.Out is an os.File handler opened with `O_APPEND` flag, and every write is smaller than 4k. (This allows multi-thread/multi-process writing)
 
-     (Refer to http://www.notthewizard.com/2014/06/17/are-files-appends-really-atomic/)
+     (Refer to <http://www.notthewizard.com/2014/06/17/are-files-appends-really-atomic/>)

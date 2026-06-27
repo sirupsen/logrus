@@ -5,23 +5,27 @@ All notable changes to this project will be documented in this file.
 ## 1.10.0 (unreleased)
 
 Fixes:
+
   * Fix reentrant logging deadlocks in formatter paths.
   * Fix race conditions in formatter and entry handling.
   * Improve concurrency safety around formatter and hook access.
 
 Features:
+
   * Basic `slog` hook for bridging Logrus entries to `log/slog`.
   * Add minimal, composable logging interfaces for each log level. This enables
     consumers to depend on narrower interfaces, making it easier to substitute
     or adapt logging implementations.
 
 Changed:
+
   * Raise minimum supported Go version to 1.23.
   * Improve TextFormatter performance and reduce allocations.
   * Optimize Entry hot paths (including WithError and caller reporting).
   * TextFormatter now renders `[]byte` values as raw/quoted strings instead of slice-of-ints.
 
 Performance:
+
   * ~17% geomean runtime improvement and ~26% throughput increase overall.
   * Significant allocation reductions across TextFormatter and Entry paths (large reductions in colored/text formatter cases).
 
@@ -29,13 +33,16 @@ Performance:
 ## 1.9.4
 
 Fixes:
+
   * Remove uses of deprecated `ioutil` package
 
 Features:
+
   * Add GNU/Hurd support
   * Add WASI wasip1 support
 
 Code quality:
+
   * Update minimum supported Go version to 1.17
   * Documentation updates
 
@@ -43,6 +50,7 @@ Code quality:
 ## 1.9.3
 
 Fixes:
+
   * Re-apply fix for potential denial of service in logrus.Writer() when logging >64KB single-line payloads without newlines (#1376)
   * Fix panic in Writer
 
@@ -50,46 +58,56 @@ Fixes:
 ## 1.9.2
 
 Fixes:
+
   * Revert Writer DoS fix (#1376) due to regression
 
 
 ## 1.9.1
 
 Fixes:
+
   * Fix potential denial of service in logrus.Writer() when logging >64KB single-line payloads without newlines (#1376)
 
 
 ## 1.9.0
 
 Fixes:
+
   * Multiple concurrency and race condition fixes
   * Improve Windows terminal and ANSI handling
 
 Code quality:
+
   * Internal cleanups and modernization
 
 
 ## 1.8.3
 
 Fixes:
+
   * Fix potential denial of service in logrus.Writer() when logging >64KB single-line payloads without newlines (#1376)
 
 
 ## 1.8.2
 
 Features:
+
   * Add support for the logger private buffer pool (#1253)
 
 Fixes:
+
   * Fix race condition for SetFormatter and SetReportCaller
   * Fix data race in hooks test package
 
 ## 1.8.1
+
 Code quality:
+
   * move magefile in its own subdir/submodule to remove magefile dependency on logrus consumer
   * improve timestamp format documentation
 
 Fixes:
+
   * fix race condition on logger hooks
 
 
@@ -102,64 +120,85 @@ Correct versioning number replacing v1.7.1.
 Beware this release has introduced a new public API and its semver is therefore incorrect.
 
 Code quality:
+
   * use go 1.15 in travis
   * use magefile as task runner
 
 Fixes:
+
   * small fixes about new go 1.13 error formatting system
   * Fix for long time race condiction with mutating data hooks
 
 Features:
+
   * build support for zos
 
 ## 1.7.0
+
 Fixes:
+
   * the dependency toward a windows terminal library has been removed
 
 Features:
+
   * a new buffer pool management API has been added
   * a set of `<LogLevel>Fn()` functions have been added
 
 ## 1.6.0
+
 Fixes:
+
   * end of line cleanup
   * revert the entry concurrency bug fix which leads to deadlock under some circumstances
   * update dependency on go-windows-terminal-sequences to fix a crash with go 1.14
 
 Features:
+
   * add an option to the `TextFormatter` to completely disable fields quoting
 
 ## 1.5.0
+
 Code quality:
+
   * add golangci linter run on travis
 
 Fixes:
+
   * add mutex for hooks concurrent access on `Entry` data
   * caller function field for go1.14
   * fix build issue for gopherjs target
 
 Feature:
+
   * add an hooks/writer sub-package whose goal is to split output on different stream depending on the trace level
   * add a `DisableHTMLEscape` option in the `JSONFormatter`
   * add `ForceQuote` and `PadLevelText` options in the `TextFormatter`
 
 ## 1.4.2
+
   * Fixes build break for plan9, nacl, solaris
+
 ## 1.4.1
+
 This new release introduces:
+
   * Enhance TextFormatter to not print caller information when they are empty (#944)
   * Remove dependency on golang.org/x/crypto (#932, #943)
 
 Fixes:
+
   * Fix Entry.WithContext method to return a copy of the initial entry (#941)
 
 ## 1.4.0
+
 This new release introduces:
+
   * Add `DeferExitHandler`, similar to `RegisterExitHandler` but prepending the handler to the list of handlers (semantically like `defer`) (#848).
   * Add `CallerPrettyfier` to `JSONFormatter` and `TextFormatter` (#909, #911)
   * Add `Entry.WithContext()` and `Entry.Context`, to set a context on entries to be used e.g. in hooks (#919).
 
 Fixes:
+
   * Fix wrong method calls `Logger.Print` and `Logger.Warningln` (#893).
   * Update `Entry.Logf` to not do string formatting unless the log level is enabled (#903)
   * Fix infinite recursion on unknown `Level.String()` (#907)
@@ -167,10 +206,13 @@ Fixes:
 
 
 ## 1.3.0
+
 This new release introduces:
+
   * Log, Logf, Logln functions for Logger and Entry that take a Level
 
 Fixes:
+
   * Building prometheus node_exporter on AIX (#840)
   * Race condition in TextFormatter (#468)
   * Travis CI import path (#868)
@@ -179,19 +221,25 @@ Fixes:
   * Properly marshal Levels (#873)
 
 ## 1.2.0
+
 This new release introduces:
+
   * A new method `SetReportCaller` in the `Logger` to enable the file, line and calling function from which the trace has been issued
   * A new trace level named `Trace` whose level is below `Debug`
   * A configurable exit function to be called upon a Fatal trace
   * The `Level` object now implements `encoding.TextUnmarshaler` interface
 
 ## 1.1.1
+
 This is a bug fix release.
+
   * fix the build break on Solaris
   * don't drop a whole trace in JSONFormatter when a field param is a function pointer which can not be serialized
 
 ## 1.1.0
+
 This new release introduces:
+
   * several fixes:
     * a fix for a race condition on entry formatting
     * proper cleanup of previously used entries before putting them back in the pool
@@ -211,6 +259,7 @@ This new release introduces:
 ## 1.0.6
 
 This new release introduces:
+
   * a new api WithTime which allows to easily force the time of the log entry
     which is mostly useful for logger wrapper
   * a fix reverting the immutability of the entry given as parameter to the hooks
