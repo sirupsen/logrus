@@ -29,7 +29,6 @@ func LogAndAssertJSON(t *testing.T, log func(*logrus.Logger), assertions func(lo
 
 func LogAndAssertText(t *testing.T, log func(*logrus.Logger), assertions func(fields map[string]string)) {
 	var buffer bytes.Buffer
-
 	logger := logrus.New()
 	logger.Out = &buffer
 	logger.Formatter = &logrus.TextFormatter{
@@ -39,18 +38,17 @@ func LogAndAssertText(t *testing.T, log func(*logrus.Logger), assertions func(fi
 	log(logger)
 
 	fields := make(map[string]string)
-	for _, kv := range strings.Split(strings.TrimRight(buffer.String(), "\n"), " ") {
-		if !strings.Contains(kv, "=") {
+	for _, kv := range strings.Fields(strings.TrimRight(buffer.String(), "\n")) {
+		key, val, ok := strings.Cut(kv, "=")
+		if !ok {
 			continue
 		}
-		kvArr := strings.Split(kv, "=")
-		key := strings.TrimSpace(kvArr[0])
-		val := kvArr[1]
-		if kvArr[1][0] == '"' {
+		if strings.HasPrefix(val, `"`) {
 			var err error
 			val, err = strconv.Unquote(val)
 			require.NoError(t, err)
 		}
+		key = strings.TrimSpace(key)
 		fields[key] = val
 	}
 	assertions(fields)
