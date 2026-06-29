@@ -49,10 +49,11 @@ func (entry *Entry) WriterLevel(level Level) *io.PipeWriter {
 	case PanicLevel:
 		printFunc = entry.Panic
 	}
+	done := make(chan struct{})
 
 	// Start a new goroutine to scan the input and write it to the logger using the specified print function.
 	// It splits the input into chunks of up to 64KB to avoid buffer overflows.
-	go entry.writerScanner(reader, printFunc)
+	go entry.writerScanner(reader, printFunc, done)
 
 	// Set a finalizer function to close the writer when it is garbage collected
 	runtime.SetFinalizer(writer, writerFinalizer)
@@ -60,8 +61,45 @@ func (entry *Entry) WriterLevel(level Level) *io.PipeWriter {
 	return writer
 }
 
+func (entry *Entry) WriterLevelWithClose(level Level) (*io.PipeWriter, func()) {
+	reader, writer := io.Pipe()
+
+	var printFunc func(args ...any)
+
+	switch level {
+	case TraceLevel:
+		printFunc = entry.Trace
+	case DebugLevel:
+		printFunc = entry.Debug
+	case InfoLevel:
+		printFunc = entry.Info
+	case WarnLevel:
+		printFunc = entry.Warn
+	case ErrorLevel:
+		printFunc = entry.Error
+	case FatalLevel:
+		printFunc = entry.Fatal
+	case PanicLevel:
+		printFunc = entry.Panic
+	default:
+		printFunc = entry.Print
+	}
+
+	done := make(chan struct{})
+
+	go entry.writerScanner(reader, printFunc, done)
+	runtime.SetFinalizer(writer, writerFinalizer)
+
+	closeFunc := func() {
+		writer.Close()
+		<-done
+	}
+
+	return writer, closeFunc
+}
+
 // writerScanner scans the input from the reader and writes it to the logger
-func (entry *Entry) writerScanner(reader *io.PipeReader, printFunc func(args ...any)) {
+func (entry *Entry) writerScanner(reader *io.PipeReader, printFunc func(args ...any), done chan struct{}) {
 	scanner := bufio.NewScanner(reader)
 
 	// Set the buffer size to the maximum token size to avoid buffer overflows
@@ -92,6 +130,7 @@ func (entry *Entry) writerScanner(reader *io.PipeReader, printFunc func(args ...
 
 	// Close the reader when we are done
 	reader.Close()
+	close(done)
 }
 
 // WriterFinalizer is a finalizer function that closes then given writer when it is garbage collected
