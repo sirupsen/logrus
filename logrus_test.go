@@ -570,7 +570,6 @@ func TestGetSetLevelRace(t *testing.T) {
 				GetLevel()
 			}
 		}(i)
-
 	}
 	wg.Wait()
 }
