@@ -666,7 +666,6 @@ func TestTextEntryFieldValueError(t *testing.T) {
 		if field := `ok=ok`; !strings.Contains(out, field) {
 			t.Errorf(`Expected log entry to contain "ok=ok": %v`, out)
 		}
-
 	})
 
 	// This is testing the current behavior; error is preserved, even if an
