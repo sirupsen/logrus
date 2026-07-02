@@ -232,6 +232,37 @@ func TestEntryHooksPanic(t *testing.T) {
 	entry.Info(badMessage)
 }
 
+func TestEntryWithFields(t *testing.T) {
+	entry1 := &logrus.Entry{
+		Logger: logrus.StandardLogger(),
+		Time:   time.Now(),
+		Level:  logrus.InfoLevel,
+	}
+
+	entry2 := entry1.WithFields(logrus.Fields{
+		"key1": "value1",
+		"key2": "value2",
+	})
+
+	// Check everything but Data is still the same
+	assert.Equal(t, entry1.Logger, entry2.Logger)
+	assert.Equal(t, entry1.Time, entry2.Time)
+	assert.Equal(t, entry1.Level, entry2.Level)
+	assert.Equal(t, entry1.Message, entry2.Message)
+	assert.Equal(t, entry1.Buffer, entry2.Buffer)
+
+	entry3 := entry2.WithFields(logrus.Fields{
+		"key3": "value4",
+		"key4": "value4",
+	})
+	// Check everything but Data is still the same
+	assert.Equal(t, entry1.Logger, entry3.Logger)
+	assert.Equal(t, entry1.Time, entry3.Time)
+	assert.Equal(t, entry1.Level, entry3.Level)
+	assert.Equal(t, entry1.Message, entry3.Message)
+	assert.Equal(t, entry1.Buffer, entry3.Buffer)
+}
+
 func TestEntryWithIncorrectField(t *testing.T) {
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{})
