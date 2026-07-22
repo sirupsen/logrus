@@ -10,7 +10,7 @@ import (
 )
 
 // LogFunction For big messages, it can be more efficient to pass a function
-// and only call it if the log level is actually enables rather than
+// and only call it if the log level is actually enabled rather than
 // generating the log message and then checking if the level is enabled
 type LogFunction func() []any
 
@@ -122,8 +122,7 @@ func (logger *Logger) WithField(key string, value any) *Entry {
 	return entry.WithField(key, value)
 }
 
-// WithFields adds a struct of fields to the log entry. It calls [Entry.WithField]
-// for each Field.
+// WithFields adds a map of fields to the log entry by calling [Entry.WithFields].
 func (logger *Logger) WithFields(fields Fields) *Entry {
 	entry := logger.newEntry()
 	defer logger.releaseEntry(entry)
@@ -138,7 +137,7 @@ func (logger *Logger) WithError(err error) *Entry {
 	return entry.WithError(err)
 }
 
-// WithContext add a context to the log entry.
+// WithContext adds a context to the log entry.
 func (logger *Logger) WithContext(ctx context.Context) *Entry {
 	entry := logger.newEntry()
 	defer logger.releaseEntry(entry)
