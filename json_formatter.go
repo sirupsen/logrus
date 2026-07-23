@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"errors"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -62,6 +63,9 @@ type JSONFormatter struct {
 
 // Format renders a single log entry
 func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
+	if entry == nil {
+		return nil, errors.New("logrus: Format called with nil Entry")
+	}
 	caller := entry.Caller
 	data := make(Fields, len(entry.Data)+defaultFields)
 	for k, v := range entry.Data {

@@ -1,6 +1,7 @@
 package logrus
 
 import (
+	"errors"
 	"bytes"
 	"fmt"
 	"maps"
@@ -140,6 +141,9 @@ func (f *TextFormatter) isColored(isTerminal bool) bool {
 
 // Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
+	if entry == nil {
+		return nil, errors.New("logrus: Format called with nil Entry")
+	}
 	data := make(Fields, len(entry.Data))
 	maps.Copy(data, entry.Data)
 	isColored := f.isColored(f.isTerminal(entry))
