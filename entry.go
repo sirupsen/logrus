@@ -173,11 +173,17 @@ func (entry *Entry) WithContext(ctx context.Context) *Entry {
 
 // WithField adds a single field to the Entry.
 func (entry *Entry) WithField(key string, value any) *Entry {
+	if entry == nil {
+		return nil
+	}
 	return entry.WithFields(Fields{key: value})
 }
 
 // WithFields adds a map of fields to the Entry.
 func (entry *Entry) WithFields(fields Fields) *Entry {
+	if entry == nil {
+		return nil
+	}
 	data := make(Fields, len(entry.Data)+len(fields))
 	maps.Copy(data, entry.Data)
 	fieldErr := entry.err
@@ -205,6 +211,9 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 
 // WithTime overrides the time of the Entry.
 func (entry *Entry) WithTime(t time.Time) *Entry {
+	if entry == nil {
+		return nil
+	}
 	return &Entry{
 		Logger:  entry.Logger,
 		Data:    maps.Clone(entry.Data),
