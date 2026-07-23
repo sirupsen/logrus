@@ -792,3 +792,14 @@ func TestSetReportCallerRace(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+func TestParseLevelTrimSpace(t *testing.T) {
+	l, err := ParseLevel(" info ")
+	if err != nil || l != InfoLevel {
+		t.Fatalf("got %v %v", l, err)
+	}
+	l, err = ParseLevel("\twarn\n")
+	if err != nil || l != WarnLevel {
+		t.Fatalf("got %v %v", l, err)
+	}
+}

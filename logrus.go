@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"strings"
 )
 
 // Fields type, used to pass to [WithFields].
@@ -38,7 +39,7 @@ func (level Level) String() string {
 
 // ParseLevel takes a string level and returns the Logrus log level constant.
 func ParseLevel(lvl string) (Level, error) {
-	return parseLevel([]byte(lvl))
+	return parseLevel([]byte(strings.TrimSpace(lvl)))
 }
 
 func parseLevel(b []byte) (Level, error) {
