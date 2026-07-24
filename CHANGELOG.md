@@ -13,6 +13,8 @@ Fixes:
 Features:
 
   * Basic `slog` hook for bridging Logrus entries to `log/slog`.
+  * Add `slog.Handler` (`hooks/slog.NewHandler`) for bridging `log/slog` records
+    into a Logrus logger (levels, fields, groups, context, and time).
   * Add minimal, composable logging interfaces for each log level. This enables
     consumers to depend on narrower interfaces, making it easier to substitute
     or adapt logging implementations.
