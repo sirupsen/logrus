@@ -2,6 +2,7 @@ package logrus_test
 
 import (
 	"fmt"
+	"runtime"
 	"testing"
 	"time"
 
@@ -140,8 +141,6 @@ func BenchmarkLargeJSONFormatter(b *testing.B) {
 	doBenchmark(b, &logrus.JSONFormatter{}, largeFields)
 }
 
-var sink []byte
-
 func doBenchmark(b *testing.B, formatter logrus.Formatter, fields logrus.Fields) {
 	logger := logrus.New()
 
@@ -168,5 +167,5 @@ func doBenchmark(b *testing.B, formatter logrus.Formatter, fields logrus.Fields)
 			b.Fatal(err)
 		}
 	}
-	sink = d
+	runtime.KeepAlive(d)
 }
