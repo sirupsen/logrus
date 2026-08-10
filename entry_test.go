@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -230,6 +232,58 @@ func TestEntryHooksPanic(t *testing.T) {
 
 	entry := logrus.NewEntry(logger)
 	entry.Info(badMessage)
+}
+
+// TestEntryDerivationPreservesCaller verifies that derived entries retain
+// explicitly set caller information.
+func TestEntryDerivationPreservesCaller(t *testing.T) {
+	entry := logrus.NewEntry(logrus.New())
+	entry.Caller = &runtime.Frame{
+		Function: "example.function",
+		File:     "example.go",
+		Line:     42,
+	}
+
+	tests := []struct {
+		doc    string
+		derive func(*logrus.Entry) *logrus.Entry
+	}{
+		{
+			doc:    "Dup",
+			derive: func(entry *logrus.Entry) *logrus.Entry { return entry.Dup() },
+		},
+		{
+			doc:    "WithContext",
+			derive: func(entry *logrus.Entry) *logrus.Entry { return entry.WithContext(context.Background()) },
+		},
+		{
+			doc:    "WithError",
+			derive: func(entry *logrus.Entry) *logrus.Entry { return entry.WithError(errors.New("boom")) },
+		},
+		{
+			doc:    "WithField",
+			derive: func(entry *logrus.Entry) *logrus.Entry { return entry.WithField("foo", "bar") },
+		},
+		{
+			doc:    "WithFields",
+			derive: func(entry *logrus.Entry) *logrus.Entry { return entry.WithFields(logrus.Fields{"foo": "bar"}) },
+		},
+		{
+			doc:    "WithTime",
+			derive: func(entry *logrus.Entry) *logrus.Entry { return entry.WithTime(time.Now()) },
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.doc, func(t *testing.T) {
+			got := tc.derive(entry)
+
+			require.NotNil(t, got.Caller)
+			assert.Equal(t, "example.function", got.Caller.Function)
+			assert.Equal(t, "example.go", got.Caller.File)
+			assert.Equal(t, 42, got.Caller.Line)
+		})
+	}
 }
 
 func TestEntryWithIncorrectField(t *testing.T) {
