@@ -270,8 +270,10 @@ func getCaller() *runtime.Frame {
 // HasCaller reports whether this Entry contains caller information.
 //
 // Caller is attached at log time if [Logger.ReportCaller] was enabled.
-// In most cases, it is preferable to check whether [Entry.Caller] is nil
-// directly.
+//
+// Deprecated: use [Entry.Caller] != nil instead.
+//
+//go:fix inline
 func (entry Entry) HasCaller() bool {
 	return entry.Caller != nil
 }
