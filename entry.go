@@ -178,9 +178,9 @@ func (entry *Entry) WithField(key string, value any) *Entry {
 	dup.Data = maps.Clone(entry.Data)
 	if isInvalidField(value) {
 		if dup.err != "" {
-			dup.err += ", can not add field " + strconv.Quote(key)
+			dup.err += ", skipping unsupported field " + strconv.Quote(key)
 		} else {
-			dup.err = "can not add field " + strconv.Quote(key)
+			dup.err = "skipping unsupported field " + strconv.Quote(key)
 		}
 		return dup
 	}
@@ -197,15 +197,15 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	dup.Data = make(Fields, len(entry.Data)+len(fields))
 	maps.Copy(dup.Data, entry.Data)
 
-	for k, v := range fields {
-		if isInvalidField(v) {
+	for key, value := range fields {
+		if isInvalidField(value) {
 			if dup.err != "" {
-				dup.err += ", can not add field " + strconv.Quote(k)
+				dup.err += ", skipping unsupported field " + strconv.Quote(key)
 			} else {
-				dup.err = "can not add field " + strconv.Quote(k)
+				dup.err = "skipping unsupported field " + strconv.Quote(key)
 			}
 		} else {
-			dup.Data[k] = v
+			dup.Data[key] = value
 		}
 	}
 	return dup
