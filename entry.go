@@ -104,9 +104,16 @@ func NewEntry(logger *Logger) *Entry {
 // Data is cloned to avoid mutating the original entry. Other fields
 // (Logger, Time, Context, etc.) are copied by value.
 func (entry *Entry) Dup() *Entry {
+	dup := entry.dup()
+	dup.Data = maps.Clone(entry.Data)
+	return dup
+}
+
+// dup copies the entry fields shared by derived entries except Data, which
+// callers must copy or initialize as appropriate for their use.
+func (entry *Entry) dup() *Entry {
 	return &Entry{
 		Logger:  entry.Logger,
-		Data:    maps.Clone(entry.Data),
 		Time:    entry.Time,
 		Context: entry.Context,
 		err:     entry.err,
@@ -147,28 +154,21 @@ func (entry *Entry) String() (string, error) {
 func (entry *Entry) WithError(err error) *Entry {
 	// Avoid reflection work in WithFields; we know the type is an error;
 	// copy the entry data and set the ErrorKey directly.
-	data := make(Fields, len(entry.Data)+1)
-	maps.Copy(data, entry.Data)
-	data[ErrorKey] = err
-
-	return &Entry{
-		Logger:  entry.Logger,
-		Data:    data,
-		Time:    entry.Time,
-		Context: entry.Context,
-		err:     entry.err,
+	dup := entry.dup()
+	dup.Data = maps.Clone(entry.Data)
+	if dup.Data == nil {
+		dup.Data = make(Fields, 1)
 	}
+	dup.Data[ErrorKey] = err
+	return dup
 }
 
 // WithContext adds a context to the Entry.
 func (entry *Entry) WithContext(ctx context.Context) *Entry {
-	return &Entry{
-		Logger:  entry.Logger,
-		Data:    maps.Clone(entry.Data),
-		Time:    entry.Time,
-		Context: ctx,
-		err:     entry.err,
-	}
+	dup := entry.dup()
+	dup.Data = maps.Clone(entry.Data)
+	dup.Context = ctx
+	return dup
 }
 
 // WithField adds a single field to the Entry.
@@ -178,9 +178,10 @@ func (entry *Entry) WithField(key string, value any) *Entry {
 
 // WithFields adds a map of fields to the Entry.
 func (entry *Entry) WithFields(fields Fields) *Entry {
-	data := make(Fields, len(entry.Data)+len(fields))
-	maps.Copy(data, entry.Data)
-	fieldErr := entry.err
+	dup := entry.dup()
+	dup.Data = make(Fields, len(entry.Data)+len(fields))
+	maps.Copy(dup.Data, entry.Data)
+
 	for k, v := range fields {
 		isErrField := false
 		if t := reflect.TypeOf(v); t != nil {
@@ -191,27 +192,24 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 		}
 		if isErrField {
 			tmp := fmt.Sprintf("can not add field %q", k)
-			if fieldErr != "" {
-				fieldErr += ", " + tmp
+			if dup.err != "" {
+				dup.err += ", " + tmp
 			} else {
-				fieldErr = tmp
+				dup.err = tmp
 			}
 		} else {
-			data[k] = v
+			dup.Data[k] = v
 		}
 	}
-	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, err: fieldErr, Context: entry.Context}
+	return dup
 }
 
 // WithTime overrides the time of the Entry.
 func (entry *Entry) WithTime(t time.Time) *Entry {
-	return &Entry{
-		Logger:  entry.Logger,
-		Data:    maps.Clone(entry.Data),
-		Time:    t,
-		Context: entry.Context,
-		err:     entry.err,
-	}
+	dup := entry.dup()
+	dup.Data = maps.Clone(entry.Data)
+	dup.Time = t
+	return dup
 }
 
 // getPackageName reduces a fully qualified function name to the package name
@@ -279,8 +277,8 @@ func (entry Entry) HasCaller() bool {
 }
 
 func (entry *Entry) log(level Level, msg string) {
-	newEntry := entry.Dup()
-	logger := newEntry.Logger
+	newEntry := entry.dup()
+	newEntry.Data = maps.Clone(entry.Data)
 
 	if newEntry.Time.IsZero() {
 		newEntry.Time = time.Now()
@@ -289,6 +287,7 @@ func (entry *Entry) log(level Level, msg string) {
 	newEntry.Level = level
 	newEntry.Message = msg
 
+	logger := newEntry.Logger
 	logger.mu.Lock()
 	reportCaller := logger.ReportCaller
 	bufPool := newEntry.getBufferPool()
