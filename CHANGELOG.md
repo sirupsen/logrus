@@ -23,6 +23,7 @@ Changed:
   * Improve TextFormatter performance and reduce allocations.
   * Optimize Entry hot paths (including WithError and caller reporting).
   * TextFormatter now renders `[]byte` values as raw/quoted strings instead of slice-of-ints.
+  * `Entry.HasCaller` is now deprecated in favor of checking `Entry.Caller` directly.
 
 Performance:
 
