@@ -242,20 +242,20 @@ func TestEntryWithIncorrectField(t *testing.T) {
 	eWithFunc := entry.WithFields(logrus.Fields{"func": fn})
 	eWithFuncPtr := entry.WithFields(logrus.Fields{"funcPtr": &fn})
 
-	assert.Equal(t, `can not add field "func"`, getErr(t, eWithFunc))
-	assert.Equal(t, `can not add field "funcPtr"`, getErr(t, eWithFuncPtr))
+	assert.Equal(t, `skipping unsupported field "func"`, getErr(t, eWithFunc))
+	assert.Equal(t, `skipping unsupported field "funcPtr"`, getErr(t, eWithFuncPtr))
 
 	eWithFunc = eWithFunc.WithField("not_a_func", "it is a string")
 	eWithFuncPtr = eWithFuncPtr.WithField("not_a_func", "it is a string")
 
-	assert.Equal(t, `can not add field "func"`, getErr(t, eWithFunc))
-	assert.Equal(t, `can not add field "funcPtr"`, getErr(t, eWithFuncPtr))
+	assert.Equal(t, `skipping unsupported field "func"`, getErr(t, eWithFunc))
+	assert.Equal(t, `skipping unsupported field "funcPtr"`, getErr(t, eWithFuncPtr))
 
 	eWithFunc = eWithFunc.WithTime(time.Now())
 	eWithFuncPtr = eWithFuncPtr.WithTime(time.Now())
 
-	assert.Equal(t, `can not add field "func"`, getErr(t, eWithFunc))
-	assert.Equal(t, `can not add field "funcPtr"`, getErr(t, eWithFuncPtr))
+	assert.Equal(t, `skipping unsupported field "func"`, getErr(t, eWithFunc))
+	assert.Equal(t, `skipping unsupported field "funcPtr"`, getErr(t, eWithFuncPtr))
 }
 
 func getErr(t *testing.T, e *logrus.Entry) string {

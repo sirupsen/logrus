@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -173,7 +174,21 @@ func (entry *Entry) WithContext(ctx context.Context) *Entry {
 
 // WithField adds a single field to the Entry.
 func (entry *Entry) WithField(key string, value any) *Entry {
-	return entry.WithFields(Fields{key: value})
+	dup := entry.dup()
+	dup.Data = maps.Clone(entry.Data)
+	if isInvalidField(value) {
+		if dup.err != "" {
+			dup.err += ", skipping unsupported field " + strconv.Quote(key)
+		} else {
+			dup.err = "skipping unsupported field " + strconv.Quote(key)
+		}
+		return dup
+	}
+	if dup.Data == nil {
+		dup.Data = make(Fields, 1)
+	}
+	dup.Data[key] = value
+	return dup
 }
 
 // WithFields adds a map of fields to the Entry.
@@ -182,26 +197,26 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	dup.Data = make(Fields, len(entry.Data)+len(fields))
 	maps.Copy(dup.Data, entry.Data)
 
-	for k, v := range fields {
-		isErrField := false
-		if t := reflect.TypeOf(v); t != nil {
-			switch {
-			case t.Kind() == reflect.Func, t.Kind() == reflect.Pointer && t.Elem().Kind() == reflect.Func:
-				isErrField = true
-			}
-		}
-		if isErrField {
-			tmp := fmt.Sprintf("can not add field %q", k)
+	for key, value := range fields {
+		if isInvalidField(value) {
 			if dup.err != "" {
-				dup.err += ", " + tmp
+				dup.err += ", skipping unsupported field " + strconv.Quote(key)
 			} else {
-				dup.err = tmp
+				dup.err = "skipping unsupported field " + strconv.Quote(key)
 			}
 		} else {
-			dup.Data[k] = v
+			dup.Data[key] = value
 		}
 	}
 	return dup
+}
+
+func isInvalidField(v any) bool {
+	t := reflect.TypeOf(v)
+	if t == nil {
+		return false
+	}
+	return t.Kind() == reflect.Func || t.Kind() == reflect.Pointer && t.Elem().Kind() == reflect.Func
 }
 
 // WithTime overrides the time of the Entry.
