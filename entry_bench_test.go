@@ -3,6 +3,7 @@ package logrus_test
 import (
 	"errors"
 	"io"
+	"runtime"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -14,17 +15,21 @@ func BenchmarkEntry_WithError(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
+	var result *logrus.Entry
 	for range b.N {
-		_ = base.WithError(errBoom)
+		result = base.WithError(errBoom)
 	}
+	runtime.KeepAlive(result)
 }
 
 func BenchmarkEntry_WithField_Chain(b *testing.B) {
 	base := &logrus.Entry{Data: logrus.Fields{"a": 1}}
 	errBoom := errors.New("boom")
+
 	b.ReportAllocs()
 	b.ResetTimer()
 
+	var result *logrus.Entry
 	for range b.N {
 		e := base
 
@@ -33,8 +38,10 @@ func BenchmarkEntry_WithField_Chain(b *testing.B) {
 		e = e.WithField("k2", 2)
 		e = e.WithField("k3", 3)
 		e = e.WithError(errBoom)
-		_ = e
+
+		result = e
 	}
+	runtime.KeepAlive(result)
 }
 
 func BenchmarkEntry_WithFields(b *testing.B) {
@@ -78,9 +85,11 @@ func BenchmarkEntry_WithFields(b *testing.B) {
 			b.ReportAllocs()
 			e := &logrus.Entry{Data: tc.base}
 			b.ResetTimer()
+			var result *logrus.Entry
 			for range b.N {
-				_ = e.WithFields(tc.fields)
+				result = e.WithFields(tc.fields)
 			}
+			runtime.KeepAlive(result)
 		})
 	}
 }
