@@ -42,7 +42,7 @@ type Logger struct {
 	Level Level
 
 	// Used to sync writing to the log. Locking is enabled by Default
-	mu MutexWrap
+	mu mutexWrap
 
 	// Reusable empty entry
 	entryPool sync.Pool
@@ -55,24 +55,29 @@ type Logger struct {
 	BufferPool BufferPool
 }
 
-type MutexWrap struct {
+// MutexWrap is the mutex implementation used by [Logger].
+//
+// Deprecated: MutexWrap is an implementation detail of Logger and should not be used directly.
+type MutexWrap = mutexWrap
+
+type mutexWrap struct {
 	lock     sync.Mutex
 	disabled bool
 }
 
-func (mw *MutexWrap) Lock() {
+func (mw *mutexWrap) Lock() {
 	if !mw.disabled {
 		mw.lock.Lock()
 	}
 }
 
-func (mw *MutexWrap) Unlock() {
+func (mw *mutexWrap) Unlock() {
 	if !mw.disabled {
 		mw.lock.Unlock()
 	}
 }
 
-func (mw *MutexWrap) Disable() {
+func (mw *mutexWrap) Disable() {
 	mw.disabled = true
 }
 
