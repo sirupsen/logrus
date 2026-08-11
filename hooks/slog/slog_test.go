@@ -19,7 +19,7 @@ import (
 func TestSlogHook(t *testing.T) {
 	tests := []struct {
 		name   string
-		mapper lslog.LevelMapper
+		mapper func(logrus.Level) slog.Leveler
 		fn     func(*logrus.Logger)
 		want   []string
 	}{
