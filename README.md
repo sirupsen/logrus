@@ -28,34 +28,25 @@ plain text):
 With `logrus.SetFormatter(&logrus.JSONFormatter{})`, for easy parsing by logstash
 or Splunk:
 
-```text
-{"animal":"walrus","level":"info","msg":"A group of walrus emerges from the
-ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
-
-{"level":"warning","msg":"The group's number increased tremendously!",
-"number":122,"omg":true,"time":"2014-03-10 19:57:38.562471297 -0400 EDT"}
-
-{"animal":"walrus","level":"info","msg":"A giant walrus appears!",
-"size":10,"time":"2014-03-10 19:57:38.562500591 -0400 EDT"}
-
-{"animal":"walrus","level":"info","msg":"Tremendously sized cow enters the ocean.",
-"size":9,"time":"2014-03-10 19:57:38.562527896 -0400 EDT"}
-
-{"level":"fatal","msg":"The ice breaks!","number":100,"omg":true,
-"time":"2014-03-10 19:57:38.562543128 -0400 EDT"}
+```json lines
+{"animal":"walrus","level":"info","msg":"A group of walrus emerges from the ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
+{"level":"warning","msg":"The group's number increased tremendously!","number":122,"omg":true,"time":"2014-03-10 19:57:38.562471297 -0400 EDT"}
+{"animal":"walrus","level":"info","msg":"A giant walrus appears!","size":10,"time":"2014-03-10 19:57:38.562500591 -0400 EDT"}
+{"animal":"walrus","level":"info","msg":"Tremendously sized cow enters the ocean.","size":9,"time":"2014-03-10 19:57:38.562527896 -0400 EDT"}
+{"level":"fatal","msg":"The ice breaks!","number":100,"omg":true,"time":"2014-03-10 19:57:38.562543128 -0400 EDT"}
 ```
 
 With the default `logrus.SetFormatter(&logrus.TextFormatter{})` when a TTY is not
 attached, the output is compatible with the
 [logfmt](https://pkg.go.dev/github.com/kr/logfmt) format:
 
-```text
+```bash
 time="2015-03-26T01:27:38-04:00" level=debug msg="Started observing beach" animal=walrus number=8
 time="2015-03-26T01:27:38-04:00" level=info msg="A group of walrus emerges from the ocean" animal=walrus size=10
 time="2015-03-26T01:27:38-04:00" level=warning msg="The group's number increased tremendously!" number=122 omg=true
 time="2015-03-26T01:27:38-04:00" level=debug msg="Temperature changes" temperature=-4
 time="2015-03-26T01:27:38-04:00" level=panic msg="It's over 9000!" animal=orca size=9009
-time="2015-03-26T01:27:38-04:00" level=fatal msg="The ice breaks!" err=&{0x2082280c0 map[animal:orca size:9009] 2015-03-26 01:27:38.441574009 -0400 EDT panic It's over 9000!} number=100 omg=true
+time="2015-03-26T01:27:38-04:00" level=fatal msg="The ice breaks!" animal=orca err="It's over 9000!" number=100 omg=true size=9009
 ```
 
 To ensure this behaviour even if a TTY is attached, set your formatter as follows:
@@ -78,11 +69,10 @@ logrus.SetReportCaller(true)
 This adds the caller as 'method' like so:
 
 ```json
-{"animal":"penguin","level":"fatal","method":"github.com/sirupsen/arcticcreatures.migrate","msg":"a penguin swims by",
-"time":"2014-03-10 19:57:38.562543129 -0400 EDT"}
+{"animal":"penguin","level":"fatal","method":"github.com/sirupsen/arcticcreatures.migrate","msg":"a penguin swims by","time":"2014-03-10 19:57:38.562543129 -0400 EDT"}
 ```
 
-```text
+```bash
 time="2015-03-26T01:27:38-04:00" level=fatal method=github.com/sirupsen/arcticcreatures.migrate msg="a penguin swims by" animal=penguin
 ```
 
