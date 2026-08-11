@@ -7,17 +7,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// LevelMapper maps a [logrus.Level] to a [slog.Leveler].
-//
-// To change the default level mapping, for instance to allow mapping to custom
-// or dynamic slog levels in your application, set [SlogHook.LevelMapper]
-// to your own implementation of this function.
-type LevelMapper func(logrus.Level) slog.Leveler
-
 // SlogHook sends logs to slog.
 type SlogHook struct {
-	logger      *slog.Logger
-	LevelMapper LevelMapper
+	logger *slog.Logger
+
+	// LevelMapper maps Logrus levels to slog levels. If nil, the default
+	// mapping is used. Set it to customize level mapping, for example to
+	// support custom or dynamic slog levels.
+	LevelMapper func(logrus.Level) slog.Leveler
 }
 
 var _ logrus.Hook = (*SlogHook)(nil)
