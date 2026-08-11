@@ -73,7 +73,7 @@ func TestSlogHook(t *testing.T) {
 			}))
 			log := logrus.New()
 			log.Out = io.Discard
-			hook := lslog.NewSlogHook(slogLogger)
+			hook := lslog.NewHook(slogLogger)
 			hook.LevelMapper = tt.mapper
 			log.AddHook(hook)
 			tt.fn(log)
@@ -125,7 +125,7 @@ func TestSlogHook_error_propagates(t *testing.T) {
 	slogLogger := slog.New(&errorHandler{})
 	log := logrus.New()
 	log.SetOutput(io.Discard)
-	log.AddHook(lslog.NewSlogHook(slogLogger))
+	log.AddHook(lslog.NewHook(slogLogger))
 	log.WithField("key", "value").Error("test error")
 
 	// Restore stderr before closing the pipe writer to avoid leaving os.Stderr
@@ -158,7 +158,7 @@ func TestSlogHook_source(t *testing.T) {
 	log := logrus.New()
 	log.Out = io.Discard
 	log.ReportCaller = true
-	log.AddHook(lslog.NewSlogHook(slogLogger))
+	log.AddHook(lslog.NewHook(slogLogger))
 	log.Info("info with source")
 	got := strings.TrimSpace(buf.String())
 	wantRE := regexp.MustCompile(`source=.*hooks[\\/]+slog[\\/]+slog_test\.go:\d+`)

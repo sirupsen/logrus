@@ -7,8 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// SlogHook sends logs to slog.
-type SlogHook struct {
+// Hook sends logs to slog.
+type Hook struct {
 	logger *slog.Logger
 
 	// LevelMapper maps Logrus levels to slog levels. If nil, the default
@@ -17,29 +17,29 @@ type SlogHook struct {
 	LevelMapper func(logrus.Level) slog.Leveler
 }
 
-var _ logrus.Hook = (*SlogHook)(nil)
+var _ logrus.Hook = (*Hook)(nil)
 
-// NewSlogHook creates a hook that sends logs to an existing slog Logger.
+// NewHook creates a hook that sends logs to an existing slog Logger.
 // This hook is intended to be used during transition from Logrus to slog,
 // or as a shim between different parts of your application or different
 // libraries that depend on different loggers.
 //
-// The provided logger must not be nil. NewSlogHook panics if logger is nil.
+// The provided logger must not be nil. NewHook panics if logger is nil.
 //
 // Example usage:
 //
 //	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
-//	hook := NewSlogHook(logger)
-func NewSlogHook(logger *slog.Logger) *SlogHook {
+//	hook := NewHook(logger)
+func NewHook(logger *slog.Logger) *Hook {
 	if logger == nil {
 		panic("cannot create hook from nil logger")
 	}
-	return &SlogHook{
+	return &Hook{
 		logger: logger,
 	}
 }
 
-func (h *SlogHook) toSlogLevel(level logrus.Level) slog.Leveler {
+func (h *Hook) toSlogLevel(level logrus.Level) slog.Leveler {
 	if h.LevelMapper != nil {
 		return h.LevelMapper(level)
 	}
@@ -60,7 +60,7 @@ func (h *SlogHook) toSlogLevel(level logrus.Level) slog.Leveler {
 
 // Levels always returns all levels, since slog allows controlling level
 // enabling based on context.
-func (h *SlogHook) Levels() []logrus.Level {
+func (h *Hook) Levels() []logrus.Level {
 	return logrus.AllLevels
 }
 
@@ -68,7 +68,7 @@ func (h *SlogHook) Levels() []logrus.Level {
 // Handler, mapping it to a slog.Record. Time and caller information are
 // preserved when available, and Entry.Data is converted to attributes.
 // If Entry.Context is nil, context.Background() is used.
-func (h *SlogHook) Fire(entry *logrus.Entry) error {
+func (h *Hook) Fire(entry *logrus.Entry) error {
 	ctx := entry.Context
 	if ctx == nil {
 		ctx = context.Background()
