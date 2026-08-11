@@ -16,7 +16,7 @@ import (
 	lslog "github.com/sirupsen/logrus/hooks/slog"
 )
 
-func TestSlogHook(t *testing.T) {
+func TestHook(t *testing.T) {
 	tests := []struct {
 		name   string
 		mapper func(logrus.Level) slog.Leveler
@@ -111,7 +111,7 @@ func (h *errorHandler) WithGroup(string) slog.Handler {
 	return h
 }
 
-func TestSlogHook_error_propagates(t *testing.T) {
+func TestHook_error_propagates(t *testing.T) {
 	stderr := os.Stderr
 	r, w, err := os.Pipe()
 	if err != nil {
@@ -138,7 +138,7 @@ func TestSlogHook_error_propagates(t *testing.T) {
 	}
 }
 
-func TestSlogHook_source(t *testing.T) {
+func TestHook_source(t *testing.T) {
 	if runtime.Compiler == "tinygo" {
 		// TinyGo currently (v0.41.1) doesn't support `runtime.Caller`;
 		// https://tinygo.org/docs/reference/lang-support/stdlib/#logslog
