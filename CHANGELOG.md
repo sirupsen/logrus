@@ -24,6 +24,9 @@ Changed:
   * Optimize Entry hot paths (including WithError and caller reporting).
   * TextFormatter now renders `[]byte` values as raw/quoted strings instead of slice-of-ints.
   * `Entry.HasCaller` is now deprecated in favor of checking `Entry.Caller` directly.
+  * Deprecated `MutexWrap`, which was unintentionally exposed as public API.
+    It remains available as an alias for compatibility but should not be used
+    directly.
 
 Performance:
 
