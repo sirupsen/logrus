@@ -14,6 +14,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	lslog "github.com/sirupsen/logrus/hooks/slog"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestHook(t *testing.T) {
@@ -164,5 +166,44 @@ func TestHook_source(t *testing.T) {
 	wantRE := regexp.MustCompile(`source=.*hooks[\\/]+slog[\\/]+slog_test\.go:\d+`)
 	if !wantRE.MatchString(got) {
 		t.Errorf("expected log to contain source attribute matching %q, got: %s", wantRE.String(), got)
+	}
+}
+
+func TestHookLevelMapping(t *testing.T) {
+	tests := []struct {
+		level logrus.Level
+		want  string
+	}{
+		{level: logrus.PanicLevel, want: "ERROR+4"},
+		{level: logrus.FatalLevel, want: "ERROR+2"},
+		{level: logrus.ErrorLevel, want: "ERROR"},
+		{level: logrus.WarnLevel, want: "WARN"},
+		{level: logrus.InfoLevel, want: "INFO"},
+		{level: logrus.DebugLevel, want: "DEBUG"},
+		{level: logrus.TraceLevel, want: "DEBUG-4"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.level.String(), func(t *testing.T) {
+			var buf bytes.Buffer
+			hook := lslog.NewHook(slog.New(slog.NewTextHandler(&buf, &slog.HandlerOptions{
+				Level: slog.LevelDebug - 4, // slogLevelTrace
+				ReplaceAttr: func(_ []string, attr slog.Attr) slog.Attr {
+					if attr.Key == slog.TimeKey {
+						return slog.Attr{}
+					}
+					return attr
+				},
+			})))
+
+			logger := logrus.New()
+			logger.SetOutput(io.Discard)
+			entry := logrus.NewEntry(logger)
+			entry.Level = tc.level
+			entry.Message = "message"
+
+			require.NoError(t, hook.Fire(entry))
+			assert.Contains(t, buf.String(), "level="+tc.want+" ")
+		})
 	}
 }

@@ -7,7 +7,32 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Hook sends logs to slog.
+// slog levels corresponding to Logrus levels.
+const (
+	slogLevelTrace = slog.LevelDebug - 4
+	slogLevelDebug = slog.LevelDebug
+	slogLevelInfo  = slog.LevelInfo
+	slogLevelWarn  = slog.LevelWarn
+	slogLevelError = slog.LevelError
+	slogLevelFatal = slog.LevelError + 2
+	slogLevelPanic = slog.LevelError + 4
+)
+
+// Hook sends Logrus entries to slog.
+//
+// By default, Logrus levels map to their corresponding slog levels. Trace,
+// Fatal, and Panic use custom slog levels below Debug and above Error,
+// respectively, preserving their relative severity:
+//
+//   - [logrus.TraceLevel] -> [slog.LevelDebug] - 4
+//   - [logrus.DebugLevel] -> [slog.LevelDebug]
+//   - [logrus.InfoLevel] -> [slog.LevelInfo]
+//   - [logrus.WarnLevel] -> [slog.LevelWarn]
+//   - [logrus.ErrorLevel] -> [slog.LevelError]
+//   - [logrus.FatalLevel] -> [slog.LevelError] + 2
+//   - [logrus.PanicLevel] -> [slog.LevelError] + 4
+//
+// Set [Hook.LevelMapper] to customize this mapping.
 type Hook struct {
 	logger *slog.Logger
 
@@ -39,22 +64,29 @@ func NewHook(logger *slog.Logger) *Hook {
 	}
 }
 
+// toSlogLevel maps a Logrus level using LevelMapper or the default mapping.
 func (h *Hook) toSlogLevel(level logrus.Level) slog.Leveler {
 	if h.LevelMapper != nil {
 		return h.LevelMapper(level)
 	}
 	switch level {
-	case logrus.PanicLevel, logrus.FatalLevel, logrus.ErrorLevel:
-		return slog.LevelError
+	case logrus.PanicLevel:
+		return slogLevelPanic
+	case logrus.FatalLevel:
+		return slogLevelFatal
+	case logrus.ErrorLevel:
+		return slogLevelError
 	case logrus.WarnLevel:
-		return slog.LevelWarn
+		return slogLevelWarn
 	case logrus.InfoLevel:
-		return slog.LevelInfo
-	case logrus.DebugLevel, logrus.TraceLevel:
-		return slog.LevelDebug
+		return slogLevelInfo
+	case logrus.DebugLevel:
+		return slogLevelDebug
+	case logrus.TraceLevel:
+		return slogLevelTrace
 	default:
 		// Treat all unknown levels as errors
-		return slog.LevelError
+		return slogLevelError
 	}
 }
 
