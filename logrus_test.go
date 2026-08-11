@@ -80,6 +80,47 @@ func TestReportCallerWhenConfigured(t *testing.T) {
 	})
 }
 
+// TestReportCallerPreservesExistingCaller verifies that explicitly set caller
+// information is preserved regardless of whether automatic caller reporting is enabled.
+func TestReportCallerPreservesExistingCaller(t *testing.T) {
+	tests := []struct {
+		doc          string
+		reportCaller bool
+	}{
+		{doc: "disabled", reportCaller: false},
+		{doc: "enabled", reportCaller: true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.doc, func(t *testing.T) {
+			var buffer bytes.Buffer
+
+			logger := &Logger{
+				Out:          &buffer,
+				Level:        InfoLevel,
+				Formatter:    &JSONFormatter{},
+				ReportCaller: tc.reportCaller,
+			}
+
+			entry := logger.WithField("foo", "bar")
+			entry.Caller = &runtime.Frame{
+				Function: "custom.function",
+				File:     "custom.go",
+				Line:     42,
+			}
+
+			entry.Info("test")
+
+			var fields Fields
+			err := json.Unmarshal(buffer.Bytes(), &fields)
+			require.NoError(t, err)
+
+			assert.Equal(t, "custom.function", fields["func"])
+			assert.Equal(t, "custom.go:42", fields["file"])
+		})
+	}
+}
+
 func logSomething(t *testing.T, message string) Fields {
 	var buffer bytes.Buffer
 	var fields Fields

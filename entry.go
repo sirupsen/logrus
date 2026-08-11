@@ -67,8 +67,13 @@ type Entry struct {
 	// is fired and reflects the level used for that log call.
 	Level Level
 
-	// Caller contains the calling method information when caller
-	// reporting is enabled.
+	// Caller contains the calling method information.
+	//
+	// When [Logger.ReportCaller] is enabled, Caller is populated automatically at
+	// log time if it is nil. Hooks and formatters may inspect Caller.
+	//
+	// Applications generally should not modify Caller unless they intentionally
+	// want to provide custom caller information.
 	Caller *runtime.Frame
 
 	// Message is the log message supplied to one of the logging methods
@@ -116,6 +121,7 @@ func (entry *Entry) dup() *Entry {
 	return &Entry{
 		Logger:  entry.Logger,
 		Time:    entry.Time,
+		Caller:  entry.Caller,
 		Context: entry.Context,
 		err:     entry.err,
 	}
@@ -282,7 +288,8 @@ func getCaller() *runtime.Frame {
 
 // HasCaller reports whether this Entry contains caller information.
 //
-// Caller is attached at log time if [Logger.ReportCaller] was enabled.
+// Caller may be set explicitly, or populated at log time when
+// [Logger.ReportCaller] is enabled.
 //
 // Deprecated: use [Entry.Caller] != nil instead.
 //
@@ -308,7 +315,8 @@ func (entry *Entry) log(level Level, msg string) {
 	bufPool := newEntry.getBufferPool()
 	logger.mu.Unlock()
 
-	if reportCaller {
+	// Preserve explicitly set caller information.
+	if reportCaller && newEntry.Caller == nil {
 		newEntry.Caller = getCaller()
 	}
 
