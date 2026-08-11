@@ -1,6 +1,7 @@
 package logrus_test
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"maps"
@@ -258,4 +259,28 @@ func TestHookFireOrder(t *testing.T) {
 		t.Error("unexpected error:", err)
 	}
 	require.Equal(t, []string{"first hook", "second hook", "third hook"}, checkers)
+}
+
+type errorHook struct {
+	name  string
+	fired *[]string
+	err   error
+}
+
+func (h *errorHook) Levels() []Level { return AllLevels }
+func (h *errorHook) Fire(entry *Entry) error {
+	*h.fired = append(*h.fired, h.name)
+	return h.err
+}
+
+func TestHookFireContinuesAfterError(t *testing.T) {
+	// Regression for #408: an error from one hook must not prevent later hooks.
+	var fired []string
+	hooks := LevelHooks{}
+	hooks.Add(&errorHook{name: "first", fired: &fired, err: errors.New("boom")})
+	hooks.Add(&errorHook{name: "second", fired: &fired, err: nil})
+
+	err := hooks.Fire(InfoLevel, &Entry{})
+	assert.Error(t, err)
+	assert.Equal(t, []string{"first", "second"}, fired)
 }

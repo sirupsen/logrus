@@ -1,5 +1,7 @@
 package logrus
 
+import "errors"
+
 // Hook describes hooks to be fired when logging on the logging levels returned from
 // [Hook.Levels] on your implementation of the interface. Note that this is not
 // fired in a goroutine or a channel with workers, you should handle such
@@ -24,11 +26,14 @@ func (hooks LevelHooks) Add(hook Hook) {
 // Fire all the hooks for the passed level. Used by `entry.log` to fire
 // appropriate hooks for a log entry.
 func (hooks LevelHooks) Fire(level Level, entry *Entry) error {
+	// Fire every registered hook for the level. Collect errors instead of
+	// stopping at the first failure so a broken hook cannot silence the rest
+	// (#408). Doc comment: "Fire all the hooks for the passed level."
+	var errs []error
 	for _, hook := range hooks[level] {
 		if err := hook.Fire(entry); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
-
-	return nil
+	return errors.Join(errs...)
 }
