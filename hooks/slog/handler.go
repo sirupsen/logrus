@@ -33,12 +33,6 @@ import (
 //
 // Mapping to [logrus.FatalLevel] or [logrus.PanicLevel] preserves the level
 // only; handling a record does not exit or panic.
-//
-// Example usage:
-//
-//	logger := logrus.New()
-//	slog.SetDefault(slog.New(NewHandler(logger)))
-//	slog.Info("hello", "key", "value")
 type Handler struct {
 	logger *logrus.Logger
 

@@ -1,3 +1,8 @@
+// Package slog provides adapters between Logrus and log/slog.
+//
+// [Handler] forwards slog records to a Logrus logger, while [Hook] forwards
+// Logrus entries to a slog logger. They can be used independently to support
+// incremental migration between the two logging APIs.
 package slog
 
 import (
@@ -50,11 +55,6 @@ var _ logrus.Hook = (*Hook)(nil)
 // libraries that depend on different loggers.
 //
 // The provided logger must not be nil. NewHook panics if logger is nil.
-//
-// Example usage:
-//
-//	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
-//	hook := NewHook(logger)
 func NewHook(logger *slog.Logger) *Hook {
 	if logger == nil {
 		panic("cannot create hook from nil logger")
