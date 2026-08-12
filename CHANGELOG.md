@@ -28,6 +28,8 @@ Changed:
   * Improve TextFormatter performance and reduce allocations.
   * Optimize Entry hot paths (including WithError and caller reporting).
   * TextFormatter now renders `[]byte` values as raw/quoted strings instead of slice-of-ints.
+  * TextFormatter now automatically enables colors on Windows terminals with ANSI support,
+    matching the behavior on other platforms.
   * `Entry.HasCaller` is now deprecated in favor of checking `Entry.Caller` directly.
   * Deprecated `MutexWrap`, which was unintentionally exposed as public API.
     It remains available as an alias for compatibility but should not be used
