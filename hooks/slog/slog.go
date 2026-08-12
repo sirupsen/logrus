@@ -8,6 +8,7 @@ package slog
 import (
 	"context"
 	"log/slog"
+	"maps"
 
 	"github.com/sirupsen/logrus"
 )
@@ -22,6 +23,30 @@ const (
 	slogLevelFatal = slog.LevelError + 2
 	slogLevelPanic = slog.LevelError + 4
 )
+
+// logrusLoggerContextKey is the context key used to track Logrus loggers a
+// record has already traversed while being forwarded through slog adapters.
+type logrusLoggerContextKey struct{}
+
+// withLogrusLogger returns a context that records logger as having already
+// handled the current log record.
+func withLogrusLogger(ctx context.Context, logger *logrus.Logger) context.Context {
+	seen, _ := ctx.Value(logrusLoggerContextKey{}).(map[*logrus.Logger]struct{})
+	seen = maps.Clone(seen)
+	if seen == nil {
+		seen = make(map[*logrus.Logger]struct{}, 1)
+	}
+	seen[logger] = struct{}{}
+	return context.WithValue(ctx, logrusLoggerContextKey{}, seen)
+}
+
+// hasLogrusLogger reports whether logger has already handled the current log
+// record while it was forwarded through slog adapters.
+func hasLogrusLogger(ctx context.Context, logger *logrus.Logger) bool {
+	seen, _ := ctx.Value(logrusLoggerContextKey{}).(map[*logrus.Logger]struct{})
+	_, ok := seen[logger]
+	return ok
+}
 
 // Hook sends Logrus entries to slog.
 //
@@ -105,6 +130,9 @@ func (h *Hook) Fire(entry *logrus.Entry) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	// Track this logger to guard against recursive forwarding.
+	ctx = withLogrusLogger(ctx, entry.Logger)
+
 	lvl := h.toSlogLevel(entry.Level).Level()
 	handler := h.logger.Handler()
 	if !handler.Enabled(ctx, lvl) {

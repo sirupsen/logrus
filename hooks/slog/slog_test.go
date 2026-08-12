@@ -14,6 +14,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	lslog "github.com/sirupsen/logrus/hooks/slog"
+	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -206,4 +207,79 @@ func TestHookLevelMapping(t *testing.T) {
 			assert.Contains(t, buf.String(), "level="+tc.want+" ")
 		})
 	}
+}
+
+// TestHookHandler_RecursionGuard verifies that the slog Hook and Handler can be
+// composed without recursively forwarding a record back through Logrus
+// loggers it has already traversed.
+func TestHookHandler_RecursionGuard(t *testing.T) {
+	t.Run("same logger", func(t *testing.T) {
+		logger, hook := test.NewNullLogger()
+
+		slogger := slog.New(lslog.NewHandler(logger, nil))
+		logger.AddHook(lslog.NewHook(slogger))
+
+		logger.Info("hello")
+
+		entries := hook.AllEntries()
+		require.Len(t, entries, 1)
+		assert.Equal(t, "hello", entries[0].Message)
+	})
+
+	t.Run("different logger", func(t *testing.T) {
+		loggerA, hookA := test.NewNullLogger()
+		loggerB, hookB := test.NewNullLogger()
+
+		slogger := slog.New(lslog.NewHandler(loggerB, nil))
+		loggerA.AddHook(lslog.NewHook(slogger))
+
+		loggerA.Info("hello")
+
+		entriesA := hookA.AllEntries()
+		require.Len(t, entriesA, 1)
+		assert.Equal(t, "hello", entriesA[0].Message)
+
+		entriesB := hookB.AllEntries()
+		require.Len(t, entriesB, 1)
+		assert.Equal(t, "hello", entriesB[0].Message)
+	})
+
+	t.Run("multiple loggers", func(t *testing.T) {
+		loggerA, hookA := test.NewNullLogger()
+		loggerB, hookB := test.NewNullLogger()
+
+		sloggerA := slog.New(lslog.NewHandler(loggerA, nil))
+		sloggerB := slog.New(lslog.NewHandler(loggerB, nil))
+
+		loggerA.AddHook(lslog.NewHook(sloggerB))
+		loggerB.AddHook(lslog.NewHook(sloggerA))
+
+		loggerA.Info("hello")
+
+		entriesA := hookA.AllEntries()
+		require.Len(t, entriesA, 1)
+		assert.Equal(t, "hello", entriesA[0].Message)
+
+		entriesB := hookB.AllEntries()
+		require.Len(t, entriesB, 1)
+		assert.Equal(t, "hello", entriesB[0].Message)
+	})
+}
+
+// TestHookHandler_RecursionGuardPreservesContext verifies that adding recursion
+// tracking does not discard context values carried by a Logrus entry.
+func TestHookHandler_RecursionGuardPreservesContext(t *testing.T) {
+	type ctxKey struct{}
+
+	logger, hook := test.NewNullLogger()
+	slogger := slog.New(lslog.NewHandler(logger, nil))
+	logger.AddHook(lslog.NewHook(slogger))
+
+	ctx := context.WithValue(context.Background(), ctxKey{}, "value")
+	logger.WithContext(ctx).Info("hello")
+
+	entries := hook.AllEntries()
+	require.Len(t, entries, 1)
+	require.NotNil(t, entries[0].Context)
+	assert.Equal(t, "value", entries[0].Context.Value(ctxKey{}))
 }

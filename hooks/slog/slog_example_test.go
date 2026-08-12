@@ -93,3 +93,50 @@ func ExampleNewHook() {
 	// Output:
 	// level=INFO msg="hello from logrus" animal=walrus
 }
+
+// ExampleNewHook_migration demonstrates using both adapters while migrating
+// from Logrus to slog. Records can cross the bridge without being forwarded
+// back into a Logrus logger they have already passed through.
+func ExampleNewHook_migration() {
+	var logrusOutput bytes.Buffer
+	var slogOutput bytes.Buffer
+
+	legacy := logrus.New()
+	legacy.SetOutput(&logrusOutput)
+	legacy.SetFormatter(&logrus.TextFormatter{
+		DisableColors:    true,
+		DisableTimestamp: true,
+	})
+
+	slogger := slog.New(slog.NewTextHandler(&slogOutput, &slog.HandlerOptions{
+		ReplaceAttr: func(_ []string, attr slog.Attr) slog.Attr {
+			if attr.Key == slog.TimeKey {
+				return slog.Attr{} // Suppress timestamps for the example.
+			}
+			return attr
+		},
+	}))
+
+	// Existing Logrus code is forwarded to the slog backend.
+	legacy.AddHook(lslog.NewHook(slogger))
+
+	// New slog code can continue using the existing Logrus backend.
+	bridged := slog.New(lslog.NewHandler(legacy, nil))
+
+	legacy.Info("hello from logrus")
+	bridged.Info("hello from slog")
+
+	fmt.Println("Logrus output:")
+	fmt.Print(logrusOutput.String())
+
+	fmt.Println("slog output:")
+	fmt.Print(slogOutput.String())
+
+	// Output:
+	// Logrus output:
+	// level=info msg="hello from logrus"
+	// level=info msg="hello from slog"
+	// slog output:
+	// level=INFO msg="hello from logrus"
+	// level=INFO msg="hello from slog"
+}
