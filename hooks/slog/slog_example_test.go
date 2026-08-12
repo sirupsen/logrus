@@ -2,6 +2,7 @@ package slog_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -20,7 +21,7 @@ func ExampleNewHandler() {
 		DisableTimestamp: true,
 	})
 
-	slog.SetDefault(slog.New(lslog.NewHandler(logger)))
+	slog.SetDefault(slog.New(lslog.NewHandler(logger, nil)))
 
 	// Both slog and Logrus write through the same Logrus backend.
 	slog.Info("hello from slog", "source", "slog")
@@ -29,6 +30,39 @@ func ExampleNewHandler() {
 	// Output:
 	// level=info msg="hello from slog" source=slog
 	// level=info msg="hello from logrus" source=logrus
+}
+
+// ExampleNewHandler_options demonstrates configuring source reporting and
+// custom slog-to-Logrus level mapping.
+//
+// Logrus writes to stderr by default, so the example has no stdout output.
+// The log output will look similar to:
+//
+//	time="2026-01-02T03:04:05Z" level=info msg="regular info" func=github.com/sirupsen/logrus/hooks/slog_test.ExampleNewHandler_options file="/src/hooks/slog/slog_example_test.go:62" animal=walrus
+//	time="2026-01-02T03:04:06Z" level=warning msg="custom level" func=github.com/sirupsen/logrus/hooks/slog_test.ExampleNewHandler_options file="/src/hooks/slog/slog_example_test.go:63" animal=walrus
+func ExampleNewHandler_options() {
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.TextFormatter{
+		DisableColors: true,
+	})
+
+	slogger := slog.New(lslog.NewHandler(logger, &lslog.HandlerOptions{
+		// Preserve slog's source location as Logrus caller information.
+		AddSource: true,
+
+		// Map this custom slog level to Logrus WarnLevel.
+		LevelMapper: func(level slog.Level) logrus.Level {
+			if level == slog.LevelInfo+1 {
+				return logrus.WarnLevel
+			}
+			return logrus.InfoLevel
+		},
+	}))
+
+	slogger.Info("regular info", "animal", "walrus")
+	slogger.Log(context.Background(), slog.LevelInfo+1, "custom level", "animal", "walrus")
+
+	// Output:
 }
 
 // ExampleNewHook demonstrates forwarding existing Logrus logging to an slog

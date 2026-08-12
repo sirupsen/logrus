@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"log/slog"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -20,7 +21,7 @@ func TestHandler_basic(t *testing.T) {
 	logger, hook := test.NewNullLogger()
 	logger.SetLevel(logrus.TraceLevel)
 
-	s := slog.New(lslog.NewHandler(logger))
+	s := slog.New(lslog.NewHandler(logger, nil))
 	s.Info("hello", "animal", "walrus")
 
 	entry := hook.LastEntry()
@@ -119,7 +120,7 @@ func TestHandler_levelMapping(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			logger, hook := test.NewNullLogger()
 			logger.SetLevel(logrus.TraceLevel)
-			s := slog.New(lslog.NewHandler(logger))
+			s := slog.New(lslog.NewHandler(logger, nil))
 			tt.log(s)
 			entry := hook.LastEntry()
 			if entry == nil {
@@ -136,11 +137,9 @@ func TestHandler_customLevelMapper(t *testing.T) {
 	logger, hook := test.NewNullLogger()
 	logger.SetLevel(logrus.TraceLevel)
 
-	h := lslog.NewHandler(logger)
-	h.LevelMapper = func(slog.Level) logrus.Level {
-		return logrus.WarnLevel
-	}
-	s := slog.New(h)
+	s := slog.New(lslog.NewHandler(logger, &lslog.HandlerOptions{
+		LevelMapper: func(slog.Level) logrus.Level { return logrus.WarnLevel },
+	}))
 	s.Info("mapped")
 
 	entry := hook.LastEntry()
@@ -156,7 +155,7 @@ func TestHandler_enabledRespectsLogrusLevel(t *testing.T) {
 	logger, hook := test.NewNullLogger()
 	logger.SetLevel(logrus.WarnLevel)
 
-	s := slog.New(lslog.NewHandler(logger))
+	s := slog.New(lslog.NewHandler(logger, nil))
 	s.Info("suppressed")
 	s.Warn("shown")
 
@@ -173,7 +172,7 @@ func TestHandler_withAttrsAndGroups(t *testing.T) {
 	logger, hook := test.NewNullLogger()
 	logger.SetLevel(logrus.DebugLevel)
 
-	s := slog.New(lslog.NewHandler(logger))
+	s := slog.New(lslog.NewHandler(logger, nil))
 	s = s.With("root", 1)
 	s = s.WithGroup("req")
 	s = s.With("id", "abc")
@@ -257,7 +256,7 @@ func TestHandler_groupAttrs(t *testing.T) {
 			logger, hook := test.NewNullLogger()
 			logger.SetLevel(logrus.DebugLevel)
 
-			s := slog.New(lslog.NewHandler(logger))
+			s := slog.New(lslog.NewHandler(logger, nil))
 			s.Info("msg", tc.attrs...)
 
 			entry := hook.LastEntry()
@@ -271,7 +270,7 @@ func TestHandler_withEmptyGroupName(t *testing.T) {
 	logger, hook := test.NewNullLogger()
 	logger.SetLevel(logrus.DebugLevel)
 
-	h := lslog.NewHandler(logger)
+	h := lslog.NewHandler(logger, nil)
 	h2 := h.WithGroup("")
 	if h2 != h {
 		t.Error(`WithGroup("") should return the same handler`)
@@ -298,7 +297,7 @@ func TestHandler_contextAndTime(t *testing.T) {
 	ctx := context.WithValue(context.Background(), ctxKey{}, "val")
 	ts := time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)
 
-	h := lslog.NewHandler(logger)
+	h := lslog.NewHandler(logger, nil)
 	s := slog.New(h)
 	s.LogAttrs(ctx, slog.LevelInfo, "timed", slog.Time("when", ts))
 
@@ -333,7 +332,7 @@ func TestHandler_outputIntegration(t *testing.T) {
 	})
 	logger.SetLevel(logrus.DebugLevel)
 
-	s := slog.New(lslog.NewHandler(logger))
+	s := slog.New(lslog.NewHandler(logger, nil))
 	s.With("chicken", "cluck").Error("error")
 
 	got := strings.TrimSpace(buf.String())
@@ -351,13 +350,13 @@ func TestHandler_nilLoggerPanics(t *testing.T) {
 			t.Error("expected panic for nil logger")
 		}
 	}()
-	_ = lslog.NewHandler(nil)
+	_ = lslog.NewHandler(nil, nil)
 }
 
 func TestHandler_withAttrsEmpty(t *testing.T) {
 	logger := logrus.New()
 	logger.Out = io.Discard
-	h := lslog.NewHandler(logger)
+	h := lslog.NewHandler(logger, nil)
 	if h.WithAttrs(nil) != h {
 		t.Error("WithAttrs(nil) should return same handler")
 	}
@@ -370,7 +369,7 @@ func TestHandler_withAttrsEmpty(t *testing.T) {
 // carried by the slog record.
 func TestHandler_PreservesRecordTime(t *testing.T) {
 	logger, hook := test.NewNullLogger()
-	h := lslog.NewHandler(logger)
+	h := lslog.NewHandler(logger, nil)
 
 	ts := time.Date(2026, 8, 12, 12, 34, 56, 789, time.UTC)
 	record := slog.NewRecord(ts, slog.LevelInfo, "hello", 0)
@@ -380,4 +379,37 @@ func TestHandler_PreservesRecordTime(t *testing.T) {
 	entry := hook.LastEntry()
 	require.NotNil(t, entry)
 	assert.Equal(t, ts, entry.Time)
+}
+
+// TestHandler_PreservesRecordCaller verifies that Handle preserves caller
+// information carried by the slog record.
+func TestHandler_PreservesRecordCaller(t *testing.T) {
+	if runtime.Compiler == "tinygo" {
+		// TinyGo currently (v0.41.1) doesn't support `runtime.Caller`;
+		// https://tinygo.org/docs/reference/lang-support/stdlib/#logslog
+		t.Log("SKIP: TinyGo does not support runtime.Caller") // no t.Skip on tinygo
+		return
+	}
+
+	logger, hook := test.NewNullLogger()
+	logger.SetReportCaller(true)
+
+	h := lslog.NewHandler(logger, &lslog.HandlerOptions{
+		AddSource: true,
+	})
+
+	var pcs [1]uintptr
+	runtime.Callers(1, pcs[:])
+
+	record := slog.NewRecord(time.Now(), slog.LevelInfo, "hello", pcs[0])
+	require.NoError(t, h.Handle(context.Background(), record))
+
+	entry := hook.LastEntry()
+	require.NotNil(t, entry)
+	require.NotNil(t, entry.Caller)
+
+	want, _ := runtime.CallersFrames(pcs[:]).Next()
+	assert.Equal(t, want.Function, entry.Caller.Function)
+	assert.Equal(t, want.File, entry.Caller.File)
+	assert.Equal(t, want.Line, entry.Caller.Line)
 }
