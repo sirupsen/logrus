@@ -157,6 +157,11 @@ func (logger *Logger) WithTime(t time.Time) *Entry {
 	return entry.WithTime(t)
 }
 
+// Logf logs a formatted message at the specified level.
+//
+// Using Logf with [PanicLevel] or [FatalLevel] intentionally does not
+// trigger a panic or exit. Logf treats the level as logging severity only;
+// use [Logger.Panicf] or [Logger.Fatalf] when those side effects are desired.
 func (logger *Logger) Logf(level Level, format string, args ...any) {
 	if logger.IsLevelEnabled(level) {
 		entry := logger.newEntry()
@@ -201,13 +206,18 @@ func (logger *Logger) Fatalf(format string, args ...any) {
 }
 
 func (logger *Logger) Panicf(format string, args ...any) {
-	logger.Logf(PanicLevel, format, args...)
+	if logger.IsLevelEnabled(PanicLevel) {
+		entry := logger.newEntry()
+		defer logger.releaseEntry(entry)
+		entry.Panicf(format, args...)
+	}
 }
 
 // Log logs a message at the specified level.
 //
-// Note: using Log with [PanicLevel] or [FatalLevel] does not trigger a panic
-// or exit. For that behavior, use [Logger.Panic] or [Logger.Fatal].
+// Using Log with [PanicLevel] or [FatalLevel] intentionally does not
+// trigger a panic or exit. Log treats the level as logging severity only;
+// use [Logger.Panic] or [Logger.Fatal] when those side effects are desired.
 func (logger *Logger) Log(level Level, args ...any) {
 	if logger.IsLevelEnabled(level) {
 		entry := logger.newEntry()
@@ -216,6 +226,11 @@ func (logger *Logger) Log(level Level, args ...any) {
 	}
 }
 
+// LogFn logs a message returned by fn at the specified level.
+//
+// Using LogFn with [PanicLevel] or [FatalLevel] intentionally does not
+// trigger a panic or exit. LogFn treats the level as logging severity only;
+// use [Logger.PanicFn] or [Logger.FatalFn] when those side effects are desired.
 func (logger *Logger) LogFn(level Level, fn LogFunction) {
 	if logger.IsLevelEnabled(level) {
 		entry := logger.newEntry()
@@ -260,7 +275,11 @@ func (logger *Logger) Fatal(args ...any) {
 }
 
 func (logger *Logger) Panic(args ...any) {
-	logger.Log(PanicLevel, args...)
+	if logger.IsLevelEnabled(PanicLevel) {
+		entry := logger.newEntry()
+		defer logger.releaseEntry(entry)
+		entry.Panic(args...)
+	}
 }
 
 func (logger *Logger) TraceFn(fn LogFunction) {
@@ -299,9 +318,18 @@ func (logger *Logger) FatalFn(fn LogFunction) {
 }
 
 func (logger *Logger) PanicFn(fn LogFunction) {
-	logger.LogFn(PanicLevel, fn)
+	if logger.IsLevelEnabled(PanicLevel) {
+		entry := logger.newEntry()
+		defer logger.releaseEntry(entry)
+		entry.Panic(fn()...)
+	}
 }
 
+// Logln logs a message at the specified level with Println-style spacing.
+//
+// Using Logln with [PanicLevel] or [FatalLevel] intentionally does not
+// trigger a panic or exit. Logln treats the level as logging severity only;
+// use [Logger.Panicln] or [Logger.Fatalln] when those side effects are desired.
 func (logger *Logger) Logln(level Level, args ...any) {
 	if logger.IsLevelEnabled(level) {
 		entry := logger.newEntry()
@@ -346,7 +374,11 @@ func (logger *Logger) Fatalln(args ...any) {
 }
 
 func (logger *Logger) Panicln(args ...any) {
-	logger.Logln(PanicLevel, args...)
+	if logger.IsLevelEnabled(PanicLevel) {
+		entry := logger.newEntry()
+		defer logger.releaseEntry(entry)
+		entry.Panicln(args...)
+	}
 }
 
 func (logger *Logger) Exit(code int) {
