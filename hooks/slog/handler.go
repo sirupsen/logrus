@@ -116,6 +116,10 @@ func (h *Handler) Enabled(_ context.Context, level slog.Level) bool {
 // attached as logrus fields; group names are joined with "." as a key prefix
 // (similar to [slog.TextHandler]).
 func (h *Handler) Handle(ctx context.Context, record slog.Record) error {
+	// Stop recursive forwarding before it can cycle back through this logger.
+	if hasLogrusLogger(ctx, h.logger) {
+		return nil
+	}
 	level := h.toLogrusLevel(record.Level)
 	if !h.logger.IsLevelEnabled(level) {
 		return nil
