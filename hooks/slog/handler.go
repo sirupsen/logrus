@@ -4,11 +4,25 @@ import (
 	"context"
 	"log/slog"
 	"maps"
+	"runtime"
 	"slices"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 )
+
+// HandlerOptions are options for a [Handler].
+// A zero HandlerOptions consists entirely of default values.
+type HandlerOptions struct {
+	// AddSource causes the handler to include the source code position
+	// of the log statement in the Logrus entry.
+	AddSource bool
+
+	// LevelMapper maps slog levels to Logrus levels. If nil, the default
+	// mapping is used. Set it to customize level mapping, for example to map
+	// custom slog levels to specific Logrus levels.
+	LevelMapper func(slog.Level) logrus.Level
+}
 
 // Handler is a [slog.Handler] that writes records to a [logrus.Logger].
 //
@@ -35,11 +49,7 @@ import (
 // only; handling a record does not exit or panic.
 type Handler struct {
 	logger *logrus.Logger
-
-	// LevelMapper maps slog levels to Logrus levels. If nil, the default
-	// mapping is used. Set it to customize level mapping, for example to map
-	// custom slog levels to specific Logrus levels.
-	LevelMapper func(slog.Level) logrus.Level
+	opts   HandlerOptions
 
 	// fields holds attributes from prior WithAttrs calls, already resolved
 	// under the group prefix that applied when they were added.
@@ -55,19 +65,24 @@ var _ slog.Handler = (*Handler)(nil)
 // [logrus.Logger].
 //
 // The provided logger must not be nil. NewHandler panics if logger is nil.
-func NewHandler(logger *logrus.Logger) *Handler {
+// If opts is nil, the default options are used.
+func NewHandler(logger *logrus.Logger, opts *HandlerOptions) *Handler {
 	if logger == nil {
 		panic("cannot create handler from nil logger")
 	}
+	if opts == nil {
+		opts = &HandlerOptions{}
+	}
 	return &Handler{
 		logger: logger,
+		opts:   *opts,
 	}
 }
 
 // toLogrusLevel maps a slog level using LevelMapper or the default mapping.
 func (h *Handler) toLogrusLevel(level slog.Level) logrus.Level {
-	if h.LevelMapper != nil {
-		return h.LevelMapper(level)
+	if h.opts.LevelMapper != nil {
+		return h.opts.LevelMapper(level)
 	}
 	switch {
 	case level >= slogLevelPanic:
@@ -111,6 +126,15 @@ func (h *Handler) Handle(ctx context.Context, record slog.Record) error {
 		Data:    h.fields,
 		Time:    record.Time,
 		Context: ctx,
+	}
+
+	if h.opts.AddSource && record.PC != 0 {
+		// Preserve the caller selected by slog instead of rediscovering it
+		// through Logrus's caller stack filtering.
+		//
+		// Record.PC is a return PC; resolve it with CallersFrames.
+		frame, _ := runtime.CallersFrames([]uintptr{record.PC}).Next()
+		entry.Caller = &frame
 	}
 
 	if n := record.NumAttrs(); n > 0 {
@@ -163,10 +187,10 @@ func (h *Handler) WithGroup(name string) slog.Handler {
 // before modifying them.
 func (h *Handler) clone() *Handler {
 	return &Handler{
-		logger:      h.logger,
-		LevelMapper: h.LevelMapper,
-		fields:      h.fields,
-		groups:      h.groups,
+		logger: h.logger,
+		opts:   h.opts,
+		fields: h.fields,
+		groups: h.groups,
 	}
 }
 
