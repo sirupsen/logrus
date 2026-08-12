@@ -8,6 +8,9 @@ Fixes:
 
   * Fix reentrant logging deadlocks in formatter paths.
   * Fix race conditions in formatter and entry handling.
+  * Fix generic `Log`, `Logf`, `Logln`, and `LogFn` methods unexpectedly
+    panicking when called with `PanicLevel`. Use the corresponding `Panic`
+    methods when panic behavior is desired.
   * Improve concurrency safety around formatter and hook access.
 
 Features:

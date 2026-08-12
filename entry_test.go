@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -128,6 +129,51 @@ func TestEntryWithTimeCopiesData(t *testing.T) {
 	val, exists = parentEntry.Data["childKey"]
 	assert.False(exists)
 	assert.Empty(val)
+}
+
+// TestEntryLogPanicLevelDoesNotPanic verifies that generic Log methods treat
+// PanicLevel as severity only and do not trigger panic behavior.
+//
+// Regression and related history:
+//   - https://github.com/sirupsen/logrus/pull/65
+//   - https://github.com/sirupsen/logrus/pull/1283
+func TestEntryLogPanicLevelDoesNotPanic(t *testing.T) {
+	tests := []struct {
+		doc  string
+		log  func(*logrus.Entry)
+		want string
+	}{
+		{
+			doc:  "Log",
+			log:  func(e *logrus.Entry) { e.Log(logrus.PanicLevel, "kaboom") },
+			want: "kaboom",
+		},
+		{
+			doc:  "Logf",
+			log:  func(e *logrus.Entry) { e.Logf(logrus.PanicLevel, "kaboom %d", 42) },
+			want: "kaboom 42",
+		},
+		{
+			doc:  "Logln",
+			log:  func(e *logrus.Entry) { e.Logln(logrus.PanicLevel, "kaboom", 42) },
+			want: "kaboom 42",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.doc, func(t *testing.T) {
+			logger, hook := test.NewNullLogger()
+
+			require.NotPanics(t, func() {
+				tc.log(logrus.NewEntry(logger))
+			})
+
+			got := hook.LastEntry()
+			require.NotNil(t, got)
+			assert.Equal(t, logrus.PanicLevel, got.Level)
+			assert.Equal(t, tc.want, got.Message)
+		})
+	}
 }
 
 func TestEntryPanicln(t *testing.T) {

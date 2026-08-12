@@ -298,7 +298,33 @@ func (entry Entry) HasCaller() bool {
 	return entry.Caller != nil
 }
 
-func (entry *Entry) log(level Level, msg string) {
+func (entry *Entry) logArgs(level Level, panicAfter bool, args ...any) {
+	entry.log(level, panicAfter, sprint(args...))
+}
+
+func (entry *Entry) logf(level Level, panicAfter bool, format string, args ...any) {
+	entry.log(level, panicAfter, fmt.Sprintf(format, args...))
+}
+
+// logln uses Sprintln for multiple arguments to preserve Println-style
+// spacing between args, then trims the trailing newline.
+func (entry *Entry) logln(level Level, panicAfter bool, args ...any) {
+	if len(args) <= 1 {
+		entry.log(level, panicAfter, sprint(args...))
+		return
+	}
+	msg := fmt.Sprintln(args...)
+	msg = msg[:len(msg)-1] // Trim the newline added by Sprintln; logging adds its own.
+	entry.log(level, panicAfter, msg)
+}
+
+// log writes msg at level. If panicAfter is true, it panics with the fully
+// populated entry after hooks and output have completed.
+//
+// The explicit flag keeps panic behavior limited to Panic, Panicf, and
+// Panicln while avoiding a return value used only as the panic value.
+// See #1283 and commits f96066e and 5f8c666.
+func (entry *Entry) log(level Level, panicAfter bool, msg string) {
 	newEntry := entry.dup()
 	newEntry.Data = maps.Clone(entry.Data)
 
@@ -337,10 +363,9 @@ func (entry *Entry) log(level Level, msg string) {
 	newEntry.write()
 	newEntry.Buffer = nil
 
-	// To avoid Entry#log() returning a value that only would make sense for
-	// panic() to use in Entry#Panic(), we avoid the allocation by checking
-	// directly here.
-	if level <= PanicLevel {
+	// Panic here so the panic value contains the fully populated entry without
+	// requiring log to return it to the caller.
+	if panicAfter {
 		panic(newEntry)
 	}
 }
@@ -386,17 +411,13 @@ func (entry *Entry) write() {
 
 // Log logs a message at the specified level.
 //
-// Note: using Log with [PanicLevel] or [FatalLevel] does not trigger a panic
-// or exit. For that behavior, use [Entry.Panic] or [Entry.Fatal].
+// Using Log with [PanicLevel] or [FatalLevel] intentionally does not
+// trigger a panic or exit. Log treats the level as logging severity only;
+// use [Entry.Panic] or [Entry.Fatal] when those side effects are desired.
 func (entry *Entry) Log(level Level, args ...any) {
+	const panicAfter = false
 	if entry.Logger.IsLevelEnabled(level) {
-		if len(args) == 1 {
-			if v, ok := args[0].(string); ok {
-				entry.log(level, v)
-				return
-			}
-		}
-		entry.log(level, fmt.Sprint(args...))
+		entry.logArgs(level, panicAfter, args...)
 	}
 }
 
@@ -434,14 +455,23 @@ func (entry *Entry) Fatal(args ...any) {
 }
 
 func (entry *Entry) Panic(args ...any) {
-	entry.Log(PanicLevel, args...)
+	const panicAfter = true
+	if entry.Logger.IsLevelEnabled(PanicLevel) {
+		entry.logArgs(PanicLevel, panicAfter, args...)
+	}
 }
 
 // Entry Printf family functions
 
+// Logf logs a formatted message at the specified level.
+//
+// Using Logf with [PanicLevel] or [FatalLevel] intentionally does not
+// trigger a panic or exit. Logf treats the level as logging severity only;
+// use [Entry.Panicf] or [Entry.Fatalf] when those side effects are desired.
 func (entry *Entry) Logf(level Level, format string, args ...any) {
+	const panicAfter = false
 	if entry.Logger.IsLevelEnabled(level) {
-		entry.Log(level, fmt.Sprintf(format, args...))
+		entry.logf(level, panicAfter, format, args...)
 	}
 }
 
@@ -479,14 +509,23 @@ func (entry *Entry) Fatalf(format string, args ...any) {
 }
 
 func (entry *Entry) Panicf(format string, args ...any) {
-	entry.Logf(PanicLevel, format, args...)
+	const panicAfter = true
+	if entry.Logger.IsLevelEnabled(PanicLevel) {
+		entry.logf(PanicLevel, panicAfter, format, args...)
+	}
 }
 
 // Entry Println family functions
 
+// Logln logs a message at the specified level with Println-style spacing.
+//
+// Using Logln with [PanicLevel] or [FatalLevel] intentionally does not
+// trigger a panic or exit. Logln treats the level as logging severity only;
+// use [Entry.Panicln] or [Entry.Fatalln] when those side effects are desired.
 func (entry *Entry) Logln(level Level, args ...any) {
+	const panicAfter = false
 	if entry.Logger.IsLevelEnabled(level) {
-		entry.log(level, entry.sprintlnn(args...))
+		entry.logln(level, panicAfter, args...)
 	}
 }
 
@@ -524,19 +563,21 @@ func (entry *Entry) Fatalln(args ...any) {
 }
 
 func (entry *Entry) Panicln(args ...any) {
-	entry.Logln(PanicLevel, args...)
+	const panicAfter = true
+	if entry.Logger.IsLevelEnabled(PanicLevel) {
+		entry.logln(PanicLevel, panicAfter, args...)
+	}
 }
 
-// sprintlnn => Sprint no newline. This is to get the behavior of
-// fmt.Sprintln where spaces are always added between operands, regardless of
-// their type. Instead of vendoring the Sprintln implementation to spare a
-// string allocation, we do the simplest thing.
-func (entry *Entry) sprintlnn(args ...any) string {
-	if len(args) == 1 {
-		if v, ok := args[0].(string); ok {
-			return v
+// sprint is fmt.Sprint with fast paths for zero or one string argument.
+func sprint(args ...any) string {
+	switch len(args) {
+	case 0:
+		return ""
+	case 1:
+		if msg, ok := args[0].(string); ok {
+			return msg
 		}
 	}
-	msg := fmt.Sprintln(args...)
-	return msg[:len(msg)-1]
+	return fmt.Sprint(args...)
 }
