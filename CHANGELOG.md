@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## 1.10.0 (unreleased)
+## 1.10.0
 
 Fixes:
 
@@ -15,18 +15,21 @@ Fixes:
 
 Features:
 
-  * Basic `slog` hook for bridging Logrus entries to `log/slog`.
-  * Add `slog.Handler` (`hooks/slog.NewHandler`) for bridging `log/slog` records
-    into a Logrus logger (levels, fields, groups, context, and time).
+  * Add `slog` hook for forwarding Logrus entries to `log/slog`.
+  * Add `slog.Handler` for forwarding `log/slog` records to a Logrus logger,
+    including levels, fields, groups, context, time, and optional caller
+    reporting. The hook and handler can also be combined to help migrate
+    between Logrus and `log/slog`.
   * Add minimal, composable logging interfaces for each log level. This enables
     consumers to depend on narrower interfaces, making it easier to substitute
     or adapt logging implementations.
+  * Allow `Entry.Caller` to be set explicitly and preserve it across derived
+    entries, enabling custom caller detection without Logrus overwriting
+    caller information when `ReportCaller` is enabled.
 
 Changed:
 
   * Raise minimum supported Go version to 1.23.
-  * Improve TextFormatter performance and reduce allocations.
-  * Optimize Entry hot paths (including WithError and caller reporting).
   * TextFormatter now renders `[]byte` values as raw/quoted strings instead of slice-of-ints.
   * TextFormatter now automatically enables colors on Windows terminals with ANSI support,
     matching the behavior on other platforms.
@@ -37,8 +40,13 @@ Changed:
 
 Performance:
 
-  * ~17% geomean runtime improvement and ~26% throughput increase overall.
-  * Significant allocation reductions across TextFormatter and Entry paths (large reductions in colored/text formatter cases).
+  * Significantly improve TextFormatter performance and reduce allocations.
+  * Optimize common Entry and Logger hot paths.
+  * Reduce allocations in caller reporting.
+  * ~17% lower geomean runtime and ~27% higher formatter throughput overall.
+  * Common enabled logging paths are ~30–44% faster.
+  * TextFormatter paths are up to ~40% faster, with allocation counts reduced
+    by 25–74% across the measured formatter cases.
 
 
 ## 1.9.4
