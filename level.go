@@ -6,11 +6,12 @@ import (
 )
 
 const (
-	ansiReset  = "\x1b[0m"  // reset attributes
-	ansiRed    = "\x1b[31m" // red
-	ansiYellow = "\x1b[33m" // yellow
-	ansiCyan   = "\x1b[36m" // cyan
-	ansiWhite  = "\x1b[37m" // white (light gray)
+	ansiReset    = "\x1b[0m"    // reset attributes
+	ansiRed      = "\x1b[31m"   // red
+	ansiYellow   = "\x1b[33m"   // yellow
+	ansiCyan     = "\x1b[36m"   // cyan
+	ansiDimCyan  = "\x1b[2;36m" // dim cyan
+	ansiDimWhite = "\x1b[2;37m" // dim white (light gray)
 )
 
 type lvlPrefix struct {
@@ -22,8 +23,10 @@ type lvlPrefix struct {
 func colorize(level Level, s string) string {
 	color := ansiCyan
 	switch level {
-	case DebugLevel, TraceLevel:
-		color = ansiWhite
+	case TraceLevel:
+		color = ansiDimWhite
+	case DebugLevel:
+		color = ansiDimCyan
 	case WarnLevel:
 		color = ansiYellow
 	case ErrorLevel, FatalLevel, PanicLevel:

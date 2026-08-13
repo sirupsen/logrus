@@ -31,6 +31,7 @@ Changed:
 
   * Raise minimum supported Go version to 1.23.
   * TextFormatter now renders `[]byte` values as raw/quoted strings instead of slice-of-ints.
+  * TextFormatter now uses distinct dimmed colors for debug and trace output.
   * TextFormatter now automatically enables colors on Windows terminals with ANSI support,
     matching the behavior on other platforms.
   * `Entry.HasCaller` is now deprecated in favor of checking `Entry.Caller` directly.
