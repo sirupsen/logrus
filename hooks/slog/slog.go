@@ -37,40 +37,54 @@ func hasLogrusLogger(ctx context.Context, logger *logrus.Logger) bool {
 	return ok
 }
 
+// HookOptions are options for a [Hook].
+// A zero HookOptions consists entirely of default values.
+type HookOptions struct {
+	// LevelMapper maps Logrus levels to slog levels. If nil, the default
+	// mapping is used. Set it to customize level mapping, for example to map
+	// custom Logrus levels to specific slog levels.
+	LevelMapper func(logrus.Level) slog.Level
+}
+
 // Hook sends Logrus entries to slog.
 //
-// By default, Logrus levels are mapped using [Level].
-// Set [Hook.LevelMapper] to customize the mapping.
+// It is intended for bridging libraries or application code that log via
+// Logrus into an existing slog logger, for example during a gradual migration.
+//
+// By default, Logrus levels are mapped using [Level]. Set
+// [HookOptions.LevelMapper] to customize the mapping.
 type Hook struct {
 	logger *slog.Logger
-
-	// LevelMapper maps Logrus levels to slog levels. If nil, the default
-	// mapping is used. Set it to customize level mapping, for example to
-	// support custom or dynamic slog levels.
-	LevelMapper func(logrus.Level) slog.Level
+	opts   HookOptions
 }
 
 var _ logrus.Hook = (*Hook)(nil)
 
-// NewHook creates a hook that sends logs to an existing slog Logger.
+// NewHook creates a [logrus.Hook] that sends logs to the provided [slog.Logger].
+//
 // This hook is intended to be used during transition from Logrus to slog,
 // or as a shim between different parts of your application or different
 // libraries that depend on different loggers.
 //
 // The provided logger must not be nil. NewHook panics if logger is nil.
-func NewHook(logger *slog.Logger) *Hook {
+// If opts is nil, the default options are used.
+func NewHook(logger *slog.Logger, opts *HookOptions) *Hook {
 	if logger == nil {
 		panic("cannot create hook from nil logger")
 	}
+	if opts == nil {
+		opts = &HookOptions{}
+	}
 	return &Hook{
 		logger: logger,
+		opts:   *opts,
 	}
 }
 
 // toSlogLevel maps a Logrus level using LevelMapper or the default mapping.
 func (h *Hook) toSlogLevel(level logrus.Level) slog.Level {
-	if h.LevelMapper != nil {
-		return h.LevelMapper(level)
+	if h.opts.LevelMapper != nil {
+		return h.opts.LevelMapper(level)
 	}
 	return Level(level).Level()
 }
