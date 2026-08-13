@@ -17,10 +17,14 @@ var baseTimestamp = time.Now()
 
 // TextFormatter formats logs into text.
 //
-// Output is logfmt-like: key=value pairs separated by spaces. Field keys are
-// written as-is (unquoted and unescaped) in the plain (non-colored) format;
-// only field values may be quoted depending on DisableQuote, ForceQuote,
-// QuoteEmptyFields, and the value content.
+// Output is logfmt-like: key=value pairs separated by spaces. Fields from
+// [Entry.Data] are included together with the standard fields derived from the
+// entry. If a field conflicts with a standard field, it is prefixed with
+// "fields.". Standard field names can be customized through FieldMap.
+//
+// Field keys are written as-is (unquoted and unescaped) in the plain
+// (non-colored) format; only field values may be quoted depending on
+// DisableQuote, ForceQuote, QuoteEmptyFields, and the value content.
 //
 // When colors are enabled, ANSI escape sequences may be added for presentation.
 // For fully escaped structured output (including safe keys), use JSONFormatter.

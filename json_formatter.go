@@ -21,7 +21,13 @@ func (f FieldMap) resolve(key fieldKey) string {
 	return string(key)
 }
 
-// JSONFormatter formats logs into parsable json
+// JSONFormatter formats logs into parsable JSON.
+//
+// Fields from [Entry.Data] are included in the JSON object together with the
+// standard fields derived from the entry. If a field conflicts with a standard
+// field, it is prefixed with "fields.". Standard field names can be customized
+// through FieldMap. When DataKey is set, fields from [Entry.Data] are nested
+// under that key instead.
 type JSONFormatter struct {
 	// TimestampFormat sets the format used for marshaling timestamps.
 	// The format to use is the same than for time.Format or time.Parse from the standard
