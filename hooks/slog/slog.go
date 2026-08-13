@@ -69,7 +69,7 @@ type Hook struct {
 	// LevelMapper maps Logrus levels to slog levels. If nil, the default
 	// mapping is used. Set it to customize level mapping, for example to
 	// support custom or dynamic slog levels.
-	LevelMapper func(logrus.Level) slog.Leveler
+	LevelMapper func(logrus.Level) slog.Level
 }
 
 var _ logrus.Hook = (*Hook)(nil)
@@ -90,7 +90,7 @@ func NewHook(logger *slog.Logger) *Hook {
 }
 
 // toSlogLevel maps a Logrus level using LevelMapper or the default mapping.
-func (h *Hook) toSlogLevel(level logrus.Level) slog.Leveler {
+func (h *Hook) toSlogLevel(level logrus.Level) slog.Level {
 	if h.LevelMapper != nil {
 		return h.LevelMapper(level)
 	}

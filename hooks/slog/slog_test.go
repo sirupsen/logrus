@@ -22,7 +22,7 @@ import (
 func TestHook(t *testing.T) {
 	tests := []struct {
 		name   string
-		mapper func(logrus.Level) slog.Leveler
+		mapper func(logrus.Level) slog.Level
 		fn     func(*logrus.Logger)
 		want   []string
 	}{
@@ -48,7 +48,7 @@ func TestHook(t *testing.T) {
 		},
 		{
 			name: "level mapper",
-			mapper: func(logrus.Level) slog.Leveler {
+			mapper: func(logrus.Level) slog.Level {
 				return slog.LevelInfo
 			},
 			fn: func(log *logrus.Logger) {
