@@ -82,7 +82,7 @@ func ExampleNewHook() {
 	logger := logrus.New()
 	// Discard Logrus's own output; the hook forwards the entry to slog.
 	logger.SetOutput(io.Discard)
-	logger.AddHook(lslog.NewHook(slogger))
+	logger.AddHook(lslog.NewHook(slogger, nil))
 
 	// Log through Logrus; the hook forwards this to slog.
 	logger.WithField("animal", "walrus").Info("hello from logrus")
@@ -118,7 +118,7 @@ func ExampleNewHook_migration() {
 	}))
 
 	// Existing Logrus code is forwarded to the slog backend.
-	legacy.AddHook(lslog.NewHook(slogger))
+	legacy.AddHook(lslog.NewHook(slogger, nil))
 
 	// New slog code can continue using the existing Logrus backend.
 	bridged := slog.New(lslog.NewHandler(legacy, nil))

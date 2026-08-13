@@ -65,7 +65,7 @@ func TestHook(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			buf := &bytes.Buffer{}
-			slogLogger := slog.New(slog.NewTextHandler(buf, &slog.HandlerOptions{
+			slogger := slog.New(slog.NewTextHandler(buf, &slog.HandlerOptions{
 				// Remove timestamps from logs, for easier comparison
 				ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 					if a.Key == slog.TimeKey {
@@ -76,9 +76,9 @@ func TestHook(t *testing.T) {
 			}))
 			log := logrus.New()
 			log.Out = io.Discard
-			hook := lslog.NewHook(slogLogger)
-			hook.LevelMapper = tt.mapper
-			log.AddHook(hook)
+			log.AddHook(lslog.NewHook(slogger, &lslog.HookOptions{
+				LevelMapper: tt.mapper,
+			}))
 			tt.fn(log)
 			got := strings.Split(strings.TrimSpace(buf.String()), "\n")
 			if len(got) != len(tt.want) {
@@ -125,10 +125,10 @@ func TestHook_error_propagates(t *testing.T) {
 		_ = r.Close()
 	})
 
-	slogLogger := slog.New(&errorHandler{})
+	slogger := slog.New(&errorHandler{})
 	log := logrus.New()
 	log.SetOutput(io.Discard)
-	log.AddHook(lslog.NewHook(slogLogger))
+	log.AddHook(lslog.NewHook(slogger, nil))
 	log.WithField("key", "value").Error("test error")
 
 	// Restore stderr before closing the pipe writer to avoid leaving os.Stderr
@@ -149,7 +149,7 @@ func TestHook_source(t *testing.T) {
 		return
 	}
 	buf := &bytes.Buffer{}
-	slogLogger := slog.New(slog.NewTextHandler(buf, &slog.HandlerOptions{
+	slogger := slog.New(slog.NewTextHandler(buf, &slog.HandlerOptions{
 		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.TimeKey {
 				return slog.Attr{}
@@ -161,7 +161,7 @@ func TestHook_source(t *testing.T) {
 	log := logrus.New()
 	log.Out = io.Discard
 	log.ReportCaller = true
-	log.AddHook(lslog.NewHook(slogLogger))
+	log.AddHook(lslog.NewHook(slogger, nil))
 	log.Info("info with source")
 	got := strings.TrimSpace(buf.String())
 	wantRE := regexp.MustCompile(`source=.*hooks[\\/]+slog[\\/]+slog_test\.go:\d+`)
@@ -195,7 +195,7 @@ func TestHookLevelMapping(t *testing.T) {
 					}
 					return attr
 				},
-			})))
+			})), nil)
 
 			logger := logrus.New()
 			logger.SetOutput(io.Discard)
@@ -217,7 +217,7 @@ func TestHookHandler_RecursionGuard(t *testing.T) {
 		logger, hook := test.NewNullLogger()
 
 		slogger := slog.New(lslog.NewHandler(logger, nil))
-		logger.AddHook(lslog.NewHook(slogger))
+		logger.AddHook(lslog.NewHook(slogger, nil))
 
 		logger.Info("hello")
 
@@ -231,7 +231,7 @@ func TestHookHandler_RecursionGuard(t *testing.T) {
 		loggerB, hookB := test.NewNullLogger()
 
 		slogger := slog.New(lslog.NewHandler(loggerB, nil))
-		loggerA.AddHook(lslog.NewHook(slogger))
+		loggerA.AddHook(lslog.NewHook(slogger, nil))
 
 		loggerA.Info("hello")
 
@@ -251,8 +251,8 @@ func TestHookHandler_RecursionGuard(t *testing.T) {
 		sloggerA := slog.New(lslog.NewHandler(loggerA, nil))
 		sloggerB := slog.New(lslog.NewHandler(loggerB, nil))
 
-		loggerA.AddHook(lslog.NewHook(sloggerB))
-		loggerB.AddHook(lslog.NewHook(sloggerA))
+		loggerA.AddHook(lslog.NewHook(sloggerB, nil))
+		loggerB.AddHook(lslog.NewHook(sloggerA, nil))
 
 		loggerA.Info("hello")
 
@@ -273,7 +273,7 @@ func TestHookHandler_RecursionGuardPreservesContext(t *testing.T) {
 
 	logger, hook := test.NewNullLogger()
 	slogger := slog.New(lslog.NewHandler(logger, nil))
-	logger.AddHook(lslog.NewHook(slogger))
+	logger.AddHook(lslog.NewHook(slogger, nil))
 
 	ctx := context.WithValue(context.Background(), ctxKey{}, "value")
 	logger.WithContext(ctx).Info("hello")
