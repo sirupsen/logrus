@@ -29,21 +29,8 @@ type HandlerOptions struct {
 // It is intended for bridging libraries or application code that log via slog
 // into an existing Logrus logger, for example during a gradual migration.
 //
-// By default, slog levels map to their corresponding Logrus levels. Trace,
-// Fatal, and Panic use custom slog levels below Debug and above Error,
-// respectively, preserving their relative severity:
-//
-//   - [slog.LevelDebug] - 4 -> [logrus.TraceLevel]
-//   - [slog.LevelDebug] -> [logrus.DebugLevel]
-//   - [slog.LevelInfo] -> [logrus.InfoLevel]
-//   - [slog.LevelWarn] -> [logrus.WarnLevel]
-//   - [slog.LevelError] -> [logrus.ErrorLevel]
-//   - [slog.LevelError] + 2 -> [logrus.FatalLevel]
-//   - [slog.LevelError] + 4 -> [logrus.PanicLevel]
-//
-// Levels between these boundaries map to the next lower Logrus severity.
-// Levels below Debug map to [logrus.TraceLevel], and levels above Panic map
-// to [logrus.PanicLevel].
+// By default, slog levels are mapped using [SlogLevel].
+// Set [HandlerOptions.LevelMapper] to customize the mapping.
 //
 // Mapping to [logrus.FatalLevel] or [logrus.PanicLevel] preserves the level
 // only; handling a record does not exit or panic.
@@ -84,24 +71,7 @@ func (h *Handler) toLogrusLevel(level slog.Level) logrus.Level {
 	if h.opts.LevelMapper != nil {
 		return h.opts.LevelMapper(level)
 	}
-	switch {
-	case level >= slogLevelPanic:
-		return logrus.PanicLevel
-	case level >= slogLevelFatal:
-		return logrus.FatalLevel
-	case level >= slogLevelError:
-		return logrus.ErrorLevel
-	case level >= slogLevelWarn:
-		return logrus.WarnLevel
-	case level >= slogLevelInfo:
-		return logrus.InfoLevel
-	case level >= slogLevelDebug:
-		return logrus.DebugLevel
-	case level >= slogLevelTrace:
-		return logrus.TraceLevel
-	default:
-		return logrus.TraceLevel
-	}
+	return SlogLevel(level).Level()
 }
 
 // Enabled reports whether the handler handles records at the given level.

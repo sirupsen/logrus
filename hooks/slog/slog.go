@@ -13,17 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// slog levels corresponding to Logrus levels.
-const (
-	slogLevelTrace = slog.LevelDebug - 4
-	slogLevelDebug = slog.LevelDebug
-	slogLevelInfo  = slog.LevelInfo
-	slogLevelWarn  = slog.LevelWarn
-	slogLevelError = slog.LevelError
-	slogLevelFatal = slog.LevelError + 2
-	slogLevelPanic = slog.LevelError + 4
-)
-
 // logrusLoggerContextKey is the context key used to track Logrus loggers a
 // record has already traversed while being forwarded through slog adapters.
 type logrusLoggerContextKey struct{}
@@ -50,19 +39,8 @@ func hasLogrusLogger(ctx context.Context, logger *logrus.Logger) bool {
 
 // Hook sends Logrus entries to slog.
 //
-// By default, Logrus levels map to their corresponding slog levels. Trace,
-// Fatal, and Panic use custom slog levels below Debug and above Error,
-// respectively, preserving their relative severity:
-//
-//   - [logrus.TraceLevel] -> [slog.LevelDebug] - 4
-//   - [logrus.DebugLevel] -> [slog.LevelDebug]
-//   - [logrus.InfoLevel] -> [slog.LevelInfo]
-//   - [logrus.WarnLevel] -> [slog.LevelWarn]
-//   - [logrus.ErrorLevel] -> [slog.LevelError]
-//   - [logrus.FatalLevel] -> [slog.LevelError] + 2
-//   - [logrus.PanicLevel] -> [slog.LevelError] + 4
-//
-// Set [Hook.LevelMapper] to customize this mapping.
+// By default, Logrus levels are mapped using [Level].
+// Set [Hook.LevelMapper] to customize the mapping.
 type Hook struct {
 	logger *slog.Logger
 
@@ -94,25 +72,7 @@ func (h *Hook) toSlogLevel(level logrus.Level) slog.Level {
 	if h.LevelMapper != nil {
 		return h.LevelMapper(level)
 	}
-	switch level {
-	case logrus.PanicLevel:
-		return slogLevelPanic
-	case logrus.FatalLevel:
-		return slogLevelFatal
-	case logrus.ErrorLevel:
-		return slogLevelError
-	case logrus.WarnLevel:
-		return slogLevelWarn
-	case logrus.InfoLevel:
-		return slogLevelInfo
-	case logrus.DebugLevel:
-		return slogLevelDebug
-	case logrus.TraceLevel:
-		return slogLevelTrace
-	default:
-		// Treat all unknown levels as errors
-		return slogLevelError
-	}
+	return Level(level).Level()
 }
 
 // Levels always returns all levels, since slog allows controlling level
@@ -133,9 +93,9 @@ func (h *Hook) Fire(entry *logrus.Entry) error {
 	// Track this logger to guard against recursive forwarding.
 	ctx = withLogrusLogger(ctx, entry.Logger)
 
-	lvl := h.toSlogLevel(entry.Level).Level()
+	level := h.toSlogLevel(entry.Level)
 	handler := h.logger.Handler()
-	if !handler.Enabled(ctx, lvl) {
+	if !handler.Enabled(ctx, level) {
 		return nil
 	}
 	attrs := make([]slog.Attr, 0, len(entry.Data))
@@ -146,7 +106,7 @@ func (h *Hook) Fire(entry *logrus.Entry) error {
 	if entry.Caller != nil {
 		pc = entry.Caller.PC
 	}
-	r := slog.NewRecord(entry.Time, lvl, entry.Message, pc)
+	r := slog.NewRecord(entry.Time, level, entry.Message, pc)
 	r.AddAttrs(attrs...)
 	return handler.Handle(ctx, r)
 }
