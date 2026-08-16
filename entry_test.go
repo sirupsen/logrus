@@ -509,3 +509,40 @@ func TestEntryReentrantLoggingDeadlock(t *testing.T) {
 		t.Fatal("deadlock detected: reentrant logging from MarshalJSON blocked for 5 seconds")
 	}
 }
+
+// TestEntryWithFieldsThenBranch verifies that an Entry with fields can be
+// logged, used as the parent of a derived Entry, and reused without inheriting
+// fields added to the derived Entry.
+func TestEntryWithFieldsThenBranch(t *testing.T) {
+	logger, hook := test.NewNullLogger()
+
+	entry := logger.
+		WithField("a", 1).
+		WithField("b", 2)
+
+	entry.Info("parent")
+
+	require.Len(t, hook.Entries, 1)
+	assert.Equal(t, logrus.Fields{
+		"a": 1,
+		"b": 2,
+	}, hook.Entries[0].Data)
+
+	child := entry.WithField("c", 3)
+	child.Info("child")
+
+	require.Len(t, hook.Entries, 2)
+	assert.Equal(t, logrus.Fields{
+		"a": 1,
+		"b": 2,
+		"c": 3,
+	}, hook.Entries[1].Data)
+
+	entry.Info("parent again")
+
+	require.Len(t, hook.Entries, 3)
+	assert.Equal(t, logrus.Fields{
+		"a": 1,
+		"b": 2,
+	}, hook.Entries[2].Data)
+}
