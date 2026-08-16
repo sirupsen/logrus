@@ -18,6 +18,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type noopHook struct{}
+
+func (noopHook) Levels() []logrus.Level   { return logrus.AllLevels }
+func (noopHook) Fire(*logrus.Entry) error { return nil }
+
+type nopBufferPool struct{}
+
+func (nopBufferPool) Get() *bytes.Buffer { return new(bytes.Buffer) }
+func (nopBufferPool) Put(*bytes.Buffer)  {}
+
+type nopFormatter struct{}
+
+func (nopFormatter) Format(*logrus.Entry) ([]byte, error) { return nil, nil }
+
 type contextKeyType string
 
 func TestEntryWithError(t *testing.T) {
@@ -412,16 +426,6 @@ func TestEntryLoggerMutationRace(t *testing.T) {
 		})
 	}
 }
-
-type noopHook struct{}
-
-func (noopHook) Levels() []logrus.Level   { return logrus.AllLevels }
-func (noopHook) Fire(*logrus.Entry) error { return nil }
-
-type nopBufferPool struct{}
-
-func (nopBufferPool) Get() *bytes.Buffer { return new(bytes.Buffer) }
-func (nopBufferPool) Put(*bytes.Buffer)  {}
 
 func runEntryLoggerRace(t *testing.T, mutate func(logger *logrus.Logger)) {
 	t.Helper()

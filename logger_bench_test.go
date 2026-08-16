@@ -60,12 +60,6 @@ func doLoggerBenchmarkNoLock(b *testing.B, out *os.File, formatter logrus.Format
 	})
 }
 
-type nopFormatter struct{}
-
-func (nopFormatter) Format(*logrus.Entry) ([]byte, error) {
-	return nil, nil
-}
-
 func BenchmarkLoggerLog(b *testing.B) {
 	logger := logrus.New()
 	logger.SetFormatter(nopFormatter{})

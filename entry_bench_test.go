@@ -9,6 +9,30 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// BenchmarkEntry_NewEntry measures the cost of creating entries that are not
+// subsequently logged.
+func BenchmarkEntry_NewEntry(b *testing.B) {
+	logger := logrus.New()
+
+	b.Run("empty", func(b *testing.B) {
+		b.ReportAllocs()
+		var entry *logrus.Entry
+		for range b.N {
+			entry = logrus.NewEntry(logger)
+		}
+		runtime.KeepAlive(entry)
+	})
+
+	b.Run("with_field", func(b *testing.B) {
+		b.ReportAllocs()
+		var entry *logrus.Entry
+		for range b.N {
+			entry = logrus.NewEntry(logger).WithField("key", "value")
+		}
+		runtime.KeepAlive(entry)
+	})
+}
+
 func BenchmarkEntry_WithError(b *testing.B) {
 	base := &logrus.Entry{Data: logrus.Fields{"a": 1}}
 	errBoom := errors.New("boom")
@@ -42,6 +66,55 @@ func BenchmarkEntry_WithField_Chain(b *testing.B) {
 		result = e
 	}
 	runtime.KeepAlive(result)
+}
+
+// BenchmarkEntry_WithField_Chain_Disabled measures the cost of constructing a
+// chain of fields when the resulting log call is disabled by the log level.
+func BenchmarkEntry_WithField_Chain_Disabled(b *testing.B) {
+	logger := logrus.New()
+	logger.SetFormatter(nopFormatter{})
+	logger.SetLevel(logrus.InfoLevel)
+
+	base := logrus.NewEntry(logger).WithField("a", 1)
+	errBoom := errors.New("boom")
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for range b.N {
+		base.
+			WithField("k0", 0).
+			WithField("k1", 1).
+			WithField("k2", 2).
+			WithField("k3", 3).
+			WithError(errBoom).
+			Debug("message")
+	}
+}
+
+// BenchmarkEntry_WithField_Chain_Enabled measures the cost of constructing and
+// logging a chain of fields when the log level is enabled.
+func BenchmarkEntry_WithField_Chain_Enabled(b *testing.B) {
+	logger := logrus.New()
+	logger.SetFormatter(nopFormatter{})
+	logger.SetLevel(logrus.DebugLevel)
+	logger.SetOutput(io.Discard)
+
+	base := logrus.NewEntry(logger).WithField("a", 1)
+	errBoom := errors.New("boom")
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for range b.N {
+		base.
+			WithField("k0", 0).
+			WithField("k1", 1).
+			WithField("k2", 2).
+			WithField("k3", 3).
+			WithError(errBoom).
+			Debug("message")
+	}
 }
 
 func BenchmarkEntry_WithFields(b *testing.B) {
@@ -90,6 +163,63 @@ func BenchmarkEntry_WithFields(b *testing.B) {
 				result = e.WithFields(tc.fields)
 			}
 			runtime.KeepAlive(result)
+		})
+	}
+}
+
+// BenchmarkEntry_WithFields_Reused measures logging through an Entry that was
+// constructed once with fields and reused across multiple log calls.
+func BenchmarkEntry_WithFields_Reused(b *testing.B) {
+	tests := []struct {
+		name  string
+		entry func(*logrus.Logger) *logrus.Entry
+	}{
+		{
+			name: "small",
+			entry: func(logger *logrus.Logger) *logrus.Entry {
+				return logger.WithFields(smallFields)
+			},
+		},
+		{
+			name: "small_duplicates",
+			entry: func(logger *logrus.Logger) *logrus.Entry {
+				return logger.
+					WithFields(smallFields).
+					WithFields(smallFields).
+					WithFields(smallFields)
+			},
+		},
+		{
+			name: "large",
+			entry: func(logger *logrus.Logger) *logrus.Entry {
+				return logger.WithFields(largeFields)
+			},
+		},
+		{
+			name: "large_duplicates",
+			entry: func(logger *logrus.Logger) *logrus.Entry {
+				return logger.
+					WithFields(largeFields).
+					WithFields(largeFields).
+					WithFields(largeFields)
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		b.Run(tc.name, func(b *testing.B) {
+			logger := logrus.New()
+			logger.SetFormatter(nopFormatter{})
+			logger.SetOutput(io.Discard)
+
+			entry := tc.entry(logger)
+
+			b.ReportAllocs()
+			b.ResetTimer()
+
+			for range b.N {
+				entry.Info("message")
+			}
 		})
 	}
 }
