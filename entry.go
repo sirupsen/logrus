@@ -100,6 +100,8 @@ type entryFields struct {
 	parent *Entry
 	field  field
 	fields Fields
+
+	once sync.Once
 }
 
 type field struct {
@@ -130,15 +132,14 @@ func (entry *Entry) Dup() *Entry {
 	return entry.hydratedDup()
 }
 
-// dup copies the entry fields shared by derived entries except Data, which
-// callers must copy or initialize as appropriate for their use.
+// dup copies the entry fields shared by derived entries except Data and err,
+// which callers must copy or initialize as appropriate for their use.
 func (entry *Entry) dup() *Entry {
 	return &Entry{
 		Logger:  entry.Logger,
 		Time:    entry.Time,
 		Caller:  entry.Caller,
 		Context: entry.Context,
-		err:     entry.err,
 	}
 }
 
@@ -205,11 +206,18 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	return dup
 }
 
-// hydratedDup materializes entry's fields into a copy with an independent Data
-// map.
+// hydratedDup materializes and caches entry's fields if necessary, then returns
+// a copy with an independent Data map.
 func (entry *Entry) hydratedDup() *Entry {
+	if lazy := entry.lazy; lazy != nil {
+		lazy.once.Do(func() {
+			entry.materialize(entry)
+		})
+	}
+
 	dup := entry.dup()
-	entry.materialize(dup)
+	dup.Data = maps.Clone(entry.Data)
+	dup.err = entry.err
 	if dup.Data == nil {
 		dup.Data = make(Fields)
 	}
@@ -222,6 +230,7 @@ func (entry *Entry) hydratedDup() *Entry {
 func (entry *Entry) materialize(dst *Entry) {
 	if entry.lazy == nil {
 		dst.Data = maps.Clone(entry.Data)
+		dst.err = entry.err
 		return
 	}
 
