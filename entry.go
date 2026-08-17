@@ -182,18 +182,7 @@ func (entry *Entry) WithContext(ctx context.Context) *Entry {
 func (entry *Entry) WithField(key string, value any) *Entry {
 	dup := entry.dup()
 	dup.Data = maps.Clone(entry.Data)
-	if isInvalidField(value) {
-		if dup.err != "" {
-			dup.err += ", skipping unsupported field " + strconv.Quote(key)
-		} else {
-			dup.err = "skipping unsupported field " + strconv.Quote(key)
-		}
-		return dup
-	}
-	if dup.Data == nil {
-		dup.Data = make(Fields, 1)
-	}
-	dup.Data[key] = value
+	dup.addField(key, value)
 	return dup
 }
 
@@ -204,25 +193,9 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	maps.Copy(dup.Data, entry.Data)
 
 	for key, value := range fields {
-		if isInvalidField(value) {
-			if dup.err != "" {
-				dup.err += ", skipping unsupported field " + strconv.Quote(key)
-			} else {
-				dup.err = "skipping unsupported field " + strconv.Quote(key)
-			}
-		} else {
-			dup.Data[key] = value
-		}
+		dup.addField(key, value)
 	}
 	return dup
-}
-
-func isInvalidField(v any) bool {
-	t := reflect.TypeOf(v)
-	if t == nil {
-		return false
-	}
-	return t.Kind() == reflect.Func || t.Kind() == reflect.Pointer && t.Elem().Kind() == reflect.Func
 }
 
 // WithTime overrides the time of the Entry.
@@ -231,6 +204,23 @@ func (entry *Entry) WithTime(t time.Time) *Entry {
 	dup.Data = maps.Clone(entry.Data)
 	dup.Time = t
 	return dup
+}
+
+func (entry *Entry) addField(key string, value any) {
+	t := reflect.TypeOf(value)
+	if t != nil && (t.Kind() == reflect.Func || t.Kind() == reflect.Pointer && t.Elem().Kind() == reflect.Func) {
+		if entry.err != "" {
+			entry.err += ", skipping unsupported field " + strconv.Quote(key)
+		} else {
+			entry.err = "skipping unsupported field " + strconv.Quote(key)
+		}
+		return
+	}
+
+	if entry.Data == nil {
+		entry.Data = make(Fields, 1)
+	}
+	entry.Data[key] = value
 }
 
 // getPackageName reduces a fully qualified function name to the package name
