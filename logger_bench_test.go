@@ -72,22 +72,23 @@ func BenchmarkLoggerLog(b *testing.B) {
 	logger.SetLevel(logrus.InfoLevel)
 	logger.SetOutput(io.Discard)
 
-	b.ReportAllocs()
-
 	b.Run("disabled_level", func(b *testing.B) {
 		b.ReportAllocs()
+		b.ResetTimer()
 		for range b.N {
 			logger.Log(logrus.DebugLevel, "test")
 		}
 	})
 	b.Run("enabled_log", func(b *testing.B) {
 		b.ReportAllocs()
+		b.ResetTimer()
 		for range b.N {
 			logger.Log(logrus.WarnLevel, "test")
 		}
 	})
 	b.Run("enabled_logln", func(b *testing.B) {
 		b.ReportAllocs()
+		b.ResetTimer()
 		for range b.N {
 			logger.Logln(logrus.WarnLevel, "test")
 		}
