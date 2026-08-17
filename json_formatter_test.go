@@ -12,19 +12,28 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func TestErrorNotLost(t *testing.T) {
-	formatter := &logrus.JSONFormatter{}
+func formatJSONEntry(t *testing.T, formatter *logrus.JSONFormatter, fields logrus.Fields) map[string]any {
+	t.Helper()
 
-	b, err := formatter.Format(logrus.WithField("error", errors.New("wild walrus")))
-	if err != nil {
-		t.Fatal("Unable to format entry: ", err)
-	}
+	var buf bytes.Buffer
+
+	logger := logrus.New()
+	logger.SetOutput(&buf)
+	logger.SetFormatter(formatter)
+
+	logger.WithFields(fields).Info("")
 
 	entry := make(map[string]any)
-	err = json.Unmarshal(b, &entry)
-	if err != nil {
+	if err := json.Unmarshal(buf.Bytes(), &entry); err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
 	}
+	return entry
+}
+
+func TestErrorNotLost(t *testing.T) {
+	entry := formatJSONEntry(t, &logrus.JSONFormatter{}, logrus.Fields{
+		"error": errors.New("wild walrus"),
+	})
 
 	if entry["error"] != "wild walrus" {
 		t.Fatal("Error field not set")
@@ -32,18 +41,9 @@ func TestErrorNotLost(t *testing.T) {
 }
 
 func TestErrorNotLostOnFieldNotNamedError(t *testing.T) {
-	formatter := &logrus.JSONFormatter{}
-
-	b, err := formatter.Format(logrus.WithField("omg", errors.New("wild walrus")))
-	if err != nil {
-		t.Fatal("Unable to format entry: ", err)
-	}
-
-	entry := make(map[string]any)
-	err = json.Unmarshal(b, &entry)
-	if err != nil {
-		t.Fatal("Unable to unmarshal formatted entry: ", err)
-	}
+	entry := formatJSONEntry(t, &logrus.JSONFormatter{}, logrus.Fields{
+		"omg": errors.New("wild walrus"),
+	})
 
 	if entry["omg"] != "wild walrus" {
 		t.Fatal("Error field not set")
@@ -51,41 +51,24 @@ func TestErrorNotLostOnFieldNotNamedError(t *testing.T) {
 }
 
 func TestFieldClashWithTime(t *testing.T) {
-	formatter := &logrus.JSONFormatter{}
-
-	b, err := formatter.Format(logrus.WithField("time", "right now!"))
-	if err != nil {
-		t.Fatal("Unable to format entry: ", err)
-	}
-
-	entry := make(map[string]any)
-	err = json.Unmarshal(b, &entry)
-	if err != nil {
-		t.Fatal("Unable to unmarshal formatted entry: ", err)
-	}
+	entry := formatJSONEntry(t, &logrus.JSONFormatter{}, logrus.Fields{
+		"time": "right now!",
+	})
 
 	if entry["fields.time"] != "right now!" {
 		t.Fatal("fields.time not set to original time field")
 	}
 
-	if entry["time"] != "0001-01-01T00:00:00Z" {
-		t.Fatal("time field not set to current time, was: ", entry["time"])
+	timeVal, ok := entry["time"].(string)
+	if !ok || timeVal == "" || timeVal == "right now!" {
+		t.Fatal("time field not set to Entry time")
 	}
 }
 
 func TestFieldClashWithMsg(t *testing.T) {
-	formatter := &logrus.JSONFormatter{}
-
-	b, err := formatter.Format(logrus.WithField("msg", "something"))
-	if err != nil {
-		t.Fatal("Unable to format entry: ", err)
-	}
-
-	entry := make(map[string]any)
-	err = json.Unmarshal(b, &entry)
-	if err != nil {
-		t.Fatal("Unable to unmarshal formatted entry: ", err)
-	}
+	entry := formatJSONEntry(t, &logrus.JSONFormatter{}, logrus.Fields{
+		"msg": "something",
+	})
 
 	if entry["fields.msg"] != "something" {
 		t.Fatal("fields.msg not set to original msg field")
@@ -93,18 +76,9 @@ func TestFieldClashWithMsg(t *testing.T) {
 }
 
 func TestFieldClashWithLevel(t *testing.T) {
-	formatter := &logrus.JSONFormatter{}
-
-	b, err := formatter.Format(logrus.WithField("level", "something"))
-	if err != nil {
-		t.Fatal("Unable to format entry: ", err)
-	}
-
-	entry := make(map[string]any)
-	err = json.Unmarshal(b, &entry)
-	if err != nil {
-		t.Fatal("Unable to unmarshal formatted entry: ", err)
-	}
+	entry := formatJSONEntry(t, &logrus.JSONFormatter{}, logrus.Fields{
+		"level": "something",
+	})
 
 	if entry["fields.level"] != "something" {
 		t.Fatal("fields.level not set to original level field")
@@ -119,24 +93,14 @@ func TestFieldClashWithRemappedFields(t *testing.T) {
 			logrus.FieldKeyMsg:   "@message",
 		},
 	}
-
-	b, err := formatter.Format(logrus.WithFields(logrus.Fields{
+	entry := formatJSONEntry(t, formatter, logrus.Fields{
 		"@timestamp": "@timestamp",
 		"@level":     "@level",
 		"@message":   "@message",
 		"timestamp":  "timestamp",
 		"level":      "level",
 		"msg":        "msg",
-	}))
-	if err != nil {
-		t.Fatal("Unable to format entry: ", err)
-	}
-
-	entry := make(map[string]any)
-	err = json.Unmarshal(b, &entry)
-	if err != nil {
-		t.Fatal("Unable to unmarshal formatted entry: ", err)
-	}
+	})
 
 	for _, field := range []string{"timestamp", "level", "msg"} {
 		if entry[field] != field {
@@ -166,23 +130,23 @@ func TestFieldClashWithRemappedFields(t *testing.T) {
 }
 
 func TestFieldsInNestedDictionary(t *testing.T) {
-	formatter := &logrus.JSONFormatter{
-		DataKey: "args",
-	}
+	var buf bytes.Buffer
 
-	logEntry := logrus.WithFields(logrus.Fields{
+	logger := logrus.New()
+	logger.SetOutput(&buf)
+	logger.SetFormatter(&logrus.JSONFormatter{
+		DataKey: "args",
+	})
+
+	logEntry := logger.WithFields(logrus.Fields{
 		"level": "level",
 		"test":  "test",
 	})
-	logEntry.Level = logrus.InfoLevel
+	logEntry.Info("test")
 
-	b, err := formatter.Format(logEntry)
-	if err != nil {
-		t.Fatal("Unable to format entry: ", err)
-	}
-
+	b := buf.Bytes()
 	entry := make(map[string]any)
-	err = json.Unmarshal(b, &entry)
+	err := json.Unmarshal(b, &entry)
 	if err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
 	}
@@ -285,13 +249,15 @@ func TestJSONEntryFieldValueError(t *testing.T) {
 }
 
 func TestJSONEntryEndsWithNewline(t *testing.T) {
-	formatter := &logrus.JSONFormatter{}
+	var buf bytes.Buffer
 
-	b, err := formatter.Format(logrus.WithField("level", "something"))
-	if err != nil {
-		t.Fatal("Unable to format entry: ", err)
-	}
+	logger := logrus.New()
+	logger.SetOutput(&buf)
+	logger.SetFormatter(&logrus.JSONFormatter{})
 
+	logger.WithField("level", "something").Info("")
+
+	b := buf.Bytes()
 	if b[len(b)-1] != '\n' {
 		t.Fatal("Expected JSON log entry to end with a newline")
 	}
@@ -349,17 +315,17 @@ func TestJSONTimeKey(t *testing.T) {
 }
 
 func TestFieldDoesNotClashWithCaller(t *testing.T) {
-	logrus.SetReportCaller(false)
-	formatter := &logrus.JSONFormatter{}
+	var buf bytes.Buffer
 
-	b, err := formatter.Format(logrus.WithField("func", "howdy pardner"))
-	if err != nil {
-		t.Fatal("Unable to format entry: ", err)
-	}
+	logger := logrus.New()
+	logger.SetOutput(&buf)
+	logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.SetReportCaller(false)
 
-	entry := make(map[string]any)
-	err = json.Unmarshal(b, &entry)
-	if err != nil {
+	logger.WithField("func", "howdy pardner").Info("")
+
+	var entry map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &entry); err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
 	}
 
@@ -369,21 +335,22 @@ func TestFieldDoesNotClashWithCaller(t *testing.T) {
 }
 
 func TestFieldClashWithCaller(t *testing.T) {
-	logrus.SetReportCaller(true)
-	t.Cleanup(func() {
-		logrus.SetReportCaller(false) // return to default value
-	})
 	formatter := &logrus.JSONFormatter{}
-	e := logrus.WithField("func", "howdy pardner")
-	e.Caller = &runtime.Frame{Function: "somefunc"}
-	b, err := formatter.Format(e)
+
+	b, err := formatter.Format(&logrus.Entry{
+		Data: logrus.Fields{
+			"func": "howdy pardner",
+		},
+		Caller: &runtime.Frame{
+			Function: "somefunc",
+		},
+	})
 	if err != nil {
 		t.Fatal("Unable to format entry: ", err)
 	}
 
 	entry := make(map[string]any)
-	err = json.Unmarshal(b, &entry)
-	if err != nil {
+	if err := json.Unmarshal(b, &entry); err != nil {
 		t.Fatal("Unable to unmarshal formatted entry: ", err)
 	}
 
