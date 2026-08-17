@@ -523,3 +523,55 @@ func TestEntryWithFieldsThenBranch(t *testing.T) {
 		"b": 2,
 	}, hook.Entries[2].Data)
 }
+
+// TestEntryDataIsMutable verifies that Entry.Data exposes materialized fields,
+// can be modified directly, and remains isolated between derived entries.
+func TestEntryDataIsMutable(t *testing.T) {
+	logger, hook := test.NewNullLogger()
+
+	// Fields added to an entry are exposed immediately through Data.
+	parent := logger.WithFields(logrus.Fields{
+		"foo": "bar",
+		"one": 1,
+	})
+
+	assert.Equal(t, "bar", parent.Data["foo"])
+	assert.Equal(t, 1, parent.Data["one"])
+
+	// Derived entries inherit the parent's fields without sharing its Data map.
+	child := parent.WithFields(logrus.Fields{
+		"two": 2,
+	})
+
+	assert.Equal(t, "bar", child.Data["foo"])
+	assert.Equal(t, 1, child.Data["one"])
+	assert.Equal(t, 2, child.Data["two"])
+
+	// Data is public and mutable. Changes to the child must not affect its
+	// parent, and newly added fields must be preserved.
+	child.Data["foo"] = "changed"
+	child.Data["three"] = 3
+
+	assert.Equal(t, "bar", parent.Data["foo"])
+	assert.Equal(t, 1, parent.Data["one"])
+	assert.NotContains(t, parent.Data, "three")
+
+	// Logging must use the currently exposed Data and must not overwrite direct
+	// mutations by re-materializing fields from internal state.
+	parent.Info("parent")
+	child.Info("child")
+
+	require.Len(t, hook.Entries, 2)
+
+	assert.Equal(t, logrus.Fields{
+		"foo": "bar",
+		"one": 1,
+	}, hook.Entries[0].Data)
+
+	assert.Equal(t, logrus.Fields{
+		"foo":   "changed",
+		"one":   1,
+		"two":   2,
+		"three": 3,
+	}, hook.Entries[1].Data)
+}
