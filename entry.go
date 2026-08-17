@@ -201,7 +201,7 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 	dup := entry.dup()
 	dup.lazy = &entryFields{
 		parent: entry,
-		fields: fields,
+		fields: maps.Clone(fields),
 	}
 	return dup
 }
