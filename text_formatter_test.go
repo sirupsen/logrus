@@ -17,30 +17,48 @@ import (
 )
 
 func TestFormatting(t *testing.T) {
-	tf := &TextFormatter{DisableColors: true}
+	var buf bytes.Buffer
 
-	testCases := []struct {
+	tf := &TextFormatter{
+		DisableColors:    true,
+		DisableTimestamp: true,
+	}
+
+	logger := New()
+	logger.SetOutput(&buf)
+	logger.SetFormatter(tf)
+
+	tests := []struct {
 		value    string
 		expected string
 	}{
-		{`foo`, "time=\"0001-01-01T00:00:00Z\" level=panic test=foo\n"},
+		{`foo`, "level=info test=foo\n"},
 	}
 
-	for _, tc := range testCases {
-		b, _ := tf.Format(WithField("test", tc.value))
+	for _, tc := range tests {
+		buf.Reset()
+		logger.WithField("test", tc.value).Info("")
 
-		if string(b) != tc.expected {
-			t.Errorf("formatting expected for %q (result was %q instead of %q)", tc.value, string(b), tc.expected)
+		if buf.String() != tc.expected {
+			t.Errorf("formatting expected for %q (result was %q instead of %q)", tc.value, buf.String(), tc.expected)
 		}
 	}
 }
 
 func TestQuoting(t *testing.T) {
+	var buf bytes.Buffer
+
 	tf := &TextFormatter{DisableColors: true}
 
+	logger := New()
+	logger.SetOutput(&buf)
+	logger.SetFormatter(tf)
+
 	checkQuoting := func(q bool, value any) {
-		b, _ := tf.Format(WithField("test", value))
-		_, after, _ := bytes.Cut(b, ([]byte)("test="))
+		buf.Reset()
+		logger.WithField("test", value).Info("")
+
+		_, after, _ := bytes.Cut(buf.Bytes(), []byte("test="))
 		cont := bytes.Contains(after, []byte("\""))
 		if cont != q {
 			if q {
@@ -130,41 +148,32 @@ func TestQuoting(t *testing.T) {
 }
 
 func TestEscaping(t *testing.T) {
+	var buf bytes.Buffer
+
 	tf := &TextFormatter{DisableColors: true}
 
-	testCases := []struct {
-		value    string
+	logger := New()
+	logger.SetOutput(&buf)
+	logger.SetFormatter(tf)
+
+	ts := time.Now()
+
+	tests := []struct {
+		value    any
 		expected string
 	}{
 		{`ba"r`, `ba\"r`},
 		{`ba'r`, `ba'r`},
-	}
-
-	for _, tc := range testCases {
-		b, _ := tf.Format(WithField("test", tc.value))
-		if !bytes.Contains(b, []byte(tc.expected)) {
-			t.Errorf("escaping expected for %q (result was %q instead of %q)", tc.value, string(b), tc.expected)
-		}
-	}
-}
-
-func TestEscaping_Interface(t *testing.T) {
-	tf := &TextFormatter{DisableColors: true}
-
-	ts := time.Now()
-
-	testCases := []struct {
-		value    any
-		expected string
-	}{
 		{ts, fmt.Sprintf("\"%s\"", ts.String())},
 		{errors.New("error: something went wrong"), "\"error: something went wrong\""},
 	}
 
-	for _, tc := range testCases {
-		b, _ := tf.Format(WithField("test", tc.value))
-		if !bytes.Contains(b, []byte(tc.expected)) {
-			t.Errorf("escaping expected for %q (result was %q instead of %q)", tc.value, string(b), tc.expected)
+	for _, tc := range tests {
+		buf.Reset()
+		logger.WithField("test", tc.value).Info("")
+
+		if !bytes.Contains(buf.Bytes(), []byte(tc.expected)) {
+			t.Errorf("escaping expected for %q (result was %q instead of %q)", tc.value, buf.String(), tc.expected)
 		}
 	}
 }

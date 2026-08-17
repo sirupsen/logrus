@@ -36,13 +36,9 @@ type contextKeyType string
 
 func TestEntryWithError(t *testing.T) {
 	expErr := fmt.Errorf("kaboom at layer %d", 4711)
-	assert.Equal(t, expErr, logrus.WithError(expErr).Data["error"])
+	logger, hook := test.NewNullLogger()
 
-	logger := logrus.New()
-	logger.SetOutput(io.Discard)
-	entry := logrus.NewEntry(logger)
-
-	assert.Equal(t, expErr, entry.WithError(expErr).Data["error"])
+	logger.WithError(expErr).Error("default key")
 
 	tmpKey := logrus.ErrorKey
 	logrus.ErrorKey = "err" //nolint:reassign // ignore "reassigning variable ErrorKey in other package logrus (reassign)"
@@ -50,7 +46,11 @@ func TestEntryWithError(t *testing.T) {
 		logrus.ErrorKey = tmpKey //nolint:reassign // ignore "reassigning variable ErrorKey in other package logrus (reassign)"
 	})
 
-	assert.Equal(t, expErr, entry.WithError(expErr).Data["err"])
+	logger.WithError(expErr).Error("custom key")
+
+	require.Len(t, hook.Entries, 2)
+	assert.Equal(t, expErr, hook.Entries[0].Data["error"])
+	assert.Equal(t, expErr, hook.Entries[1].Data["err"])
 }
 
 func TestEntryWithContext(t *testing.T) {
@@ -67,82 +67,58 @@ func TestEntryWithContext(t *testing.T) {
 	assert.Equal(ctx, entry.WithContext(ctx).Context)
 }
 
-func TestEntryWithContextCopiesData(t *testing.T) {
-	assert := assert.New(t)
+func TestEntryWithContextPreservesData(t *testing.T) {
+	logger, hook := test.NewNullLogger()
 
-	// Initialize a parent Entry object with a key/value set in its Data map
-	logger := logrus.New()
-	logger.SetOutput(io.Discard)
-	parentEntry := logrus.NewEntry(logger).WithField("parentKey", "parentValue")
+	// Initialize a parent Entry object with a key/value field.
+	parentEntry := logger.WithField("parentKey", "parentValue")
 
-	// Create two children Entry objects from the parent in different contexts
+	// Create two child Entry objects from the parent in different contexts.
 	var contextKey1 contextKeyType = "foo"
 	ctx1 := context.WithValue(context.Background(), contextKey1, "bar")
 	childEntry1 := parentEntry.WithContext(ctx1)
-	assert.Equal(ctx1, childEntry1.Context)
+	assert.Equal(t, ctx1, childEntry1.Context)
 
 	var contextKey2 contextKeyType = "bar"
 	ctx2 := context.WithValue(context.Background(), contextKey2, "baz")
 	childEntry2 := parentEntry.WithContext(ctx2)
-	assert.Equal(ctx2, childEntry2.Context)
-	assert.NotEqual(ctx1, ctx2)
+	assert.Equal(t, ctx2, childEntry2.Context)
+	assert.NotEqual(t, ctx1, ctx2)
 
-	// Ensure that data set in the parent Entry are preserved to both children
-	assert.Equal("parentValue", childEntry1.Data["parentKey"])
-	assert.Equal("parentValue", childEntry2.Data["parentKey"])
+	childEntry1.Info("child 1")
+	childEntry2.Info("child 2")
+	parentEntry.Info("parent")
 
-	// Modify data stored in the child entry
-	childEntry1.Data["childKey"] = "childValue"
+	require.Len(t, hook.Entries, 3)
 
-	// Verify that data is successfully stored in the child it was set on
-	val, exists := childEntry1.Data["childKey"]
-	assert.True(exists)
-	assert.Equal("childValue", val)
-
-	// Verify that the data change to child 1 has not affected its sibling
-	val, exists = childEntry2.Data["childKey"]
-	assert.False(exists)
-	assert.Empty(val)
-
-	// Verify that the data change to child 1 has not affected its parent
-	val, exists = parentEntry.Data["childKey"]
-	assert.False(exists)
-	assert.Empty(val)
+	// Ensure that data set in the parent Entry are preserved in both children
+	// and when the parent is reused.
+	assert.Equal(t, "parentValue", hook.Entries[0].Data["parentKey"])
+	assert.Equal(t, "parentValue", hook.Entries[1].Data["parentKey"])
+	assert.Equal(t, "parentValue", hook.Entries[2].Data["parentKey"])
 }
 
-func TestEntryWithTimeCopiesData(t *testing.T) {
-	assert := assert.New(t)
+func TestEntryWithTimePreservesData(t *testing.T) {
+	logger, hook := test.NewNullLogger()
 
-	// Initialize a parent Entry object with a key/value set in its Data map
-	logger := logrus.New()
-	logger.SetOutput(io.Discard)
-	parentEntry := logrus.NewEntry(logger).WithField("parentKey", "parentValue")
+	// Initialize a parent Entry object with a key/value field.
+	parentEntry := logger.WithField("parentKey", "parentValue")
 
-	// Create two children Entry objects from the parent with two different times
+	// Create two child Entry objects from the parent with two different times.
 	childEntry1 := parentEntry.WithTime(time.Now().AddDate(0, 0, 1))
 	childEntry2 := parentEntry.WithTime(time.Now().AddDate(0, 0, 2))
 
-	// Ensure that data set in the parent Entry are preserved to both children
-	assert.Equal("parentValue", childEntry1.Data["parentKey"])
-	assert.Equal("parentValue", childEntry2.Data["parentKey"])
+	childEntry1.Info("child 1")
+	childEntry2.Info("child 2")
+	parentEntry.Info("parent")
 
-	// Modify data stored in the child entry
-	childEntry1.Data["childKey"] = "childValue"
+	require.Len(t, hook.Entries, 3)
 
-	// Verify that data is successfully stored in the child it was set on
-	val, exists := childEntry1.Data["childKey"]
-	assert.True(exists)
-	assert.Equal("childValue", val)
-
-	// Verify that the data change to child 1 has not affected its sibling
-	val, exists = childEntry2.Data["childKey"]
-	assert.False(exists)
-	assert.Empty(val)
-
-	// Verify that the data change to child 1 has not affected its parent
-	val, exists = parentEntry.Data["childKey"]
-	assert.False(exists)
-	assert.Empty(val)
+	// Ensure that data set in the parent Entry are preserved in both children
+	// and when the parent is reused.
+	assert.Equal(t, "parentValue", hook.Entries[0].Data["parentKey"])
+	assert.Equal(t, "parentValue", hook.Entries[1].Data["parentKey"])
+	assert.Equal(t, "parentValue", hook.Entries[2].Data["parentKey"])
 }
 
 // TestEntryLogPanicLevelDoesNotPanic verifies that generic Log methods treat
@@ -347,41 +323,42 @@ func TestEntryDerivationPreservesCaller(t *testing.T) {
 }
 
 func TestEntryWithIncorrectField(t *testing.T) {
+	var buf bytes.Buffer
+
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{})
-	logger.SetOutput(io.Discard)
-	entry := logrus.NewEntry(logger)
+	logger.SetOutput(&buf)
 
 	fn := func() {}
-	eWithFunc := entry.WithFields(logrus.Fields{"func": fn})
-	eWithFuncPtr := entry.WithFields(logrus.Fields{"funcPtr": &fn})
+	eWithFunc := logger.WithFields(logrus.Fields{"func": fn})
+	eWithFuncPtr := logger.WithFields(logrus.Fields{"funcPtr": &fn})
 
-	assert.Equal(t, `skipping unsupported field "func"`, getErr(t, eWithFunc))
-	assert.Equal(t, `skipping unsupported field "funcPtr"`, getErr(t, eWithFuncPtr))
+	assert.Equal(t, `skipping unsupported field "func"`, getErr(t, &buf, eWithFunc))
+	assert.Equal(t, `skipping unsupported field "funcPtr"`, getErr(t, &buf, eWithFuncPtr))
 
 	eWithFunc = eWithFunc.WithField("not_a_func", "it is a string")
 	eWithFuncPtr = eWithFuncPtr.WithField("not_a_func", "it is a string")
 
-	assert.Equal(t, `skipping unsupported field "func"`, getErr(t, eWithFunc))
-	assert.Equal(t, `skipping unsupported field "funcPtr"`, getErr(t, eWithFuncPtr))
+	assert.Equal(t, `skipping unsupported field "func"`, getErr(t, &buf, eWithFunc))
+	assert.Equal(t, `skipping unsupported field "funcPtr"`, getErr(t, &buf, eWithFuncPtr))
 
 	eWithFunc = eWithFunc.WithTime(time.Now())
 	eWithFuncPtr = eWithFuncPtr.WithTime(time.Now())
 
-	assert.Equal(t, `skipping unsupported field "func"`, getErr(t, eWithFunc))
-	assert.Equal(t, `skipping unsupported field "funcPtr"`, getErr(t, eWithFuncPtr))
+	assert.Equal(t, `skipping unsupported field "func"`, getErr(t, &buf, eWithFunc))
+	assert.Equal(t, `skipping unsupported field "funcPtr"`, getErr(t, &buf, eWithFuncPtr))
 }
 
-func getErr(t *testing.T, e *logrus.Entry) string {
+func getErr(t *testing.T, buf *bytes.Buffer, entry *logrus.Entry) string {
 	t.Helper()
 
-	out, err := e.String()
-	require.NoError(t, err)
+	buf.Reset()
+	entry.Info("test")
 
-	var m map[string]any
-	require.NoError(t, json.Unmarshal([]byte(out), &m))
+	var data map[string]any
+	require.NoError(t, json.Unmarshal(buf.Bytes(), &data))
 
-	got, _ := m[logrus.FieldKeyLogrusError].(string)
+	got, _ := data[logrus.FieldKeyLogrusError].(string)
 	return got
 }
 
