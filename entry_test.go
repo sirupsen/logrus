@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"runtime"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -106,11 +105,6 @@ func TestEntryErrorFieldValues(t *testing.T) {
 	for _, tc := range tests {
 		for _, val := range values {
 			t.Run(tc.doc+"("+val.name+")", func(t *testing.T) {
-				valid := val.valid
-				// TODO: remove once generic fields recognize error values before rejecting function-backed values.
-				if tc.doc != "WithError" && strings.HasPrefix(val.name, "function error") {
-					valid = false
-				}
 				if _, ok := val.value.(error); tc.doc == "WithError" && !ok {
 					skip(t, "WithError only accepts error values")
 					return
@@ -127,7 +121,7 @@ func TestEntryErrorFieldValues(t *testing.T) {
 				var data map[string]any
 				require.NoError(t, json.Unmarshal(buf.Bytes(), &data))
 
-				if valid {
+				if val.valid {
 					assert.Equal(t, "boom", data[logrus.ErrorKey])
 					assert.NotContains(t, data, logrus.FieldKeyLogrusError)
 				} else {

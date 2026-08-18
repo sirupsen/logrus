@@ -159,15 +159,7 @@ func (entry *Entry) String() (string, error) {
 // WithError adds an error as single field (using the key defined in [ErrorKey])
 // to the Entry.
 func (entry *Entry) WithError(err error) *Entry {
-	// Avoid reflection work in WithFields; we know the type is an error;
-	// copy the entry data and set the ErrorKey directly.
-	dup := entry.dup()
-	dup.Data = maps.Clone(entry.Data)
-	if dup.Data == nil {
-		dup.Data = make(Fields, 1)
-	}
-	dup.Data[ErrorKey] = err
-	return dup
+	return entry.WithField(ErrorKey, err)
 }
 
 // WithContext adds a context to the Entry.
@@ -207,14 +199,16 @@ func (entry *Entry) WithTime(t time.Time) *Entry {
 }
 
 func (entry *Entry) addField(key string, value any) {
-	t := reflect.TypeOf(value)
-	if t != nil && (t.Kind() == reflect.Func || t.Kind() == reflect.Pointer && t.Elem().Kind() == reflect.Func) {
-		if entry.err != "" {
-			entry.err += ", skipping unsupported field " + strconv.Quote(key)
-		} else {
-			entry.err = "skipping unsupported field " + strconv.Quote(key)
+	if _, ok := value.(error); !ok {
+		t := reflect.TypeOf(value)
+		if t != nil && (t.Kind() == reflect.Func || t.Kind() == reflect.Pointer && t.Elem().Kind() == reflect.Func) {
+			if entry.err != "" {
+				entry.err += ", skipping unsupported field " + strconv.Quote(key)
+			} else {
+				entry.err = "skipping unsupported field " + strconv.Quote(key)
+			}
+			return
 		}
-		return
 	}
 
 	if entry.Data == nil {
