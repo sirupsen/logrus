@@ -33,17 +33,38 @@ func BenchmarkEntry_NewEntry(b *testing.B) {
 	})
 }
 
+// BenchmarkEntry_WithError compares the ways an error can be added to an Entry.
 func BenchmarkEntry_WithError(b *testing.B) {
-	base := &logrus.Entry{Data: logrus.Fields{"a": 1}}
+	logger := logrus.New()
+	base := logrus.NewEntry(logger).WithField("a", 1)
 	errBoom := errors.New("boom")
-	b.ReportAllocs()
-	b.ResetTimer()
 
-	var result *logrus.Entry
-	for range b.N {
-		result = base.WithError(errBoom)
-	}
-	runtime.KeepAlive(result)
+	b.Run("WithError", func(b *testing.B) {
+		b.ReportAllocs()
+		var entry *logrus.Entry
+		for range b.N {
+			entry = base.WithError(errBoom)
+		}
+		runtime.KeepAlive(entry)
+	})
+
+	b.Run("WithField", func(b *testing.B) {
+		b.ReportAllocs()
+		var entry *logrus.Entry
+		for range b.N {
+			entry = base.WithField(logrus.ErrorKey, errBoom)
+		}
+		runtime.KeepAlive(entry)
+	})
+
+	b.Run("WithFields", func(b *testing.B) {
+		b.ReportAllocs()
+		var entry *logrus.Entry
+		for range b.N {
+			entry = base.WithFields(logrus.Fields{logrus.ErrorKey: errBoom})
+		}
+		runtime.KeepAlive(entry)
+	})
 }
 
 func BenchmarkEntry_WithField_Chain(b *testing.B) {
