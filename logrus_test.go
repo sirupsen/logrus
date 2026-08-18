@@ -21,13 +21,26 @@ import (
 
 func skipReportCaller(t *testing.T) bool {
 	t.Helper()
-	if runtime.Compiler == "tinygo" {
+	switch runtime.Compiler {
+	case "tinygo":
 		// TinyGo currently (v0.41.1) doesn't support `runtime.Caller`;
 		// https://tinygo.org/docs/reference/lang-support/stdlib/#logslog
-		t.Log("SKIP: TinyGo does not support runtime.Caller") // no t.Skip on tinygo
+		skip(t, "TinyGo does not support runtime.Caller")
 		return true
+	default:
+		return false
 	}
-	return false
+}
+
+// tinygo doesn't support t.Skip
+func skip(t *testing.T, msg string) {
+	t.Helper()
+	switch runtime.Compiler {
+	case "tinygo":
+		t.Log(msg+"\n\r--- SKIP:", t.Name(), "(0.00s)")
+	default:
+		t.Skip(msg)
+	}
 }
 
 // TestReportCallerWhenConfigured verifies that when ReportCaller is set, the 'func' field

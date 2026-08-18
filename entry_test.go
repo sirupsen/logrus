@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"runtime"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -32,6 +33,10 @@ type nopFormatter struct{}
 
 func (nopFormatter) Format(*logrus.Entry) ([]byte, error) { return nil, nil }
 
+type funcError func()
+
+func (funcError) Error() string { return "boom" }
+
 type contextKeyType string
 
 func TestEntryWithError(t *testing.T) {
@@ -51,6 +56,87 @@ func TestEntryWithError(t *testing.T) {
 	require.Len(t, hook.Entries, 2)
 	assert.Equal(t, expErr, hook.Entries[0].Data["error"])
 	assert.Equal(t, expErr, hook.Entries[1].Data["err"])
+}
+
+// TestEntryErrorFieldValues verifies that error fields are accepted, rejected,
+// and formatted consistently across WithError, WithField, and WithFields.
+//
+// relates to https://github.com/sirupsen/logrus/pull/1577#discussion_r3799339160
+func TestEntryErrorFieldValues(t *testing.T) {
+	errFunc := funcError(func() {})
+	fn := func() {}
+
+	values := []struct {
+		name  string
+		value any
+		valid bool
+	}{
+		{name: "error", value: errors.New("boom"), valid: true},
+		{name: "function error", value: errFunc, valid: true},
+		{name: "function error pointer", value: &errFunc, valid: true},
+		{name: "string", value: "boom", valid: true},
+		{name: "function", value: fn, valid: false},
+		{name: "function pointer", value: &fn, valid: false},
+	}
+
+	tests := []struct {
+		doc   string
+		apply func(*logrus.Logger, any) *logrus.Entry
+	}{
+		{
+			doc: "WithError",
+			apply: func(logger *logrus.Logger, value any) *logrus.Entry {
+				return logger.WithError(value.(error))
+			},
+		},
+		{
+			doc: "WithField",
+			apply: func(logger *logrus.Logger, value any) *logrus.Entry {
+				return logger.WithField(logrus.ErrorKey, value)
+			},
+		},
+		{
+			doc: "WithFields",
+			apply: func(logger *logrus.Logger, value any) *logrus.Entry {
+				return logger.WithFields(logrus.Fields{logrus.ErrorKey: value})
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		for _, val := range values {
+			t.Run(tc.doc+"("+val.name+")", func(t *testing.T) {
+				valid := val.valid
+				// TODO: remove once generic fields recognize error values before rejecting function-backed values.
+				if tc.doc != "WithError" && strings.HasPrefix(val.name, "function error") {
+					valid = false
+				}
+				if _, ok := val.value.(error); tc.doc == "WithError" && !ok {
+					skip(t, "WithError only accepts error values")
+					return
+				}
+
+				var buf bytes.Buffer
+
+				logger := logrus.New()
+				logger.SetOutput(&buf)
+				logger.SetFormatter(&logrus.JSONFormatter{})
+
+				tc.apply(logger, val.value).Error("test")
+
+				var data map[string]any
+				require.NoError(t, json.Unmarshal(buf.Bytes(), &data))
+
+				if valid {
+					assert.Equal(t, "boom", data[logrus.ErrorKey])
+					assert.NotContains(t, data, logrus.FieldKeyLogrusError)
+				} else {
+					assert.NotContains(t, data, logrus.ErrorKey)
+					assert.Contains(t, data, logrus.FieldKeyLogrusError)
+				}
+			})
+		}
+	}
 }
 
 func TestEntryWithContext(t *testing.T) {
