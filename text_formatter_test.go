@@ -691,3 +691,71 @@ func TestTextEntryFieldValueError(t *testing.T) {
 		}
 	})
 }
+
+type panicError string
+
+func (e panicError) Error() string { panic(string(e)) }
+
+type panicStringer string
+
+func (s panicStringer) String() string { panic(string(s)) }
+
+type nilError struct{}
+
+func (*nilError) Error() string { panic("unexpected") }
+
+type nilStringer struct{}
+
+func (*nilStringer) String() string { panic("unexpected") }
+
+// TestTextFormatterPanickingValue verifies panicking Error and Stringer
+// methods are recovered.
+//
+// regression test for https://github.com/sirupsen/logrus/issues/1580
+func TestTextFormatterPanickingValue(t *testing.T) {
+	var nilErr *nilError
+	var nilString *nilStringer
+
+	tests := []struct {
+		doc   string
+		value any
+		want  string
+	}{
+		{
+			doc:   "error",
+			value: panicError("boom"),
+			want:  `level=info test="%!v(PANIC=Error method: boom)"` + "\n",
+		},
+		{
+			doc:   "stringer",
+			value: panicStringer("boom"),
+			want:  `level=info test="%!v(PANIC=String method: boom)"` + "\n",
+		},
+		{
+			doc:   "nil error",
+			value: nilErr,
+			want:  `level=info test="<nil>"` + "\n",
+		},
+		{
+			doc:   "nil stringer",
+			value: nilString,
+			want:  `level=info test="<nil>"` + "\n",
+		},
+	}
+
+	formatter := &TextFormatter{
+		DisableColors:    true,
+		DisableTimestamp: true,
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.doc, func(t *testing.T) {
+			got, err := formatter.Format(&Entry{
+				Level: InfoLevel,
+				Data:  Fields{"test": tc.value},
+			})
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, string(got))
+		})
+	}
+}

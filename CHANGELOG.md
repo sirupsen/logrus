@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.10.1
+
+  * Fix a regression introduced in v1.10.0 where `TextFormatter` could panic
+    when formatting nil or panicking `error` and `fmt.Stringer` values.
+
 ## 1.10.0
 
 Fixes:
