@@ -702,24 +702,38 @@ func (s panicStringer) String() string { panic(string(s)) }
 
 type nilError struct{}
 
-func (*nilError) Error() string { panic("unexpected") }
+func (*nilError) Error() string { panic("boom") }
+
+type nilValueError struct{}
+
+func (nilValueError) Error() string { return "" }
 
 type nilStringer struct{}
 
-func (*nilStringer) String() string { panic("unexpected") }
+func (*nilStringer) String() string { panic("boom") }
+
+type nilValueStringer struct{}
+
+func (nilValueStringer) String() string { return "" }
 
 // TestTextFormatterPanickingValue verifies panicking Error and Stringer
 // methods are recovered.
 //
 // regression test for https://github.com/sirupsen/logrus/issues/1580
 func TestTextFormatterPanickingValue(t *testing.T) {
-	var nilErr *nilError
-	var nilString *nilStringer
+	var (
+		nilErr         *nilError
+		nilValueErr    *nilValueError
+		nilString      *nilStringer
+		nilValueString *nilValueStringer
+	)
 
 	tests := []struct {
 		doc   string
 		value any
 		want  string
+
+		skipTiny bool
 	}{
 		{
 			doc:   "error",
@@ -732,14 +746,26 @@ func TestTextFormatterPanickingValue(t *testing.T) {
 			want:  `level=info test="%!v(PANIC=String method: boom)"` + "\n",
 		},
 		{
-			doc:   "nil error",
+			doc:   "nil pointer-receiver error",
 			value: nilErr,
 			want:  `level=info test="<nil>"` + "\n",
 		},
 		{
-			doc:   "nil stringer",
+			doc:      "nil value-receiver error",
+			value:    nilValueErr,
+			want:     `level=info test="<nil>"` + "\n",
+			skipTiny: true,
+		},
+		{
+			doc:   "nil pointer-receiver stringer",
 			value: nilString,
 			want:  `level=info test="<nil>"` + "\n",
+		},
+		{
+			doc:      "nil value-receiver stringer",
+			value:    nilValueString,
+			want:     `level=info test="<nil>"` + "\n",
+			skipTiny: true,
 		},
 	}
 
@@ -750,6 +776,12 @@ func TestTextFormatterPanickingValue(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.doc, func(t *testing.T) {
+			if tc.skipTiny && runtime.Compiler == "tinygo" {
+				// tinygo doesn't support t.Skip
+				msg := "TinyGo does not panic when invoking a value-receiver method through a nil pointer"
+				t.Log(msg+"\n\r--- SKIP:", t.Name(), "(0.00s)")
+				return
+			}
 			got, err := formatter.Format(&Entry{
 				Level: InfoLevel,
 				Data:  Fields{"test": tc.value},
