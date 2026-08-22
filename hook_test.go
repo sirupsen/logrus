@@ -1,6 +1,7 @@
 package logrus_test
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"maps"
@@ -258,4 +259,34 @@ func TestHookFireOrder(t *testing.T) {
 		t.Error("unexpected error:", err)
 	}
 	require.Equal(t, []string{"first hook", "second hook", "third hook"}, checkers)
+}
+
+type errHook struct {
+	name string
+	err  error
+	hit  *[]string
+}
+
+func (h *errHook) Levels() []Level { return AllLevels }
+
+func (h *errHook) Fire(*Entry) error {
+	if h.hit != nil {
+		*h.hit = append(*h.hit, h.name)
+	}
+	return h.err
+}
+
+func TestHookFireContinuesAfterError(t *testing.T) {
+	// Issue #408: an error from one hook must not skip later hooks.
+	var hit []string
+	h := LevelHooks{}
+	h.Add(&errHook{name: "first", err: errors.New("boom-first"), hit: &hit})
+	h.Add(&errHook{name: "second", err: nil, hit: &hit})
+	h.Add(&errHook{name: "third", err: errors.New("boom-third"), hit: &hit})
+
+	err := h.Fire(InfoLevel, &Entry{})
+	require.Error(t, err)
+	require.ErrorContains(t, err, "boom-first")
+	require.ErrorContains(t, err, "boom-third")
+	require.Equal(t, []string{"first", "second", "third"}, hit)
 }
