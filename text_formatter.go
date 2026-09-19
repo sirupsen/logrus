@@ -329,6 +329,9 @@ func (f *TextFormatter) appendValue(b *bytes.Buffer, value any) {
 		var raw [8]byte
 		f.appendBytes(b, strconv.AppendBool(raw[:0], v))
 		return
+	case fmt.Formatter:
+		f.appendString(b, fmt.Sprint(v))
+		return
 	case error:
 		f.appendError(b, v)
 		return
