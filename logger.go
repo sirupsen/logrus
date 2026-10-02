@@ -113,7 +113,11 @@ func (logger *Logger) newEntry() *Entry {
 }
 
 func (logger *Logger) releaseEntry(entry *Entry) {
-	entry.Data = map[string]any{}
+	if entry.Data == nil {
+		entry.Data = map[string]any{}
+	} else {
+		clear(entry.Data)
+	}
 	logger.entryPool.Put(entry)
 }
 

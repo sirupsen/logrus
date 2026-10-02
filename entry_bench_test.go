@@ -148,6 +148,16 @@ func BenchmarkEntry_WithFields(b *testing.B) {
 		fields logrus.Fields
 	}{
 		{
+			name:   "empty_fields",
+			base:   logrus.Fields{"a": 1, "b": "two"},
+			fields: logrus.Fields{},
+		},
+		{
+			name:   "single_field",
+			base:   logrus.Fields{"a": 1, "b": "two"},
+			fields: logrus.Fields{"c": 3},
+		},
+		{
 			name:   "valid_fields_only",
 			base:   logrus.Fields{"a": 1, "b": "two"},
 			fields: logrus.Fields{"c": 3, "d": "four"},

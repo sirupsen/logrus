@@ -655,3 +655,99 @@ func TestEntryDataIsMutable(t *testing.T) {
 		"three": 3,
 	}, hook.Entries[1].Data)
 }
+
+// TestEntryWithFieldsEmptyAndSingle verifies that calling WithFields with empty
+// or single-field contexts correctly attaches fields, skips invalid fields,
+// preserves parent immutability, and behaves consistently with WithField.
+// Regression test for https://github.com/sirupsen/logrus/issues/1452.
+func TestEntryWithFieldsEmptyAndSingle(t *testing.T) {
+	logger, hook := test.NewNullLogger()
+
+	t.Run("empty fields preserves fields and isolation", func(t *testing.T) {
+		hook.Reset()
+		parent := logger.WithFields(logrus.Fields{"a": 1})
+		childEmpty := parent.WithFields(logrus.Fields{})
+		childNil := parent.WithFields(nil)
+
+		assert.Equal(t, 1, childEmpty.Data["a"])
+		assert.Equal(t, 1, childNil.Data["a"])
+
+		// Mutating child does not affect parent
+		childEmpty.Data["b"] = 2
+		childNil.Data["c"] = 3
+		assert.NotContains(t, parent.Data, "b")
+		assert.NotContains(t, parent.Data, "c")
+
+		// Logging produces expected entry
+		childEmpty.Info("msg1")
+		childNil.Info("msg2")
+		require.Len(t, hook.Entries, 2)
+		assert.Equal(t, logrus.Fields{"a": 1, "b": 2}, hook.Entries[0].Data)
+		assert.Equal(t, logrus.Fields{"a": 1, "c": 3}, hook.Entries[1].Data)
+	})
+
+	t.Run("empty base entry with empty fields", func(t *testing.T) {
+		hook.Reset()
+		entry := logger.WithFields(logrus.Fields{})
+		assert.Empty(t, entry.Data)
+		entry.Data["x"] = 10
+		entry.Info("msg")
+		require.Len(t, hook.Entries, 1)
+		assert.Equal(t, logrus.Fields{"x": 10}, hook.Entries[0].Data)
+	})
+
+	t.Run("single field adds field and preserves isolation", func(t *testing.T) {
+		hook.Reset()
+		parent := logger.WithFields(logrus.Fields{"a": 1})
+		child := parent.WithFields(logrus.Fields{"b": 2})
+
+		assert.Equal(t, 1, child.Data["a"])
+		assert.Equal(t, 2, child.Data["b"])
+		assert.NotContains(t, parent.Data, "b")
+
+		child.Data["b"] = 20
+		assert.Equal(t, 20, child.Data["b"])
+		assert.NotContains(t, parent.Data, "b")
+
+		child.Info("single field log")
+		require.Len(t, hook.Entries, 1)
+		assert.Equal(t, logrus.Fields{"a": 1, "b": 20}, hook.Entries[0].Data)
+	})
+
+	t.Run("single field overwrites parent field", func(t *testing.T) {
+		hook.Reset()
+		parent := logger.WithFields(logrus.Fields{"a": 1})
+		child := parent.WithFields(logrus.Fields{"a": 99})
+
+		assert.Equal(t, 99, child.Data["a"])
+		assert.Equal(t, 1, parent.Data["a"])
+	})
+
+	t.Run("single invalid field is skipped and recorded", func(t *testing.T) {
+		hook.Reset()
+		parent := logger.WithFields(logrus.Fields{"a": 1})
+		child := parent.WithFields(logrus.Fields{"bad": func() {}})
+
+		assert.Equal(t, 1, child.Data["a"])
+		assert.NotContains(t, child.Data, "bad")
+		out, err := child.String()
+		require.NoError(t, err)
+		assert.Contains(t, out, `skipping unsupported field \"bad\"`)
+	})
+
+	t.Run("disabled log level with WithFields and WithField", func(t *testing.T) {
+		hook.Reset()
+		l, h := test.NewNullLogger()
+		l.SetLevel(logrus.InfoLevel)
+
+		// Debug is disabled; verify WithFields and WithField don't fail or emit logs
+		l.WithFields(logrus.Fields{"debug_key": "val"}).Debug("should not log")
+		l.WithField("debug_key2", "val2").Debug("should not log")
+		assert.Empty(t, h.Entries)
+
+		// Info is enabled
+		l.WithFields(logrus.Fields{"info_key": "val"}).Info("should log")
+		require.Len(t, h.Entries, 1)
+		assert.Equal(t, logrus.Fields{"info_key": "val"}, h.Entries[0].Data)
+	})
+}

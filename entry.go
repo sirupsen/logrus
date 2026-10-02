@@ -173,16 +173,31 @@ func (entry *Entry) WithContext(ctx context.Context) *Entry {
 // WithField adds a single field to the Entry.
 func (entry *Entry) WithField(key string, value any) *Entry {
 	dup := entry.dup()
-	dup.Data = maps.Clone(entry.Data)
+	if len(entry.Data) == 0 {
+		dup.Data = make(Fields, 1)
+	} else {
+		dup.Data = maps.Clone(entry.Data)
+	}
 	dup.addField(key, value)
 	return dup
 }
 
 // WithFields adds a map of fields to the Entry.
 func (entry *Entry) WithFields(fields Fields) *Entry {
+	switch len(fields) {
+	case 0:
+		return entry.Dup()
+	case 1:
+		for key, value := range fields {
+			return entry.WithField(key, value)
+		}
+	}
+
 	dup := entry.dup()
 	dup.Data = make(Fields, len(entry.Data)+len(fields))
-	maps.Copy(dup.Data, entry.Data)
+	if len(entry.Data) > 0 {
+		maps.Copy(dup.Data, entry.Data)
+	}
 
 	for key, value := range fields {
 		dup.addField(key, value)
