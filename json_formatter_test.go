@@ -418,3 +418,46 @@ func TestJSONEnableHTMLEscape(t *testing.T) {
 		t.Error("Message should be HTML escaped", s)
 	}
 }
+
+// prefixFieldClashes moves a clashing "func"/"file" field to "fields.func"/
+// "fields.file" so that the caller keys reported by the formatter are not
+// shadowed. When the caller keys are not emitted (here because
+// CallerPrettyfier returned empty strings, which the field is documented to
+// treat as "remove the key"), the original user keys must be gone too, rather
+// than resurfacing at the top level.
+func TestJSONFormatterCallerFieldClash(t *testing.T) {
+	formatter := &logrus.JSONFormatter{
+		DisableTimestamp: true,
+		CallerPrettyfier: func(*runtime.Frame) (string, string) { return "", "" },
+	}
+
+	entry := &logrus.Entry{
+		Logger:  logrus.New(),
+		Message: "hello",
+		Level:   logrus.InfoLevel,
+		Caller:  &runtime.Frame{Function: "pkg.Fn", File: "f.go", Line: 10},
+		Data:    logrus.Fields{"func": "userfunc", "file": "userfile"},
+	}
+
+	b, err := formatter.Format(entry)
+	if err != nil {
+		t.Fatal("Unable to format entry: ", err)
+	}
+
+	var data map[string]any
+	if err := json.Unmarshal(b, &data); err != nil {
+		t.Fatal("Unable to unmarshal formatted entry: ", err)
+	}
+
+	for _, key := range []string{"func", "file"} {
+		if _, ok := data[key]; ok {
+			t.Errorf(`Expected %q key to be removed from log entry: %v`, key, data)
+		}
+	}
+	if v := data["fields.func"]; v != "userfunc" {
+		t.Errorf(`Expected "fields.func"="userfunc": %v`, data)
+	}
+	if v := data["fields.file"]; v != "userfile" {
+		t.Errorf(`Expected "fields.file"="userfile": %v`, data)
+	}
+}

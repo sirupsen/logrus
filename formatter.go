@@ -77,15 +77,17 @@ func prefixFieldClashes(data Fields, fieldMap FieldMap, reportCaller bool) {
 		delete(data, logrusErrKey)
 	}
 
-	// If reportCaller is not set, 'func' will not conflict.
+	// If reportCaller is not set, 'func' and 'file' will not conflict.
 	if reportCaller {
 		funcKey := fieldMap.resolve(FieldKeyFunc)
 		if l, ok := data[funcKey]; ok {
 			data["fields."+funcKey] = l
+			delete(data, funcKey)
 		}
 		fileKey := fieldMap.resolve(FieldKeyFile)
 		if l, ok := data[fileKey]; ok {
 			data["fields."+fileKey] = l
+			delete(data, fileKey)
 		}
 	}
 }

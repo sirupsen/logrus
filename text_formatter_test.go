@@ -791,3 +791,66 @@ func TestTextFormatterPanickingValue(t *testing.T) {
 		})
 	}
 }
+
+// A user field that clashes with a reserved key is renamed to "fields.<key>", so
+// that the reserved key emitted by the formatter is never shadowed. That holds
+// for "time", "msg", "level" and "logrus_error"; "func" and "file" must behave
+// the same way when the caller is reported, otherwise the reserved key is
+// emitted twice.
+func TestTextFormatterCallerFieldClash(t *testing.T) {
+	newEntry := func(data Fields) *Entry {
+		return &Entry{
+			Logger:  New(),
+			Message: "hello",
+			Level:   InfoLevel,
+			Caller:  &runtime.Frame{Function: "pkg.Fn", File: "f.go", Line: 10},
+			Data:    data,
+		}
+	}
+
+	t.Run("reserved func and file keys are not emitted twice", func(t *testing.T) {
+		f := &TextFormatter{DisableTimestamp: true, DisableColors: true}
+
+		b, err := f.Format(newEntry(Fields{"func": "userfunc", "file": "userfile"}))
+		require.NoError(t, err)
+
+		assert.Equal(t,
+			`level=info msg=hello func=pkg.Fn file="f.go:10" fields.file=userfile fields.func=userfunc`+"\n",
+			string(b),
+			"clashing func/file fields must be moved to fields.func/fields.file, not duplicated")
+	})
+
+	t.Run("clashing FieldMap keys are not emitted twice", func(t *testing.T) {
+		f := &TextFormatter{
+			DisableTimestamp: true,
+			DisableColors:    true,
+			FieldMap:         FieldMap{FieldKeyFunc: "@caller", FieldKeyFile: "@location"},
+		}
+
+		b, err := f.Format(newEntry(Fields{"@caller": "userfunc", "@location": "userfile"}))
+		require.NoError(t, err)
+
+		assert.Equal(t,
+			`level=info msg=hello @caller=pkg.Fn @location="f.go:10" fields.@caller=userfunc fields.@location=userfile`+"\n",
+			string(b),
+			"clashing FieldMap keys must be moved to fields.*, not duplicated")
+	})
+
+	// CallerPrettyfier documents that returning an empty string removes the
+	// corresponding key. A clashing user field must not resurrect it.
+	t.Run("caller prettyfier can still remove the keys", func(t *testing.T) {
+		f := &TextFormatter{
+			DisableTimestamp: true,
+			DisableColors:    true,
+			CallerPrettyfier: func(*runtime.Frame) (string, string) { return "", "" },
+		}
+
+		b, err := f.Format(newEntry(Fields{"func": "userfunc", "file": "userfile"}))
+		require.NoError(t, err)
+
+		assert.Equal(t,
+			`level=info msg=hello fields.file=userfile fields.func=userfunc`+"\n",
+			string(b),
+			"keys removed by CallerPrettyfier must not be emitted with empty values")
+	})
+}
