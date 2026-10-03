@@ -52,11 +52,13 @@ type Formatter interface {
 //
 // It's not exported because it's still using Data in an opinionated way. It's to
 // avoid code duplication between the two default formatters.
-func prefixFieldClashes(data Fields, fieldMap FieldMap, reportCaller bool) {
-	timeKey := fieldMap.resolve(FieldKeyTime)
-	if t, ok := data[timeKey]; ok {
-		data["fields."+timeKey] = t
-		delete(data, timeKey)
+func prefixFieldClashes(data Fields, fieldMap FieldMap, reportCaller, timestampEnabled bool) {
+	if timestampEnabled {
+		timeKey := fieldMap.resolve(FieldKeyTime)
+		if t, ok := data[timeKey]; ok {
+			data["fields."+timeKey] = t
+			delete(data, timeKey)
+		}
 	}
 
 	msgKey := fieldMap.resolve(FieldKeyMsg)
