@@ -692,6 +692,40 @@ func TestTextEntryFieldValueError(t *testing.T) {
 	})
 }
 
+type customFormattedValue struct{}
+
+func (customFormattedValue) Format(state fmt.State, verb rune) {
+	_, _ = fmt.Fprint(state, "custom format")
+}
+
+type customFormattedError struct{ customFormattedValue }
+
+func (customFormattedError) Error() string { return "error text" }
+
+type customFormattedStringer struct{ customFormattedValue }
+
+func (customFormattedStringer) String() string { return "string text" }
+
+func TestTextFormatterCustomFormatter(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		value any
+	}{
+		{name: "formatter", value: customFormattedValue{}},
+		{name: "formatter and error", value: customFormattedError{}},
+		{name: "formatter and stringer", value: customFormattedStringer{}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			logger := New()
+			logger.SetOutput(&buf)
+			logger.SetFormatter(&TextFormatter{DisableColors: true, DisableTimestamp: true})
+			logger.WithField("value", tc.value).Info("test")
+			assert.Equal(t, "level=info msg=test value=\"custom format\"\n", buf.String())
+		})
+	}
+}
+
 type panicError string
 
 func (e panicError) Error() string { panic(string(e)) }
