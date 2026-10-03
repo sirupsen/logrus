@@ -21,7 +21,10 @@ func (hook *Hook) Fire(entry *logrus.Entry) error {
 	if err != nil {
 		return err
 	}
-	_, err = hook.Writer.Write(line)
+	n, err := hook.Writer.Write(line)
+	if n < len(line) && err == nil {
+		return io.ErrShortWrite
+	}
 	return err
 }
 
