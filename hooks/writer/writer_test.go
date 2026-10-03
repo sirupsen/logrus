@@ -38,3 +38,18 @@ func TestDifferentLevelsGoToDifferentWriters(t *testing.T) {
 	assert.Equal(t, "level=warning msg=\"send to a\"\n", a.String())
 	assert.Equal(t, "level=info msg=\"send to b\"\n", b.String())
 }
+
+type shortWriter struct{}
+
+func (shortWriter) Write(p []byte) (int, error) {
+	return len(p) - 1, nil
+}
+
+func TestHookReportsShortWrite(t *testing.T) {
+	log := logrus.New()
+	log.SetFormatter(&logrus.TextFormatter{DisableTimestamp: true})
+	hook := &writer.Hook{Writer: shortWriter{}}
+
+	err := hook.Fire(log.WithField("key", "value"))
+	assert.ErrorIs(t, err, io.ErrShortWrite)
+}
