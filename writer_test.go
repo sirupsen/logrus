@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -125,4 +126,41 @@ func TestWriterSplitsMax64KB(t *testing.T) {
 	lines := strings.Split(strings.TrimRight(buf.String(), "\n"), "\n")
 	// we should have 4 lines because we wrote more than 64 KB each time
 	assert.Len(t, lines, 4, "logger printed incorrect number of lines")
+}
+
+func TestWriterSplitNewlinesLargeWrite(t *testing.T) {
+	buf := &bufferWithMu{
+		buf: bytes.NewBuffer(nil),
+	}
+	logger := logrus.New()
+	logger.Formatter = &logrus.TextFormatter{
+		DisableColors:    true,
+		DisableTimestamp: true,
+	}
+	logger.SetOutput(buf)
+	writer := logger.Writer()
+
+	// A single write holding many short lines that together exceed the
+	// scanner's 64KB buffer must still produce one entry per line.
+	const logNum = 10000
+	var input strings.Builder
+	for i := range logNum {
+		input.WriteString("line-")
+		input.WriteString(strconv.Itoa(i))
+		input.WriteByte('\n')
+	}
+	require.Greater(t, input.Len(), bufio.MaxScanTokenSize)
+
+	_, err := writer.Write([]byte(input.String()))
+	require.NoError(t, err, "writer.Write failed")
+	writer.Close()
+	// Test is flaky because it writes in another goroutine,
+	// we need to make sure to wait a bit so all write are done.
+	time.Sleep(500 * time.Millisecond)
+
+	lines := strings.Split(strings.TrimRight(buf.String(), "\n"), "\n")
+	require.Len(t, lines, logNum, "logger printed incorrect number of lines")
+	for i, line := range lines {
+		assert.Equal(t, "level=info msg=line-"+strconv.Itoa(i), line)
+	}
 }
