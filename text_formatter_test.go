@@ -854,3 +854,109 @@ func TestTextFormatterCallerFieldClash(t *testing.T) {
 			"keys removed by CallerPrettyfier must not be emitted with empty values")
 	})
 }
+
+func TestTextFormatterDisableTimestampPreservesUserTimeField(t *testing.T) {
+	t.Run("plain output preserves user time field", func(t *testing.T) {
+		tf := &TextFormatter{
+			DisableTimestamp: true,
+			DisableColors:    true,
+		}
+
+		entry := &Entry{
+			Message: "event",
+			Level:   InfoLevel,
+			Data:    Fields{"time": "from application"},
+		}
+
+		b, err := tf.Format(entry)
+		require.NoError(t, err)
+
+		assert.Equal(t, "level=info msg=event time=\"from application\"\n", string(b))
+	})
+
+	t.Run("colored output preserves user time field", func(t *testing.T) {
+		tf := &TextFormatter{
+			DisableTimestamp: true,
+			ForceColors:      true,
+		}
+
+		entry := &Entry{
+			Message: "event",
+			Level:   InfoLevel,
+			Data:    Fields{"time": "from application"},
+		}
+
+		b, err := tf.Format(entry)
+		require.NoError(t, err)
+
+		assert.Contains(t, string(b), colorize(InfoLevel, "time")+`="from application"`)
+		assert.NotContains(t, string(b), "fields.time")
+		assert.NotContains(t, string(b), "[0000]")
+	})
+
+	t.Run("custom field map preserves mapped time key when timestamp disabled", func(t *testing.T) {
+		tf := &TextFormatter{
+			DisableTimestamp: true,
+			DisableColors:    true,
+			FieldMap: FieldMap{
+				FieldKeyTime: "@timestamp",
+			},
+		}
+
+		entry := &Entry{
+			Message: "event",
+			Level:   InfoLevel,
+			Data: Fields{
+				"@timestamp": "from application",
+				"time":       "normal time",
+			},
+		}
+
+		b, err := tf.Format(entry)
+		require.NoError(t, err)
+
+		assert.Equal(t, "level=info msg=event @timestamp=\"from application\" time=\"normal time\"\n", string(b))
+	})
+
+	t.Run("timestamp enabled still renames user time field to fields.time", func(t *testing.T) {
+		tf := &TextFormatter{
+			DisableTimestamp: false,
+			DisableColors:    true,
+			TimestampFormat:  "2006-01-02",
+		}
+
+		entry := &Entry{
+			Message: "event",
+			Level:   InfoLevel,
+			Time:    time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+			Data:    Fields{"time": "from application"},
+		}
+
+		b, err := tf.Format(entry)
+		require.NoError(t, err)
+
+		assert.Equal(t, "time=2023-01-01 level=info msg=event fields.time=\"from application\"\n", string(b))
+	})
+
+	t.Run("custom sorting with timestamp disabled preserves user time field", func(t *testing.T) {
+		tf := &TextFormatter{
+			DisableTimestamp: true,
+			DisableColors:    true,
+			SortingFunc: func(keys []string) {
+				slices.Sort(keys)
+			},
+		}
+
+		entry := &Entry{
+			Message: "event",
+			Level:   InfoLevel,
+			Data:    Fields{"time": "from application"},
+		}
+
+		b, err := tf.Format(entry)
+		require.NoError(t, err)
+
+		assert.Equal(t, "level=info msg=event time=\"from application\"\n", string(b))
+	})
+}
+
