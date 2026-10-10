@@ -124,6 +124,9 @@ var (
 	_ StdLogger = (*Entry)(nil)
 	_ StdLogger = (*Logger)(nil)
 
+	_ Fielder = (*Entry)(nil)
+	_ Fielder = (*Logger)(nil)
+
 	_ FieldLogger = (*Logger)(nil)
 	_ FieldLogger = (*Entry)(nil)
 	_ FieldLogger = Ext1FieldLogger(nil)
@@ -161,12 +164,18 @@ type StdLogger interface {
 	Panicln(args ...any)
 }
 
-// FieldLogger extends the [StdLogger] interface, generalizing
-// the [Entry] and [Logger] types.
-type FieldLogger interface {
+// Fielder defines the methods implemented by [Entry] and [Logger] to
+// manage fields (structured logs).
+type Fielder interface {
 	WithField(key string, value any) *Entry
 	WithFields(fields Fields) *Entry
 	WithError(err error) *Entry
+}
+
+// FieldLogger extends the [StdLogger] interface, generalizing
+// the [Entry] and [Logger] types.
+type FieldLogger interface {
+	Fielder
 
 	StdLogger
 	DebugLogger
