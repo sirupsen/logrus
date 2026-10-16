@@ -2,6 +2,7 @@ package writer_test
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"testing"
 
@@ -37,4 +38,33 @@ func TestDifferentLevelsGoToDifferentWriters(t *testing.T) {
 
 	assert.Equal(t, "level=warning msg=\"send to a\"\n", a.String())
 	assert.Equal(t, "level=info msg=\"send to b\"\n", b.String())
+}
+
+// shortWriter returns a short count without an error, violating the io.Writer
+// contract that applications sometimes get in practice.
+type shortWriter struct{}
+
+func (shortWriter) Write(p []byte) (int, error) { return len(p) - 1, nil }
+
+// errWriter returns a specific error so we can confirm it is preserved and
+// not shadowed by the short-write check.
+type errWriter struct{ err error }
+
+func (w errWriter) Write(p []byte) (int, error) { return 0, w.err }
+
+func TestFireReportsShortWrite(t *testing.T) {
+	hook := &writer.Hook{Writer: shortWriter{}, LogLevels: logrus.AllLevels}
+	entry := logrus.NewEntry(logrus.New()).WithField("key", "value")
+	err := hook.Fire(entry)
+	assert.ErrorIs(t, err, io.ErrShortWrite,
+		"short write without a writer error must surface io.ErrShortWrite")
+}
+
+func TestFirePreservesWriterError(t *testing.T) {
+	custom := errors.New("boom")
+	hook := &writer.Hook{Writer: errWriter{err: custom}, LogLevels: logrus.AllLevels}
+	entry := logrus.NewEntry(logrus.New()).WithField("key", "value")
+	err := hook.Fire(entry)
+	assert.ErrorIs(t, err, custom,
+		"the writer's own error must be preserved and not shadowed")
 }

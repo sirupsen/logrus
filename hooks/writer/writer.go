@@ -15,14 +15,23 @@ type Hook struct {
 var _ logrus.Hook = (*Hook)(nil)
 
 // Fire will be called when some logging function is called with current hook
-// It will format log entry to string and write it to appropriate writer
+// It will format log entry to string and write it to appropriate writer. If
+// the writer reports a short write without returning an error (an io.Writer
+// contract violation that happens in practice), surface io.ErrShortWrite so
+// the caller is not told the entry was written when it was truncated.
 func (hook *Hook) Fire(entry *logrus.Entry) error {
 	line, err := entry.Bytes()
 	if err != nil {
 		return err
 	}
-	_, err = hook.Writer.Write(line)
-	return err
+	n, err := hook.Writer.Write(line)
+	if err != nil {
+		return err
+	}
+	if n < len(line) {
+		return io.ErrShortWrite
+	}
+	return nil
 }
 
 // Levels define on which log levels this hook would trigger
