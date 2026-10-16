@@ -854,3 +854,56 @@ func TestTextFormatterCallerFieldClash(t *testing.T) {
 			"keys removed by CallerPrettyfier must not be emitted with empty values")
 	})
 }
+
+// TestTextDisableTimestampKeepsUserTimeField verifies that with
+// DisableTimestamp the text formatter neither renames a user "time" field
+// to "fields.time" nor substitutes the entry's automatic time for the
+// field's value in the plain-output switch.
+func TestTextDisableTimestampKeepsUserTimeField(t *testing.T) {
+	// Default key: "time"
+	formatter := TextFormatter{DisableTimestamp: true, DisableColors: true}
+	entry := NewEntry(New()).WithField("time", "from application")
+	b, err := formatter.Format(entry)
+	if err != nil {
+		t.Fatalf("formatter errored: %v", err)
+	}
+	s := string(b)
+	if !strings.Contains(s, "time=\"from application\"") {
+		t.Fatalf("user time field dropped or overwritten: %q", s)
+	}
+	if strings.Contains(s, "fields.time=") {
+		t.Fatalf("user time field was renamed when it should have been preserved: %q", s)
+	}
+
+	// Custom key: "@timestamp"
+	customFormatter := TextFormatter{
+		DisableTimestamp: true,
+		DisableColors:    true,
+		FieldMap:         FieldMap{FieldKeyTime: "@timestamp"},
+	}
+	entry = NewEntry(New()).WithField("@timestamp", "from application")
+	b, err = customFormatter.Format(entry)
+	if err != nil {
+		t.Fatalf("formatter errored: %v", err)
+	}
+	s = string(b)
+	if !strings.Contains(s, "@timestamp=\"from application\"") {
+		t.Fatalf("user @timestamp field dropped or overwritten: %q", s)
+	}
+}
+
+// TestTextTimestampEnabledStillClashes keeps the existing clash behaviour so
+// an automatic timestamp cannot be silently overwritten by a user field.
+func TestTextTimestampEnabledStillClashes(t *testing.T) {
+	formatter := TextFormatter{DisableColors: true}
+	entry := NewEntry(New()).WithField("time", "from application")
+	b, err := formatter.Format(entry)
+	if err != nil {
+		t.Fatalf("formatter errored: %v", err)
+	}
+	s := string(b)
+	// user field must be renamed to fields.time
+	if !strings.Contains(s, "fields.time=\"from application\"") {
+		t.Fatalf("user time field should have moved to fields.time: %q", s)
+	}
+}

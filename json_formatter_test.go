@@ -461,3 +461,70 @@ func TestJSONFormatterCallerFieldClash(t *testing.T) {
 		t.Errorf(`Expected "fields.file"="userfile": %v`, data)
 	}
 }
+
+// TestJSONDisableTimestampKeepsUserTimeField verifies that a user-provided
+// field named "time" (or the FieldMap-remapped name) is not renamed to
+// "fields.time" when DisableTimestamp is set. There is no automatic
+// timestamp to collide with in that case, so the application value must
+// survive under its original key.
+func TestJSONDisableTimestampKeepsUserTimeField(t *testing.T) {
+	// Default key: "time"
+	defaultFormatter := logrus.JSONFormatter{DisableTimestamp: true}
+	entry := logrus.NewEntry(logrus.New()).WithField("time", "from application")
+	b, err := defaultFormatter.Format(entry)
+	if err != nil {
+		t.Fatalf("formatter errored: %v", err)
+	}
+	var out map[string]any
+	if jerr := json.Unmarshal(b, &out); jerr != nil {
+		t.Fatalf("output was not valid JSON: %v (%s)", jerr, b)
+	}
+	if got, ok := out["time"]; !ok || got != "from application" {
+		t.Fatalf("user time field dropped: output=%s", b)
+	}
+	if _, renamed := out["fields.time"]; renamed {
+		t.Fatalf("user time field was renamed when it should have been preserved: %s", b)
+	}
+
+	// Custom key via FieldMap: "@timestamp"
+	customFormatter := logrus.JSONFormatter{
+		DisableTimestamp: true,
+		FieldMap:         logrus.FieldMap{logrus.FieldKeyTime: "@timestamp"},
+	}
+	entry = logrus.NewEntry(logrus.New()).WithField("@timestamp", "from application")
+	b, err = customFormatter.Format(entry)
+	if err != nil {
+		t.Fatalf("formatter errored: %v", err)
+	}
+	out = nil
+	if jerr := json.Unmarshal(b, &out); jerr != nil {
+		t.Fatalf("output was not valid JSON: %v (%s)", jerr, b)
+	}
+	if got, ok := out["@timestamp"]; !ok || got != "from application" {
+		t.Fatalf("user @timestamp field dropped: output=%s", b)
+	}
+	if _, renamed := out["fields.@timestamp"]; renamed {
+		t.Fatalf("user @timestamp was renamed when it should have been preserved: %s", b)
+	}
+}
+
+// TestJSONTimestampEnabledStillClashes keeps the existing clash behaviour so
+// an automatic timestamp cannot be silently overwritten by a user field.
+func TestJSONTimestampEnabledStillClashes(t *testing.T) {
+	formatter := logrus.JSONFormatter{}
+	entry := logrus.NewEntry(logrus.New()).WithField("time", "from application")
+	b, err := formatter.Format(entry)
+	if err != nil {
+		t.Fatalf("formatter errored: %v", err)
+	}
+	var out map[string]any
+	if jerr := json.Unmarshal(b, &out); jerr != nil {
+		t.Fatalf("output was not valid JSON: %v (%s)", jerr, b)
+	}
+	if _, hasAuto := out["time"]; !hasAuto {
+		t.Fatalf("automatic time missing: %s", b)
+	}
+	if got, ok := out["fields.time"]; !ok || got != "from application" {
+		t.Fatalf("user time field should have moved to fields.time: %s", b)
+	}
+}
