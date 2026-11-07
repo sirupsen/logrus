@@ -145,13 +145,18 @@ func (f *TextFormatter) isColored(isTerminal bool) bool {
 
 // Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
-	data := make(Fields, len(entry.Data))
-	maps.Copy(data, entry.Data)
 	isColored := f.isColored(f.isTerminal(entry))
 
 	caller := entry.Caller
 	hasCaller := caller != nil
-	prefixFieldClashes(data, f.FieldMap, hasCaller)
+	// The formatter does not change data, so copy it only when a key
+	// must be renamed.
+	data := entry.Data
+	if i, v := firstFieldClash(data, f.FieldMap, hasCaller); i >= 0 {
+		data = make(Fields, len(entry.Data))
+		maps.Copy(data, entry.Data)
+		prefixFieldClashesFrom(data, f.FieldMap, hasCaller, i, v)
+	}
 	keys := make([]string, 0, len(data))
 	for k := range data {
 		keys = append(keys, k)
@@ -169,6 +174,48 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	}
 
 	return b.Bytes(), nil
+}
+
+// clashKeys are the default fields in the order that prefixFieldClashes
+// renames them. The last two clash only when the entry has a caller.
+var clashKeys = [...]fieldKey{FieldKeyTime, FieldKeyMsg, FieldKeyLevel, FieldKeyLogrusError, FieldKeyFunc, FieldKeyFile}
+
+func clashKeysFor(reportCaller bool) []fieldKey {
+	if reportCaller {
+		return clashKeys[:]
+	}
+	return clashKeys[:4]
+}
+
+// firstFieldClash returns the index in clashKeys of the first default field
+// that is also a key in data, and the value of that key. It returns -1 if no
+// key clashes.
+func firstFieldClash(data Fields, fieldMap FieldMap, reportCaller bool) (int, any) {
+	if len(data) == 0 {
+		return -1, nil
+	}
+	for i, k := range clashKeysFor(reportCaller) {
+		if v, ok := data[fieldMap.resolve(k)]; ok {
+			return i, v
+		}
+	}
+	return -1, nil
+}
+
+// prefixFieldClashesFrom does the renames of prefixFieldClashes, starting
+// at clashKeys[i]. v is the value of that key, from firstFieldClash.
+func prefixFieldClashesFrom(data Fields, fieldMap FieldMap, reportCaller bool, i int, v any) {
+	keys := clashKeysFor(reportCaller)
+	key := fieldMap.resolve(keys[i])
+	data["fields."+key] = v
+	delete(data, key)
+	for _, k := range keys[i+1:] {
+		key := fieldMap.resolve(k)
+		if v, ok := data[key]; ok {
+			data["fields."+key] = v
+			delete(data, key)
+		}
+	}
 }
 
 func (f *TextFormatter) printPlain(b *bytes.Buffer, entry *Entry, keys []string, data Fields) {
