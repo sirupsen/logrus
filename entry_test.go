@@ -106,8 +106,7 @@ func TestEntryErrorFieldValues(t *testing.T) {
 		for _, val := range values {
 			t.Run(tc.doc+"("+val.name+")", func(t *testing.T) {
 				if _, ok := val.value.(error); tc.doc == "WithError" && !ok {
-					skip(t, "WithError only accepts error values")
-					return
+					t.Skip("WithError only accepts error values")
 				}
 
 				var buf bytes.Buffer

@@ -1,6 +1,6 @@
-// TinyGo currently (v0.41.1) doesn't support `os/exec`;
+// TinyGo currently (v0.44.0) doesn't support `os/exec`;
 // https://tinygo.org/docs/reference/lang-support/stdlib/#osexec
-// https://github.com/tinygo-org/tinygo/blob/v0.41.1/src/os/exec_linux.go#L77-L95
+// https://github.com/tinygo-org/tinygo/blob/v0.44.0/src/os/exec_linux.go#L77-L95
 //go:build !tinygo
 
 package logrus_test

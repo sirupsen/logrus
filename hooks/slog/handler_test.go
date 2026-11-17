@@ -385,10 +385,9 @@ func TestHandler_PreservesRecordTime(t *testing.T) {
 // information carried by the slog record.
 func TestHandler_PreservesRecordCaller(t *testing.T) {
 	if runtime.Compiler == "tinygo" {
-		// TinyGo currently (v0.41.1) doesn't support `runtime.Caller`;
+		// TinyGo currently (v0.44.0) doesn't support `runtime.Caller`;
 		// https://tinygo.org/docs/reference/lang-support/stdlib/#logslog
-		t.Log("SKIP: TinyGo does not support runtime.Caller") // no t.Skip on tinygo
-		return
+		t.Skip("TinyGo does not support runtime.Caller")
 	}
 
 	logger, hook := test.NewNullLogger()
