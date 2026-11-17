@@ -80,7 +80,7 @@ jobs:
         # TinyGo may not have support for all latest language features,
         # so we're pinning to a fixed version for now.
         # https://tinygo.org/docs/reference/go-compat-matrix/
-        go-version: [1.26.x]
+        go-version: [1.27.x]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -98,8 +98,8 @@ jobs:
           sudo dpkg -i "${tinygo_deb}"
           tinygo version
         env:
-          TINYGO_VERSION: 0.41.1
-          TINYGO_CHECKSUM: "sha256:901fbccffc61adb111656d1f907dfc21b6c499ca841b115866a0d6de2d835fbe"
+          TINYGO_VERSION: 0.44.0
+          TINYGO_CHECKSUM: "sha256:8810b20d88236a1353e35641a6a56df1720a7db97006aacc2c6656a3bb090b74"
       - name: Test
         # Run with "safe" tag to avoid "panic: reflect.Value has no flag field"
         # coming from go-spew (or the next testify version);
