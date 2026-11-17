@@ -19,27 +19,12 @@ import (
 	. "github.com/sirupsen/logrus/internal/testutils"
 )
 
-func skipReportCaller(t *testing.T) bool {
+func skipIfCallerUnsupported(t *testing.T) {
 	t.Helper()
-	switch runtime.Compiler {
-	case "tinygo":
-		// TinyGo currently (v0.41.1) doesn't support `runtime.Caller`;
+	if runtime.Compiler == "tinygo" {
+		// TinyGo currently (v0.44.0) doesn't support `runtime.Caller`;
 		// https://tinygo.org/docs/reference/lang-support/stdlib/#logslog
-		skip(t, "TinyGo does not support runtime.Caller")
-		return true
-	default:
-		return false
-	}
-}
-
-// tinygo doesn't support t.Skip
-func skip(t *testing.T, msg string) {
-	t.Helper()
-	switch runtime.Compiler {
-	case "tinygo":
-		t.Log(msg+"\n\r--- SKIP:", t.Name(), "(0.00s)")
-	default:
-		t.Skip(msg)
+		t.Skip("TinyGo does not support runtime.Caller")
 	}
 }
 
@@ -48,9 +33,7 @@ func skip(t *testing.T, msg string) {
 // Verify that functions within the Logrus package aren't considered when
 // discovering the caller.
 func TestReportCallerWhenConfigured(t *testing.T) {
-	if skipReportCaller(t) {
-		return
-	}
+	skipIfCallerUnsupported(t)
 	LogAndAssertJSON(t, func(log *Logger) {
 		log.ReportCaller = false
 		log.Print("testNoCaller")
@@ -157,9 +140,7 @@ func logSomething(t *testing.T, message string) Fields {
 
 // TestReportCallerHelperDirect - verify reference when logging from a regular function
 func TestReportCallerHelperDirect(t *testing.T) {
-	if skipReportCaller(t) {
-		return
-	}
+	skipIfCallerUnsupported(t)
 	fields := logSomething(t, "direct")
 
 	assert.Equal(t, "direct", fields["msg"])
@@ -169,9 +150,7 @@ func TestReportCallerHelperDirect(t *testing.T) {
 
 // TestReportCallerHelperViaPointer - verify reference when logging from a function called via pointer
 func TestReportCallerHelperViaPointer(t *testing.T) {
-	if skipReportCaller(t) {
-		return
-	}
+	skipIfCallerUnsupported(t)
 	fptr := logSomething
 	fields := fptr(t, "via pointer")
 
@@ -432,9 +411,7 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 }
 
 func TestNestedLoggingReportsCorrectCaller(t *testing.T) {
-	if skipReportCaller(t) {
-		return
-	}
+	skipIfCallerUnsupported(t)
 
 	var buffer bytes.Buffer
 	var fields Fields
@@ -812,9 +789,7 @@ func TestLogLevelEnabled(t *testing.T) {
 }
 
 func TestReportCallerOnTextFormatter(t *testing.T) {
-	if skipReportCaller(t) {
-		return
-	}
+	skipIfCallerUnsupported(t)
 	l := New()
 	l.SetOutput(io.Discard)
 
@@ -828,9 +803,7 @@ func TestReportCallerOnTextFormatter(t *testing.T) {
 }
 
 func TestSetReportCallerRace(t *testing.T) {
-	if skipReportCaller(t) {
-		return
-	}
+	skipIfCallerUnsupported(t)
 	l := New()
 	l.Out = io.Discard
 	l.SetReportCaller(true)

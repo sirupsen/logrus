@@ -577,11 +577,6 @@ func TestCustomSorting(t *testing.T) {
 // regression test for https://github.com/sirupsen/logrus/issues/1298
 func TestCustomSorting_FirstFormat(t *testing.T) {
 	if !checkIfTerminal(os.Stderr) {
-		if runtime.Compiler == "tinygo" {
-			// TinyGo currently (v0.41.1) doesn't support t.Skip (SkipNow is incomplete, requires runtime.Goexit())
-			t.Log("SKIP: test requires a TTY")
-			return
-		}
 		t.Skip("test requires a TTY")
 	}
 
@@ -777,10 +772,7 @@ func TestTextFormatterPanickingValue(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.doc, func(t *testing.T) {
 			if tc.skipTiny && runtime.Compiler == "tinygo" {
-				// tinygo doesn't support t.Skip
-				msg := "TinyGo does not panic when invoking a value-receiver method through a nil pointer"
-				t.Log(msg+"\n\r--- SKIP:", t.Name(), "(0.00s)")
-				return
+				t.Skip("TinyGo does not panic when invoking a value-receiver method through a nil pointer")
 			}
 			got, err := formatter.Format(&Entry{
 				Level: InfoLevel,
