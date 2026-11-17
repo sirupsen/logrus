@@ -4,6 +4,7 @@ package test
 
 import (
 	"io"
+	"maps"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -55,7 +56,8 @@ func (t *Hook) Levels() []logrus.Level {
 	return logrus.AllLevels
 }
 
-// LastEntry returns the last entry that was logged or nil.
+// LastEntry returns a copy of the last entry that was logged or nil.
+// The Data map is copied; values stored in it are not deep-copied.
 func (t *Hook) LastEntry() *logrus.Entry {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -63,10 +65,13 @@ func (t *Hook) LastEntry() *logrus.Entry {
 	if i < 0 {
 		return nil
 	}
-	return &t.Entries[i]
+	entry := t.Entries[i]
+	entry.Data = maps.Clone(entry.Data)
+	return &entry
 }
 
-// AllEntries returns all entries that were logged.
+// AllEntries returns copies of all entries that were logged.
+// Each Data map is copied; values stored in it are not deep-copied.
 func (t *Hook) AllEntries() []*logrus.Entry {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -74,7 +79,9 @@ func (t *Hook) AllEntries() []*logrus.Entry {
 	entries := make([]*logrus.Entry, len(t.Entries))
 	for i := 0; i < len(t.Entries); i++ {
 		// Make a copy, for safety
-		entries[i] = &t.Entries[i]
+		entry := t.Entries[i]
+		entry.Data = maps.Clone(entry.Data)
+		entries[i] = &entry
 	}
 	return entries
 }
