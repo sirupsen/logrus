@@ -784,6 +784,97 @@ func TestTextFormatterPanickingValue(t *testing.T) {
 	}
 }
 
+type cyclicStringer map[string]any
+
+func (cyclicStringer) String() string { return "stringer" }
+
+type cyclicStruct struct {
+	Self []any
+}
+
+type cyclicNode struct {
+	Next *cyclicNode
+}
+
+// TestTextFormatterCyclicValue verifies that a value fmt cannot print because
+// it contains itself is replaced, instead of overflowing the stack.
+func TestTextFormatterCyclicValue(t *testing.T) {
+	selfMap := map[string]any{}
+	selfMap["self"] = selfMap
+
+	selfSlice := []any{nil}
+	selfSlice[0] = selfSlice
+
+	viaStruct := &cyclicStruct{Self: []any{nil}}
+	viaStruct.Self[0] = *viaStruct
+
+	stringer := cyclicStringer{}
+	stringer["self"] = stringer
+
+	shared := map[string]any{"a": 1}
+
+	const cyclic = `level=info test="%!v(CYCLE)"` + "\n"
+	tests := []struct {
+		doc   string
+		value any
+		want  string
+	}{
+		{doc: "map", value: selfMap, want: cyclic},
+		{doc: "slice", value: selfSlice, want: cyclic},
+		{doc: "struct", value: *viaStruct, want: cyclic},
+		{doc: "pointer to map", value: &selfMap, want: cyclic},
+		{doc: "nested", value: []any{1, map[string]any{"a": selfMap}}, want: cyclic},
+		{
+			doc:   "repeated value is not a cycle",
+			value: []any{shared, shared},
+			want:  `level=info test="[map[a:1] map[a:1]]"` + "\n",
+		},
+		{
+			doc:   "cycle behind a Stringer is not printed",
+			value: []any{stringer},
+			want:  `level=info test="[stringer]"` + "\n",
+		},
+	}
+
+	formatter := &TextFormatter{
+		DisableColors:    true,
+		DisableTimestamp: true,
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.doc, func(t *testing.T) {
+			got, err := formatter.Format(&Entry{
+				Level: InfoLevel,
+				Data:  Fields{"test": tc.value},
+			})
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, string(got))
+		})
+	}
+
+	// fmt prints a nested pointer as an address, so this does not recurse.
+	t.Run("nested pointer is not followed", func(t *testing.T) {
+		node := &cyclicNode{}
+		node.Next = node
+		got, err := formatter.Format(&Entry{
+			Level: InfoLevel,
+			Data:  Fields{"test": node},
+		})
+		require.NoError(t, err)
+		assert.NotContains(t, string(got), "CYCLE")
+	})
+
+	t.Run("colored output", func(t *testing.T) {
+		colored := &TextFormatter{ForceColors: true, DisableTimestamp: true}
+		got, err := colored.Format(&Entry{
+			Level: InfoLevel,
+			Data:  Fields{"test": selfMap},
+		})
+		require.NoError(t, err)
+		assert.Contains(t, string(got), `"%!v(CYCLE)"`)
+	})
+}
+
 // A user field that clashes with a reserved key is renamed to "fields.<key>", so
 // that the reserved key emitted by the formatter is never shadowed. That holds
 // for "time", "msg", "level" and "logrus_error"; "func" and "file" must behave

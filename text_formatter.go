@@ -372,11 +372,90 @@ func (f *TextFormatter) appendValue(b *bytes.Buffer, value any) {
 		num = strconv.AppendFloat(raw[:0], v, 'g', -1, 64)
 
 	default:
+		if isCyclic(value) {
+			f.appendString(b, "%!v(CYCLE)")
+			return
+		}
 		f.appendString(b, fmt.Sprint(value))
 		return
 	}
 
 	f.appendNumeric(b, num)
+}
+
+// isCyclic reports whether printing value with fmt would never terminate. A
+// stack overflow is fatal and cannot be recovered from, so this has to be
+// checked before calling fmt.
+func isCyclic(value any) bool {
+	v := reflect.ValueOf(value)
+	// fmt only follows a pointer at the top level.
+	if v.Kind() == reflect.Pointer {
+		v = v.Elem()
+	}
+	return hasCycle(v, make(map[visitedRef]struct{}))
+}
+
+// visitedRef identifies a map or slice that is being walked. The length is
+// included because slices of different lengths can share a data pointer.
+type visitedRef struct {
+	ptr uintptr
+	len int
+}
+
+// hasCycle follows the same path as fmt: it stops at values that format
+// themselves and at nested pointers, which fmt prints as addresses. Only maps
+// and slices are tracked, because every cycle fmt can follow goes through one.
+// A ref is forgotten once walked, so a repeated value is not reported.
+func hasCycle(v reflect.Value, active map[visitedRef]struct{}) bool {
+	kind := v.Kind()
+	if kind == reflect.Interface {
+		return hasCycle(v.Elem(), active)
+	}
+	if kind != reflect.Map && kind != reflect.Slice && kind != reflect.Struct && kind != reflect.Array {
+		return false
+	}
+
+	if v.CanInterface() {
+		switch v.Interface().(type) {
+		case fmt.Formatter, error, fmt.Stringer:
+			return false
+		}
+	}
+
+	if kind == reflect.Map || kind == reflect.Slice {
+		if v.Len() == 0 {
+			return false
+		}
+		ref := visitedRef{ptr: v.Pointer(), len: v.Len()}
+		if _, ok := active[ref]; ok {
+			return true
+		}
+		active[ref] = struct{}{}
+		defer delete(active, ref)
+	}
+
+	if kind == reflect.Map {
+		for iter := v.MapRange(); iter.Next(); {
+			if hasCycle(iter.Value(), active) {
+				return true
+			}
+		}
+		return false
+	}
+	if kind == reflect.Struct {
+		for i := range v.NumField() {
+			if hasCycle(v.Field(i), active) {
+				return true
+			}
+		}
+		return false
+	}
+	for i := range v.Len() {
+		if hasCycle(v.Index(i), active) {
+			return true
+		}
+	}
+	return false
 }
 
 func (f *TextFormatter) appendString(b *bytes.Buffer, s string) {
