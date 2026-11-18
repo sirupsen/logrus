@@ -112,3 +112,14 @@ func TestLoggerLogPanicLevelDoesNotPanic(t *testing.T) {
 		})
 	}
 }
+
+func TestLoggerPooledEntryDataIsReset(t *testing.T) {
+	logger, hook := test.NewNullLogger()
+
+	logger.WithField("first", 1).Info("one")
+	logger.WithField("second", 2).Info("two")
+
+	require.Len(t, hook.Entries, 2)
+	assert.Equal(t, logrus.Fields{"first": 1}, hook.Entries[0].Data)
+	assert.Equal(t, logrus.Fields{"second": 2}, hook.Entries[1].Data)
+}
