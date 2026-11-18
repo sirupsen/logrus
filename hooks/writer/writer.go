@@ -21,8 +21,14 @@ func (hook *Hook) Fire(entry *logrus.Entry) error {
 	if err != nil {
 		return err
 	}
-	_, err = hook.Writer.Write(line)
-	return err
+	n, err := hook.Writer.Write(line)
+	if err != nil {
+		return err
+	}
+	if n < len(line) {
+		return io.ErrShortWrite
+	}
+	return nil
 }
 
 // Levels define on which log levels this hook would trigger
