@@ -151,7 +151,7 @@ func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 
 	caller := entry.Caller
 	hasCaller := caller != nil
-	prefixFieldClashes(data, f.FieldMap, hasCaller)
+	prefixFieldClashes(data, f.FieldMap, hasCaller, f.DisableTimestamp)
 	keys := make([]string, 0, len(data))
 	for k := range data {
 		keys = append(keys, k)
@@ -221,7 +221,7 @@ func (f *TextFormatter) printPlain(b *bytes.Buffer, entry *Entry, keys []string,
 	for _, key := range fixedKeys {
 		var value any
 		switch {
-		case key == f.FieldMap.resolve(FieldKeyTime):
+		case key == f.FieldMap.resolve(FieldKeyTime) && !f.DisableTimestamp:
 			if f.TimestampFormat == "" {
 				value = entry.Time.Format(defaultTimestampFormat)
 			} else {

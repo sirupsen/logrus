@@ -461,3 +461,52 @@ func TestJSONFormatterCallerFieldClash(t *testing.T) {
 		t.Errorf(`Expected "fields.file"="userfile": %v`, data)
 	}
 }
+
+func TestJSONDisableTimestampPreservesUserTimeField(t *testing.T) {
+	entry := formatJSONEntry(t, &logrus.JSONFormatter{DisableTimestamp: true}, logrus.Fields{
+		"time": "from application",
+	})
+
+	if entry["time"] != "from application" {
+		t.Errorf("Expected 'time' field to be 'from application', got %v", entry["time"])
+	}
+	if _, ok := entry["fields.time"]; ok {
+		t.Errorf("Unexpected 'fields.time' present: %v", entry["fields.time"])
+	}
+}
+
+func TestJSONDisableTimestampWithCustomFieldMap(t *testing.T) {
+	entry := formatJSONEntry(t, &logrus.JSONFormatter{
+		DisableTimestamp: true,
+		FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime: "@timestamp",
+		},
+	}, logrus.Fields{
+		"@timestamp": "from application",
+		"time":       "normal time field",
+	})
+
+	if entry["@timestamp"] != "from application" {
+		t.Errorf("Expected '@timestamp' field to be 'from application', got %v", entry["@timestamp"])
+	}
+	if entry["time"] != "normal time field" {
+		t.Errorf("Expected 'time' field to be 'normal time field', got %v", entry["time"])
+	}
+	if _, ok := entry["fields.@timestamp"]; ok {
+		t.Errorf("Unexpected 'fields.@timestamp' present: %v", entry["fields.@timestamp"])
+	}
+}
+
+func TestJSONEnableTimestampRenamesUserTimeField(t *testing.T) {
+	entry := formatJSONEntry(t, &logrus.JSONFormatter{}, logrus.Fields{
+		"time": "from application",
+	})
+
+	if entry["fields.time"] != "from application" {
+		t.Errorf("Expected 'fields.time' field to be 'from application', got %v", entry["fields.time"])
+	}
+	if entry["time"] == "from application" {
+		t.Errorf("Expected 'time' field to be automatic timestamp, got %v", entry["time"])
+	}
+}
+
