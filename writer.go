@@ -7,9 +7,9 @@ import (
 	"strings"
 )
 
-// Writer at INFO level. See WriterLevel for details.
+// Writer at the Logger's level. See WriterLevel for details.
 func (logger *Logger) Writer() *io.PipeWriter {
-	return logger.WriterLevel(InfoLevel)
+	return logger.WriterLevel(logger.GetLevel())
 }
 
 // WriterLevel returns an io.Writer that can be used to write arbitrary text to
@@ -21,9 +21,9 @@ func (logger *Logger) WriterLevel(level Level) *io.PipeWriter {
 	return NewEntry(logger).WriterLevel(level)
 }
 
-// Writer returns an io.Writer that writes to the logger at the info log level
+// Writer returns an io.Writer that writes to the logger at its configured log level
 func (entry *Entry) Writer() *io.PipeWriter {
-	return entry.WriterLevel(InfoLevel)
+	return entry.WriterLevel(entry.Logger.GetLevel())
 }
 
 // WriterLevel returns an io.Writer that writes to the logger at the given log level
