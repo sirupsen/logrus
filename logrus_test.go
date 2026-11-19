@@ -711,7 +711,7 @@ func TestEntryWriter(t *testing.T) {
 	log.Formatter = new(JSONFormatter)
 	_, err := log.WithField("foo", "bar").WriterLevel(WarnLevel).Write([]byte("hello\n"))
 	if err != nil {
-		t.Error("unexecpted error", err)
+		t.Error("unexpected error", err)
 	}
 
 	bs := <-cw
