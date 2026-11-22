@@ -461,3 +461,70 @@ func TestJSONFormatterCallerFieldClash(t *testing.T) {
 		t.Errorf(`Expected "fields.file"="userfile": %v`, data)
 	}
 }
+
+type jsonPanicError string
+
+func (e jsonPanicError) Error() string { panic(string(e)) }
+
+type jsonNilError struct{}
+
+func (*jsonNilError) Error() string { panic("boom") }
+
+type jsonNilValueError struct{}
+
+func (jsonNilValueError) Error() string { return "" }
+
+// TestJSONFormatterPanickingError verifies a panicking Error method doesn't take
+// down the logging call, matching TextFormatter.
+//
+// regression test for https://github.com/sirupsen/logrus/issues/1304
+func TestJSONFormatterPanickingError(t *testing.T) {
+	var (
+		nilErr      *jsonNilError
+		nilValueErr *jsonNilValueError
+	)
+
+	tests := []struct {
+		doc   string
+		value error
+		want  any
+
+		skipTiny bool
+	}{
+		{
+			doc:   "error",
+			value: jsonPanicError("boom"),
+			want:  "%!v(PANIC=Error method: boom)",
+		},
+		{
+			doc:   "nil pointer-receiver error",
+			value: nilErr,
+			want:  nil,
+		},
+		{
+			doc:      "nil value-receiver error",
+			value:    nilValueErr,
+			want:     nil,
+			skipTiny: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.doc, func(t *testing.T) {
+			if tc.skipTiny && runtime.Compiler == "tinygo" {
+				// tinygo doesn't support t.Skip
+				msg := "TinyGo does not panic when invoking a value-receiver method through a nil pointer"
+				t.Log(msg+"\n\r--- SKIP:", t.Name(), "(0.00s)")
+				return
+			}
+			entry := formatJSONEntry(t, &logrus.JSONFormatter{}, logrus.Fields{"test": tc.value})
+			got, ok := entry["test"]
+			if !ok {
+				t.Fatal("test field not set")
+			}
+			if got != tc.want {
+				t.Errorf("got %v, want %v", got, tc.want)
+			}
+		})
+	}
+}

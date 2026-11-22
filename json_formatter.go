@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"runtime"
 	"strconv"
 )
@@ -75,7 +76,7 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		case error:
 			// Otherwise errors are ignored by `encoding/json`
 			// https://github.com/sirupsen/logrus/issues/137
-			data[k] = v.Error()
+			data[k] = errorValue(v)
 		default:
 			data[k] = v
 		}
@@ -134,4 +135,20 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 	}
 
 	return b.Bytes(), nil
+}
+
+// errorValue returns the value to log for err. A panicking Error method must not
+// take down the logging call, so like [TextFormatter] it recovers: a nil pointer
+// is logged as null (as an untyped nil error is), any other panic as a message.
+func errorValue(err error) (val any) {
+	defer func() {
+		if r := recover(); r != nil {
+			if rv := reflect.ValueOf(err); rv.Kind() == reflect.Pointer && rv.IsNil() {
+				val = nil
+			} else {
+				val = fmt.Sprintf("%%!v(PANIC=Error method: %v)", r)
+			}
+		}
+	}()
+	return err.Error()
 }
