@@ -380,6 +380,24 @@ func TestJSONDisableTimestamp(t *testing.T) {
 	}
 }
 
+func TestJSONDisableTimestampKeepsUserTimeField(t *testing.T) {
+	for _, fieldName := range []string{"time", "@timestamp"} {
+		t.Run(fieldName, func(t *testing.T) {
+			formatter := &logrus.JSONFormatter{
+				DisableTimestamp: true,
+				FieldMap:         logrus.FieldMap{logrus.FieldKeyTime: fieldName},
+			}
+			entry := formatJSONEntry(t, formatter, logrus.Fields{fieldName: "from application"})
+			if got := entry[fieldName]; got != "from application" {
+				t.Errorf("user time field = %v, want from application", got)
+			}
+			if _, ok := entry["fields."+fieldName]; ok {
+				t.Errorf("user time field was renamed despite disabled timestamp: %v", entry)
+			}
+		})
+	}
+}
+
 func TestJSONEnableTimestamp(t *testing.T) {
 	formatter := &logrus.JSONFormatter{}
 

@@ -336,6 +336,25 @@ func TestDisableTimestampWithColoredOutput(t *testing.T) {
 	}
 }
 
+func TestDisableTimestampKeepsUserTimeField(t *testing.T) {
+	for _, fieldName := range []string{"time", "@timestamp"} {
+		t.Run(fieldName, func(t *testing.T) {
+			formatter := &TextFormatter{
+				DisableTimestamp: true,
+				FieldMap:         FieldMap{FieldKeyTime: fieldName},
+			}
+			entry := &Entry{Data: Fields{fieldName: "from application"}, Level: InfoLevel}
+			output, err := formatter.Format(entry)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !strings.Contains(" "+string(output), " "+fieldName+"=\"from application\"") {
+				t.Errorf("user time field was renamed: %s", output)
+			}
+		})
+	}
+}
+
 func TestNewlineBehavior(t *testing.T) {
 	tf := &TextFormatter{ForceColors: true}
 
