@@ -7,7 +7,6 @@ import (
 	"os"
 	"runtime"
 	"slices"
-	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -543,14 +542,17 @@ func TestCustomSorting(t *testing.T) {
 	formatter := &TextFormatter{
 		DisableColors: true,
 		SortingFunc: func(keys []string) {
-			sort.Slice(keys, func(i, j int) bool {
-				if keys[j] == "prefix" {
-					return false
+			slices.SortFunc(keys, func(a, b string) int {
+				if a == "prefix" {
+					if b == "prefix" {
+						return 0
+					}
+					return -1
 				}
-				if keys[i] == "prefix" {
-					return true
+				if b == "prefix" {
+					return 1
 				}
-				return strings.Compare(keys[i], keys[j]) == -1
+				return strings.Compare(a, b)
 			})
 		},
 	}
