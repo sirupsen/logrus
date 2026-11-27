@@ -117,8 +117,10 @@ func (h *Hook) Fire(entry *logrus.Entry) error {
 		attrs = append(attrs, slog.Any(k, v))
 	}
 	var pc uintptr
-	if entry.Caller != nil {
-		pc = entry.Caller.PC
+	if entry.Caller != nil && entry.Caller.PC != 0 {
+		// runtime.Frame.PC identifies a call instruction, while slog.Record
+		// expects the return PC. CallersFrames subtracts one when resolving it.
+		pc = entry.Caller.PC + 1
 	}
 	r := slog.NewRecord(entry.Time, level, entry.Message, pc)
 	r.AddAttrs(attrs...)
