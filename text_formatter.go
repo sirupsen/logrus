@@ -249,7 +249,7 @@ func (f *TextFormatter) printPlain(b *bytes.Buffer, entry *Entry, keys []string,
 func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []string, data Fields) {
 	// Remove a single newline if it already exists in the message to keep
 	// the behavior of logrus text_formatter the same as the stdlib log package
-	entry.Message = strings.TrimSuffix(entry.Message, "\n")
+	message := strings.TrimSuffix(entry.Message, "\n")
 
 	var callerText string
 	if caller := entry.Caller; caller != nil {
@@ -275,15 +275,15 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 	levelText := levelPrefix(entry.Level, f.DisableLevelTruncation, f.PadLevelText)
 	switch {
 	case f.DisableTimestamp:
-		_, _ = fmt.Fprintf(b, "%s%s %-44s ", levelText, callerText, entry.Message)
+		_, _ = fmt.Fprintf(b, "%s%s %-44s ", levelText, callerText, message)
 	case !f.FullTimestamp:
-		_, _ = fmt.Fprintf(b, "%s[%04d]%s %-44s ", levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), callerText, entry.Message)
+		_, _ = fmt.Fprintf(b, "%s[%04d]%s %-44s ", levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), callerText, message)
 	default:
 		timestampFormat := f.TimestampFormat
 		if timestampFormat == "" {
 			timestampFormat = defaultTimestampFormat
 		}
-		_, _ = fmt.Fprintf(b, "%s[%s]%s %-44s ", levelText, entry.Time.Format(timestampFormat), callerText, entry.Message)
+		_, _ = fmt.Fprintf(b, "%s[%s]%s %-44s ", levelText, entry.Time.Format(timestampFormat), callerText, message)
 	}
 
 	if !f.DisableSorting {
