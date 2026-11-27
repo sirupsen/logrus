@@ -91,6 +91,22 @@ type Entry struct {
 
 	// err contains internal field-formatting errors.
 	err string
+
+	// Fields used for lazy evaluation of fields.
+	lazy *entryFields
+}
+
+type entryFields struct {
+	parent *Entry
+	field  field
+	fields Fields
+
+	once sync.Once
+}
+
+type field struct {
+	key   string
+	value any
 }
 
 // NewEntry creates a new [Entry] associated with the provided Logger.
@@ -101,29 +117,29 @@ func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
 		// Reserve default predefined fields and a little extra room.
-		Data: make(Fields, defaultFields+3),
+		//
+		// FIXME(thaJeztah): make this conditional based on whether lazy is enabled.
+		// Data: make(Fields, defaultFields+3),
 	}
 }
 
 // Dup creates a copy of the entry for further modification.
 //
-// Data is cloned to avoid mutating the original entry. Other fields
-// (Logger, Time, Context, etc.) are copied by value.
+// Fields are materialized into a new Data map so modifications to the returned
+// entry do not affect the original. Other fields (Logger, Time, Context, etc.)
+// are copied by value.
 func (entry *Entry) Dup() *Entry {
-	dup := entry.dup()
-	dup.Data = maps.Clone(entry.Data)
-	return dup
+	return entry.hydratedDup()
 }
 
-// dup copies the entry fields shared by derived entries except Data, which
-// callers must copy or initialize as appropriate for their use.
+// dup copies the entry fields shared by derived entries except Data and err,
+// which callers must copy or initialize as appropriate for their use.
 func (entry *Entry) dup() *Entry {
 	return &Entry{
 		Logger:  entry.Logger,
 		Time:    entry.Time,
 		Caller:  entry.Caller,
 		Context: entry.Context,
-		err:     entry.err,
 	}
 }
 
@@ -165,7 +181,7 @@ func (entry *Entry) WithError(err error) *Entry {
 // WithContext adds a context to the Entry.
 func (entry *Entry) WithContext(ctx context.Context) *Entry {
 	dup := entry.dup()
-	dup.Data = maps.Clone(entry.Data)
+	dup.lazy = &entryFields{parent: entry}
 	dup.Context = ctx
 	return dup
 }
@@ -173,27 +189,70 @@ func (entry *Entry) WithContext(ctx context.Context) *Entry {
 // WithField adds a single field to the Entry.
 func (entry *Entry) WithField(key string, value any) *Entry {
 	dup := entry.dup()
-	dup.Data = maps.Clone(entry.Data)
-	dup.addField(key, value)
+	dup.lazy = &entryFields{
+		parent: entry,
+		field:  field{key: key, value: value},
+	}
 	return dup
 }
 
 // WithFields adds a map of fields to the Entry.
 func (entry *Entry) WithFields(fields Fields) *Entry {
 	dup := entry.dup()
-	dup.Data = make(Fields, len(entry.Data)+len(fields))
-	maps.Copy(dup.Data, entry.Data)
-
-	for key, value := range fields {
-		dup.addField(key, value)
+	dup.lazy = &entryFields{
+		parent: entry,
+		fields: maps.Clone(fields),
 	}
 	return dup
+}
+
+// hydratedDup materializes and caches entry's fields if necessary, then returns
+// a copy with an independent Data map.
+func (entry *Entry) hydratedDup() *Entry {
+	if lazy := entry.lazy; lazy != nil {
+		lazy.once.Do(func() {
+			entry.materialize(entry)
+		})
+	}
+
+	dup := entry.dup()
+	dup.Data = maps.Clone(entry.Data)
+	dup.err = entry.err
+	if dup.Data == nil {
+		dup.Data = make(Fields)
+	}
+	return dup
+}
+
+// materialize copies the fields associated with entry into dst, preserving
+// the most recently added valid value for duplicate fields and reporting fields
+// with unsupported values through dst.err.
+func (entry *Entry) materialize(dst *Entry) {
+	if entry.lazy == nil {
+		dst.Data = maps.Clone(entry.Data)
+		dst.err = entry.err
+		return
+	}
+
+	lazy := entry.lazy
+	lazy.parent.materialize(dst)
+
+	if lazy.fields != nil {
+		if dst.Data == nil {
+			dst.Data = make(Fields, len(lazy.fields))
+		}
+		for key, value := range lazy.fields {
+			dst.addField(key, value)
+		}
+	} else if key := lazy.field.key; key != "" {
+		dst.addField(key, lazy.field.value)
+	}
 }
 
 // WithTime overrides the time of the Entry.
 func (entry *Entry) WithTime(t time.Time) *Entry {
 	dup := entry.dup()
-	dup.Data = maps.Clone(entry.Data)
+	dup.lazy = &entryFields{parent: entry}
 	dup.Time = t
 	return dup
 }
@@ -309,9 +368,7 @@ func (entry *Entry) logln(level Level, panicAfter bool, args ...any) {
 // Panicln while avoiding a return value used only as the panic value.
 // See #1283 and commits f96066e and 5f8c666.
 func (entry *Entry) log(level Level, panicAfter bool, msg string) {
-	newEntry := entry.dup()
-	newEntry.Data = maps.Clone(entry.Data)
-
+	newEntry := entry.hydratedDup()
 	if newEntry.Time.IsZero() {
 		newEntry.Time = time.Now()
 	}
