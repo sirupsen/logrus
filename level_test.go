@@ -60,3 +60,43 @@ func TestLevelMarshalText(t *testing.T) {
 		})
 	}
 }
+
+func TestLevelStringUnknown(t *testing.T) {
+	unknownLevel := logrus.Level(99)
+	require.Equal(t, "unknown", unknownLevel.String())
+}
+
+func TestParseLevelVariations(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected logrus.Level
+		hasErr   bool
+	}{
+		{"panic", logrus.PanicLevel, false},
+		{"PANIC", logrus.PanicLevel, false},
+		{"fatal", logrus.FatalLevel, false},
+		{"error", logrus.ErrorLevel, false},
+		{"warn", logrus.WarnLevel, false},
+		{"WARN", logrus.WarnLevel, false},
+		{"warning", logrus.WarnLevel, false},
+		{"WARNING", logrus.WarnLevel, false},
+		{"info", logrus.InfoLevel, false},
+		{"INFO", logrus.InfoLevel, false},
+		{"debug", logrus.DebugLevel, false},
+		{"trace", logrus.TraceLevel, false},
+		{"TRACE", logrus.TraceLevel, false},
+		{"invalid", logrus.Level(0), true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			lvl, err := logrus.ParseLevel(tt.input)
+			if tt.hasErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.expected, lvl)
+			}
+		})
+	}
+}
